@@ -1,0 +1,83 @@
+{
+    "status": "200",
+    "data": [
+             {
+             "weekDay": "monday",
+             "data": [
+                      {
+                      "courseStart": "1",
+                      "courseName": "大学外语",
+                      "place": "31307",
+                      "numberOfCourse": "2",
+                      "couresPeriod": "1-14"
+                      },
+                      {
+                      "courseStart": "3",
+                      "courseName": "高等数学",
+                      "place": "32401",
+                      "numberOfCourse": "2",
+                      "couresPeriod": "1-14"
+                      }
+                      ]
+             },
+             {
+             "weekDay": "tuesday",
+             "data": [
+                      {
+                      "courseStart": "3",
+                      "courseName": "大学外语",
+                      "place": "31307",
+                      "numberOfCourse": "2",
+                      "couresPeriod": "1-14"
+                      },
+                      {
+                      "courseStart": "5",
+                      "courseName": "高等数学",
+                      "place": "31301",
+                      "numberOfCourse": "2",
+                      "couresPeriod": "1-14"
+                      }
+                      ]
+             },
+             {
+             "weekDay": "wednesday",
+             "data": [
+                      {
+                      "courseStart": "1",
+                      "courseName": "大学外语",
+                      "place": "31301",
+                      "numberOfCourse": "2",
+                      "couresPeriod": "1-14"
+                      },
+                      {
+                      "courseStart": "5",
+                      "courseName": "c程序设计",
+                      "place": "31304",
+                      "numberOfCourse": "3",
+                      "couresPeriod": "1-14"
+                      }
+                      ]
+             },
+             {
+             "weekDay": "thursday",
+             "data": [
+                      {
+                      "courseStart": "3",
+                      "courseName": "大学体育1",
+                      "place": "31303",
+                      "numberOfCourse": "2",
+                      "couresPeriod": "1-14"
+                      },
+                      {
+                      "courseStart": "7",
+                      "courseName": "线性代数",
+                      "place": "31302",
+                      "numberOfCourse": "3",
+                      "couresPeriod": "1-14"
+                      }
+                      ]
+             }
+             ]
+}
+
+
