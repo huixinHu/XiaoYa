@@ -47,7 +47,7 @@
     }
 }
 
-+(instancetype)SectionCellWithTableView:(UITableView *)tableview{
++ (instancetype)SectionCellWithTableView:(UITableView *)tableview{
     static NSString *ID = @"SectionSelectCell";
     SectionSelectTableViewCell *cell = [tableview dequeueReusableCellWithIdentifier:ID];
     if (cell == nil) {

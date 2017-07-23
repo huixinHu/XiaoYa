@@ -37,7 +37,7 @@
     if (self = [super initWithFrame:frame]){
         self.backgroundColor = [UIColor whiteColor];
         self.layer.cornerRadius = 10.0;
-        self.layer.masksToBounds = YES;
+//        self.layer.masksToBounds = YES;
         
         self.monthArr =@[@"1月",@"2月",@"3月",@"4月",@"5月",@"6月",@"7月",@"8月",@"9月",@"10月",@"11月",@"12月"];
         _currentDate = currentDate;
@@ -46,6 +46,7 @@
         _year = self.curDateComp.year;
         _month = self.curDateComp.month;
         
+        [self drawHeader];
         [self commonInit];
 
         //row=self.monthArr.count * 5刚好是一月
@@ -144,7 +145,7 @@
     center.x = self.frame.size.width/2;
     _monthLab.center = center;
     
-    _confirm.frame = CGRectMake(self.frame.size.width / 2, self.frame.size.height - 36, self.frame.size.width / 2, 36);
+    _confirm.frame = CGRectMake(self.frame.size.width / 2 , self.frame.size.height - 36, self.frame.size.width / 2, 36);
     _cancel.frame = CGRectMake(0, self.frame.size.height - 36, self.frame.size.width / 2, 36);
     _line1.frame = CGRectMake(0, self.frame.size.height - 36, self.frame.size.width, 0.5);
     _line2.frame = CGRectMake(self.frame.size.width / 2, self.frame.size.height - 36, 0.5, 36);
@@ -182,8 +183,27 @@
     lastyear = newyear;
 }
 
-- (void)drawRect:(CGRect)rect{
-    CGFloat width = self.frame.size.width;
+//- (void)drawRect:(CGRect)rect{
+//    CGFloat width = self.frame.size.width;
+//    CGFloat radius = 10;
+//    UIBezierPath*path = [UIBezierPath bezierPath];
+//    [path addArcWithCenter:CGPointMake(radius, radius) radius:radius startAngle:M_PI endAngle:M_PI/2*3 clockwise:1];
+//    [path moveToPoint:CGPointMake(radius, 0)];
+//    [path addLineToPoint:CGPointMake(width - radius, 0)];
+//    [path addArcWithCenter:CGPointMake(width - radius , radius) radius:radius startAngle:M_PI*3/2 endAngle:M_PI*2 clockwise:1];
+//    [path addLineToPoint:CGPointMake(width, 86)];
+//    [path addLineToPoint:CGPointMake(0 , 86)];
+//    [path addLineToPoint:CGPointMake(0, radius)];
+//    [path closePath];
+//    UIColor *fillColor = [UIColor colorWithRed:57/255.0 green:185/255.0 blue:248/255.0 alpha:1.0];//39b9f8
+//    [fillColor set];
+//    [path fill];
+//}
+
+- (void)drawHeader{
+    UIGraphicsBeginImageContextWithOptions(CGSizeMake(265, 322), NO, 0.0);
+    CGContextRef ctx = UIGraphicsGetCurrentContext();
+    CGFloat width = 265;
     CGFloat radius = 10;
     UIBezierPath*path = [UIBezierPath bezierPath];
     [path addArcWithCenter:CGPointMake(radius, radius) radius:radius startAngle:M_PI endAngle:M_PI/2*3 clockwise:1];
@@ -197,5 +217,10 @@
     UIColor *fillColor = [UIColor colorWithRed:57/255.0 green:185/255.0 blue:248/255.0 alpha:1.0];//39b9f8
     [fillColor set];
     [path fill];
+    
+    CGContextAddPath(ctx, path.CGPath);
+    UIImage * getImage = UIGraphicsGetImageFromCurrentImageContext();
+    [self addSubview:[[UIImageView alloc]initWithImage:getImage]];
+    UIGraphicsEndImageContext();
 }
 @end

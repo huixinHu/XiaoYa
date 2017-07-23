@@ -8,13 +8,14 @@
 
 #import <UIKit/UIKit.h>
 #import "CourseModel.h"
+#import "HXTextField.h"
 @interface CourseTimeCell : UITableViewCell
 
 @property (nonatomic,weak) UIButton *weeks;
 @property (nonatomic,weak) UIButton *weekDay;
 @property (nonatomic,weak) UIButton *courseTime;
 @property (nonatomic,weak) UIButton *delete_btn;
-@property (nonatomic,weak) UITextField *place;
+@property (nonatomic,weak) HXTextField *place;
 @property (nonatomic , strong)CourseModel *model;//模型
 +(instancetype)CourseTimeCellWithTableView:(UITableView *)tableview;
 

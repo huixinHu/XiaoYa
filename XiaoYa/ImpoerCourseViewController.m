@@ -10,7 +10,6 @@
 #import "Utils.h"
 #import "Masonry.h"
 #import "UIAlertController+Appearance.h"
-#import "SessionManager.h"
 #import "DbManager.h"
 #import "TFHpple.h"
 
@@ -26,7 +25,7 @@
 @property (nonatomic ,weak)UITextField *yanzhengmaTxf;
 @property (nonatomic ,weak)UIImageView *checkCodeImg;
 
-@property (nonatomic ,strong)SessionManager *ssManager;
+//@property (nonatomic ,strong)SessionManager *ssManager;
 //@property (nonatomic ,strong)NSURLSessionDataTask *dataTask;
 @property (nonatomic ,copy)NSString *viewState;
 @property (nonatomic ,copy)NSString *randomStr;
@@ -61,6 +60,7 @@
     [self yanzhengmaSetting];
     
     self.view.backgroundColor = [Utils colorWithHexString:@"#F0F0F6"];
+    self.edgesForExtendedLayout = UIRectEdgeNone;
     self.navigationController.navigationBar.titleTextAttributes = @{NSForegroundColorAttributeName:[Utils colorWithHexString:@"#00a7fa"],NSFontAttributeName:[UIFont systemFontOfSize:17]};
     self.navigationItem.title = @"自动导入";
     UIButton *rightBtn = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 30, 30)];
@@ -645,12 +645,12 @@ willPerformHTTPRedirection:(NSHTTPURLResponse *)response
     // Dispose of any resources that can be recreated.
 }
 
-- (SessionManager *)ssManager{
-    if (_ssManager == nil) {
-        _ssManager = [SessionManager shareSession];
-    }
-    return _ssManager;
-}
+//- (SessionManager *)ssManager{
+//    if (_ssManager == nil) {
+//        _ssManager = [SessionManager shareSession];
+//    }
+//    return _ssManager;
+//}
 
 - (NSString *)randomStr{
     if (_randomStr == nil) {

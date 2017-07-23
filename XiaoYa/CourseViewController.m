@@ -19,6 +19,7 @@
 #import "UIAlertController+Appearance.h"
 #import "UIView+Extend.h"
 #import "MBProgressHUD.h"
+#import "HXTextField.h"
 
 #define kScreenWidth [UIApplication sharedApplication].keyWindow.bounds.size.width
 #define kScreenHeight [UIApplication sharedApplication].keyWindow.bounds.size.height
@@ -27,7 +28,7 @@
 @interface CourseViewController ()<UITableViewDataSource,UITableViewDelegate,UITextFieldDelegate,weekselectViewDelegate,dayselsctViewDelegate,timeselectViewDelegate>
 //上课的子view
 @property (nonatomic,weak) UIView *coursefield_view;
-@property (nonatomic,weak) UITextField * courseNameField;
+@property (nonatomic,weak) HXTextField * courseNameField;
 @property (nonatomic,weak) UITableView *course_tableview;
 @property (nonatomic,weak) UIButton *addcoursetime_btn;
 
@@ -108,7 +109,6 @@
 -(void)courseViewSetting{
     self.navigationController.navigationBar.titleTextAttributes = @{NSForegroundColorAttributeName:[Utils colorWithHexString:@"#00a7fa"],NSFontAttributeName:[UIFont systemFontOfSize:17]};
     self.navigationItem.title = @"课程";
-    //    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc]initWithImage:[[UIImage imageNamed:@"confirm"]imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal] style:UIBarButtonItemStyleDone target:self action:@selector(confirm)];
     UIButton *rightBtn = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 30, 30)];
     [rightBtn setImage:[UIImage imageNamed:@"confirm"] forState:UIControlStateNormal];
     [rightBtn addTarget:self action:@selector(confirm) forControlEvents:UIControlEventTouchUpInside];
@@ -117,6 +117,7 @@
     
     self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc]initWithImage:[[UIImage imageNamed:@"cancel"]imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal] style:UIBarButtonItemStyleDone target:self action:@selector(cancel)];
     self.view.backgroundColor = [Utils colorWithHexString:@"#F0F0F6"];
+    self.edgesForExtendedLayout = UIRectEdgeNone;
     [self addcoursefield_view];
     [self addcoursetableview];
     [self add_addcoursetime_btn];
@@ -143,24 +144,13 @@
     }];
     
     //文本框
-    UITextField *namefield = [[UITextField alloc] init];
-    //边框
+    HXTextField *namefield = [[HXTextField alloc] init];
     _courseNameField = namefield;
     _courseNameField.layer.borderColor = [[Utils colorWithHexString:@"#d9d9d9"]CGColor];
     _courseNameField.layer.borderWidth = 0.5f;
     _courseNameField.layer.cornerRadius = 2.0f;
-    //placeholder颜色、大小
-    NSMutableDictionary *dict = [NSMutableDictionary dictionary];
-    dict[NSForegroundColorAttributeName] = [Utils colorWithHexString:@"#d9d9d9"];
-    dict[NSFontAttributeName] = [UIFont systemFontOfSize:12.0];
-    NSAttributedString *attribute = [[NSAttributedString alloc] initWithString:@"请输入课程名称" attributes:dict];
-    [_courseNameField setAttributedPlaceholder:attribute];
-    //文本颜色、大小
-    _courseNameField.textColor = [Utils colorWithHexString:@"#333333"];
-    _courseNameField.font = [UIFont systemFontOfSize:12.0];
-    //文本框内的文字距离左边框的距离
-    _courseNameField.leftView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 8, 1)];
-    _courseNameField.leftViewMode = UITextFieldViewModeAlways;
+    UIView *lv = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 8, 1)];
+    [_courseNameField appearanceWithTextColor:[Utils colorWithHexString:@"#333333"] textFontSize:12.0 placeHolderColor:[Utils colorWithHexString:@"#d9d9d9"] placeHolderFontSize:12.0 placeHolderText:@"请输入课程名称" leftView:lv];
     _courseNameField.text = self.originCourseName;
     [_coursefield_view addSubview:_courseNameField];
     [_courseNameField mas_makeConstraints:^(MASConstraintMaker *make) {

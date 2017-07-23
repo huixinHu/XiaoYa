@@ -39,7 +39,6 @@
     if (self = [super initWithFrame:frame]) {
         self.backgroundColor = [UIColor whiteColor];
         self.layer.cornerRadius = 10.0;
-        self.layer.masksToBounds = YES;
         _currentDate = currentDate;
         _firstDateOfTerm = firstDateOfTerm;
         NSCalendar *gregorian = [[NSCalendar alloc]initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
@@ -47,6 +46,7 @@
         _year = self.curDateComp.year;
         _month = self.curDateComp.month;
 
+        [self drawHeader];
         [self commonInit];
     }
     return self;
@@ -62,7 +62,7 @@
     [_confirm setTitle:@"确认" forState:UIControlStateNormal];
     [_confirm setTitleColor:[Utils colorWithHexString:@"#39b9f8"] forState:UIControlStateNormal];
     _confirm.titleLabel.font = [UIFont systemFontOfSize:13.0];
-    _confirm.backgroundColor = [UIColor whiteColor];
+//    _confirm.backgroundColor = [UIColor whiteColor];
     [_confirm addTarget:self action:@selector(confirmAction) forControlEvents:UIControlEventTouchUpInside];
     [self addSubview:_confirm];
     
@@ -71,7 +71,7 @@
     [_cancel setTitle:@"取消" forState:UIControlStateNormal];
     [_cancel setTitleColor:[Utils colorWithHexString:@"#39b9f8"] forState:UIControlStateNormal];
     _cancel.titleLabel.font = [UIFont systemFontOfSize:13.0];
-    _cancel.backgroundColor = [UIColor whiteColor];
+//    _cancel.backgroundColor = [UIColor whiteColor];
     [_cancel addTarget:self action:@selector(cancelAction) forControlEvents:UIControlEventTouchUpInside];
     [self addSubview:_cancel];
     
@@ -142,8 +142,27 @@
     _monthBtn.center = center;
 }
 
-- (void)drawRect:(CGRect)rect{
-    CGFloat width = self.frame.size.width;
+//- (void)drawRect:(CGRect)rect{
+//    CGFloat width = self.frame.size.width;
+//    CGFloat radius = 10;
+//    UIBezierPath*path = [UIBezierPath bezierPath];
+//    [path addArcWithCenter:CGPointMake(radius, radius) radius:radius startAngle:M_PI endAngle:M_PI/2*3 clockwise:1];
+//    [path moveToPoint:CGPointMake(radius, 0)];
+//    [path addLineToPoint:CGPointMake(width - radius, 0)];
+//    [path addArcWithCenter:CGPointMake(width - radius , radius) radius:radius startAngle:M_PI*3/2 endAngle:M_PI*2 clockwise:1];
+//    [path addLineToPoint:CGPointMake(width, 178/2)];
+//    [path addLineToPoint:CGPointMake(0 , 178 /2)];
+//    [path addLineToPoint:CGPointMake(0, radius)];
+//    [path closePath];
+//    UIColor *fillColor = [UIColor colorWithRed:57/255.0 green:185/255.0 blue:248/255.0 alpha:1.0];//39b9f8
+//    [fillColor set];
+//    [path fill];
+//}
+
+- (void)drawHeader{
+    UIGraphicsBeginImageContextWithOptions(CGSizeMake(321, 178), NO, 0.0);
+    CGContextRef ctx = UIGraphicsGetCurrentContext();
+    CGFloat width = 321;
     CGFloat radius = 10;
     UIBezierPath*path = [UIBezierPath bezierPath];
     [path addArcWithCenter:CGPointMake(radius, radius) radius:radius startAngle:M_PI endAngle:M_PI/2*3 clockwise:1];
@@ -157,6 +176,11 @@
     UIColor *fillColor = [UIColor colorWithRed:57/255.0 green:185/255.0 blue:248/255.0 alpha:1.0];//39b9f8
     [fillColor set];
     [path fill];
+    
+    CGContextAddPath(ctx, path.CGPath);
+    UIImage * getImage = UIGraphicsGetImageFromCurrentImageContext();
+    [self addSubview:[[UIImageView alloc]initWithImage:getImage]];
+    UIGraphicsEndImageContext();
 }
 
 @end

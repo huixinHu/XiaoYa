@@ -43,7 +43,7 @@
     [_confirm setTitle:@"确认" forState:UIControlStateNormal];
     [_confirm setTitleColor:[Utils colorWithHexString:@"#39b9f8"] forState:UIControlStateNormal];
     _confirm.titleLabel.font = [UIFont systemFontOfSize:13.0];
-    _confirm.backgroundColor = [UIColor whiteColor];
+//    _confirm.backgroundColor = [UIColor whiteColor];
     [_confirm addTarget:self action:@selector(confirmAction) forControlEvents:UIControlEventTouchUpInside];
     [self addSubview:_confirm];
     
@@ -52,7 +52,7 @@
     [_cancel setTitle:@"取消" forState:UIControlStateNormal];
     [_cancel setTitleColor:[Utils colorWithHexString:@"#39b9f8"] forState:UIControlStateNormal];
     _cancel.titleLabel.font = [UIFont systemFontOfSize:13.0];
-    _cancel.backgroundColor = [UIColor whiteColor];
+//    _cancel.backgroundColor = [UIColor whiteColor];
     [_cancel addTarget:self action:@selector(cancelAction) forControlEvents:UIControlEventTouchUpInside];
     [self addSubview:_cancel];
     
@@ -119,7 +119,7 @@
 - (void)layoutSubviews{
     [super layoutSubviews];
     
-    _confirm.frame = CGRectMake(self.frame.size.width / 2, self.frame.size.height - 38, self.frame.size.width / 2, 38);
+    _confirm.frame = CGRectMake(self.frame.size.width / 2 , self.frame.size.height - 38, self.frame.size.width / 2, 38);
     _cancel.frame = CGRectMake(0, self.frame.size.height - 38, self.frame.size.width / 2, 38);
     _line1.frame = CGRectMake(0, self.frame.size.height - 38, self.frame.size.width, 0.5);
     _line2.frame = CGRectMake(self.frame.size.width / 2, self.frame.size.height - 38, 0.5, 38);

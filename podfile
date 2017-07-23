@@ -1,5 +1,6 @@
 platform:ios,’8.0’
 target ‘XiaoYa’ do
 pod 'Masonry'
+pod 'AFNetworking', '~> 3.0'
 end
 

@@ -8,8 +8,11 @@
 
 #import "AppDelegate.h"
 #import "CourseTableViewController.h"
+#import "LoginViewController.h"
+#import "GroupHomePageViewController.h"
 #import "Utils.h"
-@interface AppDelegate ()
+#import "LoginManager.h"
+@interface AppDelegate ()<UITabBarControllerDelegate>
 
 @end
 
@@ -23,39 +26,47 @@
     
     UITabBarController *tabbar = [[UITabBarController alloc]init];
     self.window.rootViewController = tabbar;
-    
+    tabbar.delegate = self;
     
     CourseTableViewController *courseTable = [[CourseTableViewController alloc]init];
     UINavigationController *courseNavVC = [[UINavigationController alloc]initWithRootViewController:courseTable];
-//    courseTable.view.backgroundColor = [UIColor whiteColor];
-    courseTable.tabBarItem.title = @"日程";
-    courseTable.tabBarItem.image = [[UIImage imageNamed:@"schedule"]imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
-    courseTable.tabBarItem.selectedImage = [[UIImage imageNamed:@"schedule_selected"]imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+    [self setTabBarItem:courseTable.tabBarItem image:@"schedule" selectedImage:@"日程" title:@"日程" tag:0];
+//    courseTable.tabBarItem.title = @"日程";
+//    courseTable.tabBarItem.image = [[UIImage imageNamed:@"schedule"]imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+//    courseTable.tabBarItem.selectedImage = [[UIImage imageNamed:@"日程"]imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
     
-    
-    UIViewController *group = [[UIViewController alloc]init];
+    GroupHomePageViewController *group = [[GroupHomePageViewController alloc]init];
     UINavigationController *groupNavVC = [[UINavigationController alloc]initWithRootViewController:group];
-    group.tabBarItem.title = @"群组";
-    group.tabBarItem.image = [[UIImage imageNamed:@"user-group"]imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
-    group.tabBarItem.selectedImage = [[UIImage imageNamed:@"user-group"]imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
-    
-    
-    UIViewController *user = [[UIViewController alloc]init];
+    [self setTabBarItem:group.tabBarItem image:@"群组未选中" selectedImage:@"群组" title:@"群组" tag:1];
+    LoginViewController *user = [[LoginViewController alloc]init];
     UINavigationController *userNavVC = [[UINavigationController alloc]initWithRootViewController:user];
-    user.tabBarItem.title = @"我的";
-    user.tabBarItem.image = [[UIImage imageNamed:@"user-alt"]imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
-    user.tabBarItem.selectedImage = [[UIImage imageNamed:@"user-alt"]imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
-    
-    
+    [self setTabBarItem:user.tabBarItem image:@"我的未选中" selectedImage:@"我的" title:@"我的" tag:2];
+    //总体字体样式设置
     [[UITabBarItem appearance] setTitleTextAttributes:[NSDictionary dictionaryWithObjectsAndKeys:[Utils colorWithHexString:@"#333333"],NSForegroundColorAttributeName, [UIFont systemFontOfSize:10.0],NSFontAttributeName,nil] forState:UIControlStateNormal];
-    
-//    [[UITabBarItem appearance] setTitleTextAttributes:[NSDictionary dictionaryWithObjectsAndKeys:[Utils colorWithHexString:@"#333333"],NSForegroundColorAttributeName, [UIFont systemFontOfSize:10.0],NSFontAttributeName,nil] forState:UIControlStateSelected];
+    [[UITabBarItem appearance] setTitleTextAttributes:[NSDictionary dictionaryWithObjectsAndKeys:[Utils colorWithHexString:@"#39b9f8"],NSForegroundColorAttributeName, [UIFont systemFontOfSize:10.0],NSFontAttributeName,nil] forState:UIControlStateSelected];
     
     tabbar.viewControllers = @[courseNavVC,groupNavVC,userNavVC];
     
-//    self.window.rootViewController = naviVC;
     [self.window makeKeyAndVisible];
+    self.isLogin = NO;//赋初值，未登录
     return YES;
+}
+
+- (void)setTabBarItem:(UITabBarItem *)item image:(NSString *)image selectedImage:(NSString *)selected title:(NSString *)title tag:(NSInteger)tag{
+    item.image = [[UIImage imageNamed:image]imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+    item.selectedImage = [[UIImage imageNamed:selected]imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+    item.title = title;
+    item.tag = tag;
+}
+
+- (BOOL)tabBarController:(UITabBarController *)tabBarController shouldSelectViewController:(UIViewController *)viewController{
+    if (viewController.tabBarItem.tag == 1 ) {
+        return [LoginManager checkLoginWithTopPresentingViewControllre:viewController isCheckLogin:YES loginedBlock:^{
+            tabBarController.selectedIndex = 1;
+        }];
+    }else{
+        return YES;
+    }
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application {

@@ -35,7 +35,7 @@
 @property (nonatomic,weak) UIView *businessField_view;//第一行的描述父view
 //@property (nonatomic,weak) UITextField *busDescription;//事件描述textfield，描述+时间均有内容才允许保存事件
 @property (nonatomic,weak) UIView *commentsField_view;//最后一行备注
-@property (nonatomic,weak) UITextField *commentfield;//备注栏
+@property (nonatomic,weak) HXTextField *commentfield;//备注栏
 @property (nonatomic,weak) businessviewcell *businessTime_view;//时间选择板块
 @property (nonatomic,weak) businessviewcell *clock_view;//提醒重复设置板块
 @property (nonatomic,weak) UIButton *delete_btn;//删除按钮
@@ -99,8 +99,6 @@
     
     self.navigationController.navigationBar.titleTextAttributes = @{NSForegroundColorAttributeName:[Utils colorWithHexString:@"#00a7fa"],NSFontAttributeName:[UIFont systemFontOfSize:17]};//设置标题文字样式
     self.navigationItem.title = @"事务";
-//    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc]initWithImage:[[UIImage imageNamed:@"confirm"]imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal] style:UIBarButtonItemStyleDone target:self action:@selector(confirm)];
-//    self.navigationItem.rightBarButtonItem.enabled = NO;
     UIButton *rightBtn = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 30, 30)];
     [rightBtn setImage:[UIImage imageNamed:@"confirm"] forState:UIControlStateNormal];
     [rightBtn addTarget:self action:@selector(confirm) forControlEvents:UIControlEventTouchUpInside];
@@ -109,6 +107,7 @@
     self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc]initWithImage:[[UIImage imageNamed:@"cancel"]imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal] style:UIBarButtonItemStyleDone target:self action:@selector(cancel)];
     
     self.view.backgroundColor = [Utils colorWithHexString:@"#F0F0F6"];
+    self.edgesForExtendedLayout = UIRectEdgeNone;
     [self addBusinessField_view];
     [self addBusinessTime_view];
     [self addRemind_btn];
@@ -284,25 +283,14 @@
     }];
     
     //文本框
-    UITextField *busDescription = [[UITextField alloc] init];
+    HXTextField *busDescription = [[HXTextField alloc] init];
     //边框
     _busDescription = busDescription;
     _busDescription.layer.borderColor = [[Utils colorWithHexString:@"#d9d9d9"]CGColor];
     _busDescription.layer.borderWidth = 0.5f;
     _busDescription.layer.cornerRadius = 2.0f;
-    //placeholder颜色、大小
-    //自定义textfield
-    NSMutableDictionary *dict = [NSMutableDictionary dictionary];
-    dict[NSForegroundColorAttributeName] = [Utils colorWithHexString:@"#d9d9d9"];
-    dict[NSFontAttributeName] = [UIFont systemFontOfSize:12.0];
-    NSAttributedString *attribute = [[NSAttributedString alloc] initWithString:@"请描述你的事务" attributes:dict];
-    [_busDescription setAttributedPlaceholder:attribute];
-    //文本颜色、大小
-    _busDescription.textColor = [Utils colorWithHexString:@"#333333"];
-    _busDescription.font = [UIFont systemFontOfSize:12.0];
-    //文本框内的文字距离左边框的距离
-    _busDescription.leftView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 8, 1)];
-    _busDescription.leftViewMode = UITextFieldViewModeAlways;
+    UIView *lv = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 8, 1)];
+    [_busDescription appearanceWithTextColor:[Utils colorWithHexString:@"#333333"] textFontSize:12.0 placeHolderColor:[Utils colorWithHexString:@"#d9d9d9"] placeHolderFontSize:12.0 placeHolderText:@"请描述你的事务" leftView:lv];
     _busDescription.text = self.busModel.desc;
     [_businessField_view addSubview:_busDescription];
     [_busDescription mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -592,24 +580,14 @@
         make.centerX.equalTo(_clock_view.mas_centerX);
     }];
     //备注文本框
-    UITextField *commentfield = [[UITextField alloc] init];
+    HXTextField *commentfield = [[HXTextField alloc] init];
     _commentfield = commentfield;
     //边框
     _commentfield.layer.borderColor = [[Utils colorWithHexString:@"#d9d9d9"]CGColor];
     _commentfield.layer.borderWidth = 0.5f;
     _commentfield.layer.cornerRadius = 2.0f;
-    //placeholder颜色、大小
-    NSMutableDictionary *dict = [NSMutableDictionary dictionary];
-    dict[NSForegroundColorAttributeName] = [Utils colorWithHexString:@"#d9d9d9"];
-    dict[NSFontAttributeName] = [UIFont systemFontOfSize:12.0];
-    NSAttributedString *attribute = [[NSAttributedString alloc] initWithString:@"有什么要补充的写在这里吧！" attributes:dict];
-    [_commentfield setAttributedPlaceholder:attribute];
-    //文本颜色、大小
-    _commentfield.textColor = [Utils colorWithHexString:@"#333333"];
-    _commentfield.font = [UIFont systemFontOfSize:12.0];
-    //文本框内的文字距离左边框的距离
-    _commentfield.leftView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 8, 1)];
-    _commentfield.leftViewMode = UITextFieldViewModeAlways;
+    UIView *lv = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 8, 1)];
+    [_commentfield appearanceWithTextColor:[Utils colorWithHexString:@"#333333"] textFontSize:12.0 placeHolderColor:[Utils colorWithHexString:@"#d9d9d9"] placeHolderFontSize:12.0 placeHolderText:@"有什么要补充的写在这里吧！" leftView:lv];
     _commentfield.text = self.commentInfo;
     [_commentsField_view addSubview:_commentfield];
     [_commentfield mas_makeConstraints:^(MASConstraintMaker *make) {

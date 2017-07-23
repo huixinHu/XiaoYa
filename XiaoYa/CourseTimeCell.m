@@ -128,15 +128,10 @@
     [_courseTime setTitleColor:[Utils colorWithHexString:@"#333333"] forState:UIControlStateNormal];
     _courseTime.titleLabel.font = [UIFont systemFontOfSize:14];
     
-    UITextField *place = [[UITextField alloc] init];
+    HXTextField *place = [[HXTextField alloc] init];
     _place = place;
+    [_place appearanceWithTextColor:[Utils colorWithHexString:@"#333333"] textFontSize:12.0 placeHolderColor:[Utils colorWithHexString:@"#d9d9d9"] placeHolderFontSize:12.0 placeHolderText:@"请输入上课教室" leftView:nil];
     [self addSubview:_place];
-    NSMutableDictionary *dict = [NSMutableDictionary dictionary];
-    dict[NSForegroundColorAttributeName] = [Utils colorWithHexString:@"#d9d9d9"];
-    dict[NSFontAttributeName] = [UIFont systemFontOfSize:12.0];
-    NSAttributedString *attribute = [[NSAttributedString alloc] initWithString:@"请输入上课教室" attributes:dict];
-    [_place setAttributedPlaceholder:attribute];
-    _place.font = [UIFont systemFontOfSize:12.0];
     [_place setTextAlignment:NSTextAlignmentCenter];
     
     [_weeks mas_makeConstraints:^(MASConstraintMaker *make) {

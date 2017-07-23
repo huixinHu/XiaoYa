@@ -29,6 +29,7 @@
 
 - (void)commonInit{
     __weak typeof(self) weakself = self;
+    [self drawSomething];
     
     CGFloat margin = 5;
     UITableView *weekTableView = [[UITableView alloc] init];
@@ -45,10 +46,6 @@
     
     NSIndexPath *selectdIdxPath = [NSIndexPath indexPathForRow:0 inSection:0];
     [_weekTableView selectRowAtIndexPath:selectdIdxPath animated:NO scrollPosition:UITableViewScrollPositionTop];
-//    WeekCell *cell = [_weekTableView cellForRowAtIndexPath:selectdIdxPath];
-//    cell.label.textColor = [Utils colorWithHexString:@"#FFFFFF"];
-//    cell.label.backgroundColor = [Utils colorWithHexString:@"39B9F8"];
-//    [self.weekTableView.delegate tableView:self.weekTableView didSelectRowAtIndexPath:selectdIdxPath];
 }
 
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
@@ -93,9 +90,37 @@
     return cell;
 }
 
--(void)drawRect:(CGRect)rect{
-    CGFloat width = self.frame.size.width;//162
-    CGFloat height = self.frame.size.height;//178
+//-(void)drawRect:(CGRect)rect{
+//    CGFloat width = self.frame.size.width;//162
+//    CGFloat height = self.frame.size.height;//178
+//    CGFloat radius = 2;
+//    CGFloat arrowHeight = 5;
+//    CGFloat arrowWeight = 17;
+//    
+//    UIBezierPath*path = [UIBezierPath bezierPath];
+//    [path addArcWithCenter:CGPointMake(radius, radius + arrowHeight) radius:radius startAngle:M_PI endAngle:M_PI/2*3 clockwise:1];
+//    [path moveToPoint:CGPointMake(radius, arrowHeight)];
+//    [path addLineToPoint:CGPointMake((width-arrowWeight)/2, arrowHeight)];
+//    [path addLineToPoint:CGPointMake(width/2, 0)];
+//    [path addLineToPoint:CGPointMake((width + arrowWeight)/2 , arrowHeight)];
+//    [path addLineToPoint:CGPointMake(width - radius , arrowHeight)];
+//    [path addArcWithCenter:CGPointMake(width - radius , radius + arrowHeight) radius:radius startAngle:M_PI*3/2 endAngle:M_PI*2 clockwise:1];
+//    [path addLineToPoint:CGPointMake(width, height - radius)];
+//    [path addArcWithCenter:CGPointMake(width - radius , height - radius) radius:radius startAngle:0 endAngle:M_PI/2.0 clockwise:1];
+//    [path addLineToPoint:CGPointMake(radius , height)];
+//    [path addArcWithCenter:CGPointMake(radius , height - radius) radius:radius startAngle:M_PI/2 endAngle:M_PI clockwise:1];
+//    [path addLineToPoint:CGPointMake(0, radius + arrowHeight)];
+//    [path closePath];
+//    UIColor *fillColor = [UIColor whiteColor];
+//    [fillColor set];
+//    [path fill];
+//}
+
+- (void)drawSomething{
+    UIGraphicsBeginImageContextWithOptions(CGSizeMake(162, 178), NO, 0.0);
+    CGContextRef ctx = UIGraphicsGetCurrentContext();
+    CGFloat width = 162;//162
+    CGFloat height = 178;//178
     CGFloat radius = 2;
     CGFloat arrowHeight = 5;
     CGFloat arrowWeight = 17;
@@ -117,8 +142,12 @@
     UIColor *fillColor = [UIColor whiteColor];
     [fillColor set];
     [path fill];
+    
+    CGContextAddPath(ctx, path.CGPath);
+    UIImage * getImage = UIGraphicsGetImageFromCurrentImageContext();
+    [self addSubview:[[UIImageView alloc]initWithImage:getImage]];
+    //结束图形上下文
+    UIGraphicsEndImageContext();
 }
-
-
 
 @end
