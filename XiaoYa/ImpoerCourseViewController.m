@@ -85,8 +85,9 @@
     if (_xuehaoTxf.text.length == 0 && _mimaTxf.text.length == 0 && _yanzhengmaTxf.text.length == 0) {
         [self.navigationController popViewControllerAnimated:YES];
     }else{
+        __weak typeof(self) weakself = self;
         void (^otherBlock)(UIAlertAction *action) = ^(UIAlertAction *action){
-            [self.navigationController popViewControllerAnimated:YES];
+            [weakself.navigationController popViewControllerAnimated:YES];
         };
         NSArray *otherBlocks = @[otherBlock];
         UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"确认退出？" message:@"一旦退出，编辑将不会保存" preferredStyle:UIAlertControllerStyleAlert cancelTitle:@"取消" cancelBlock:nil otherTitles:@[@"确定"] otherBlocks:otherBlocks];

@@ -339,14 +339,16 @@
 //点击上课时间coursetime_view里的删除按钮
 -(void)deletecoursetime:(id)sender{
     [self.view endEditing:YES];
+    __weak typeof(self) weakself = self;
     void (^otherBlock)(UIAlertAction *action) = ^(UIAlertAction *action){
+        __strong typeof(weakself) strongself = weakself;
         CourseTimeCell *cell = (CourseTimeCell *)[sender superview];//获取被点击的button所在的cell
         NSIndexPath *indexPathselect = [_course_tableview indexPathForCell:cell];
         NSUInteger deleteone =(long)indexPathselect.section;
         if(_courseview_array.count > 1){
             [_courseview_array removeObjectAtIndex:deleteone];
-            [self.originTimeIndexArray removeObjectAtIndex:deleteone];
-            [self.originWeekdayArray removeObjectAtIndex:deleteone];
+            [strongself.originTimeIndexArray removeObjectAtIndex:deleteone];
+            [strongself.originWeekdayArray removeObjectAtIndex:deleteone];
             NSIndexSet *index= [[NSIndexSet alloc] initWithIndex:deleteone];
             [_course_tableview deleteSections:index withRowAnimation:UITableViewRowAnimationNone];
             [_course_tableview reloadData];
@@ -356,10 +358,10 @@
         }else{//只剩一个
             DbManager *dbManger = [DbManager shareInstance];
             //删除所有原课程（所有同名课程数据）
-            NSString *deleteOrigin = [NSString stringWithFormat:@"DELETE FROM course_table WHERE courseName = '%@';",self.originCourseName];
+            NSString *deleteOrigin = [NSString stringWithFormat:@"DELETE FROM course_table WHERE courseName = '%@';",strongself.originCourseName];
             [dbManger executeNonQuery:deleteOrigin];
-            [self.delegate CourseViewControllerDelete:self];
-            [self.navigationController popViewControllerAnimated:YES];
+            [strongself.delegate CourseViewControllerDelete:strongself];
+            [strongself.navigationController popViewControllerAnimated:YES];
         }
     };
     NSArray *otherBlocks = @[otherBlock];
@@ -509,8 +511,9 @@
 //---------------------------------保存当前页数据的方法-------------------------------
 -(void)cancel
 {
+    __weak typeof(self) weakself = self;
     void (^otherBlock)(UIAlertAction *action) = ^(UIAlertAction *action){
-        [self.navigationController popViewControllerAnimated:YES];
+        [weakself.navigationController popViewControllerAnimated:YES];
     };
     NSArray *otherBlocks = @[otherBlock];
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"确认退出？" message:@"一旦退出，编辑将不会保存" preferredStyle:UIAlertControllerStyleAlert cancelTitle:@"取消" cancelBlock:nil otherTitles:@[@"确定"] otherBlocks:otherBlocks];

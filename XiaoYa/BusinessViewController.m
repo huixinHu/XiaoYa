@@ -251,8 +251,9 @@
 }
 
 - (void)cancel{
+    __weak typeof(self) weakself = self;
     void (^otherBlock)(UIAlertAction *action) = ^(UIAlertAction *action){
-        [self.navigationController popViewControllerAnimated:YES];
+        [weakself.navigationController popViewControllerAnimated:YES];
     };
     NSArray *otherBlocks = @[otherBlock];
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"确认退出？" message:@"一旦退出，编辑将不会保存" preferredStyle:UIAlertControllerStyleAlert cancelTitle:@"取消" cancelBlock:nil otherTitles:@[@"确定"] otherBlocks:otherBlocks];
@@ -665,11 +666,13 @@
 - (void)deleteAction{
     if (_busModel.repeat.intValue == 6) {//不重复
         NSArray *otherTitles = @[@"确认"];
+        __weak typeof(self) weakself = self;
         void (^confirmBlock)(UIAlertAction *action) = ^(UIAlertAction *action){
+            __strong typeof(weakself) strongself = weakself;
             //日历事件删除
-            [self.eventManager removeEventNotifyWithCurrentDateString:@[_busModel.date] startSection:_busModel.timeArray.firstObject endSection:_busModel.timeArray.lastObject isDeleteFuture:NO];
-            [self.delegate deleteBusiness:self];
-            [self.navigationController popViewControllerAnimated:YES];
+            [strongself.eventManager removeEventNotifyWithCurrentDateString:@[_busModel.date] startSection:_busModel.timeArray.firstObject endSection:_busModel.timeArray.lastObject isDeleteFuture:NO];
+            [strongself.delegate deleteBusiness:strongself];
+            [strongself.navigationController popViewControllerAnimated:YES];
         };
         NSArray *otherBlocks = @[confirmBlock];
         UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"确认删除本次事务？" message:@"本次删除不可逆" preferredStyle:UIAlertControllerStyleAlert cancelTitle:@"取消" cancelBlock:nil otherTitles:otherTitles otherBlocks:otherBlocks];

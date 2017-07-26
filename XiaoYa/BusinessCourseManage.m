@@ -271,8 +271,9 @@
         if ([_bsVc.busDescription.text isEqualToString:@""] && _bsVc.sectionArray.count == 0) {
             [self.navigationController popViewControllerAnimated:YES];//返回主界面
         }else{
+            __weak typeof(self) weakself = self;
             void (^otherBlock)(UIAlertAction *action) = ^(UIAlertAction *action){
-                [self.navigationController popViewControllerAnimated:YES];
+                [weakself.navigationController popViewControllerAnimated:YES];
             };
             NSArray *otherBlocks = @[otherBlock];
             UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"确认退出？" message:@"一旦退出，编辑将不会保存" preferredStyle:UIAlertControllerStyleAlert cancelTitle:@"取消" cancelBlock:nil otherTitles:@[@"确定"] otherBlocks:otherBlocks];
