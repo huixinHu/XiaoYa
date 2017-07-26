@@ -7,6 +7,7 @@
 //查找群组 搜索结果cell
 
 #import "GroupSearchTableViewCell.h"
+#import "GroupSearchModel.h"
 #import "Masonry.h"
 #import "Utils.h"
 
@@ -36,14 +37,22 @@
     return self;
 }
 
-//- (void)setGroup:(GroupListModel *)group{
-//    _group = group;
-//    self.groupName.text = group.groupName;
-//    self.groupMessage.text = group.groupMessage;
-//    self.time.text = group.time;
-//}
+- (void)setModel:(GroupSearchModel *)model{
+    _model = model;
+    self.groupName.text = model.groupName;
+    self.groupManager.text = [NSString stringWithFormat:@"群主：%@",model.managerName];
+}
+
+- (void)join:(UIButton *)sender{
+    UIView *view1 = [sender superview];
+    UIView *view2 = [view1 superview];
+    NSIndexPath *indexPath = [(UITableView *)[[view2 superview] superview] indexPathForCell:(UITableViewCell*)view2];
+    [self.delegate groupSearchCell:self selectIndex:indexPath];
+}
 
 - (void)initSubView{
+    self.selectionStyle = UITableViewCellSelectionStyleNone;
+    
     __weak typeof(self)weakself = self;
     UIImageView *avatar = [[UIImageView alloc]init];
     _avatar = avatar;
@@ -76,8 +85,8 @@
     _groupManager.textColor = [Utils colorWithHexString:@"#999999"];
     [self.contentView addSubview:_groupManager];
     [_groupManager mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.left.equalTo(_groupName.mas_left);
-        make.top.equalTo(_groupName.mas_bottom).offset(12);
+        make.left.equalTo(_groupName);
+        make.top.equalTo(_groupName.mas_bottom).offset(8);
         make.right.equalTo(weakself.contentView.mas_right).offset(-60);
     }];
     
@@ -85,12 +94,22 @@
     _joinBtn = joinBtn;
     _joinBtn.titleLabel.font = [UIFont systemFontOfSize:17];
     [_joinBtn setTitle:@"加入" forState:UIControlStateNormal];
-    [_joinBtn setTitleColor:[Utils colorWithHexString:@"#7df3fc"] forState:UIControlStateNormal];
+    [_joinBtn setTitleColor:[Utils colorWithHexString:@"#00a7fa"] forState:UIControlStateNormal];
+    [_joinBtn addTarget:self action:@selector(join:) forControlEvents:UIControlEventTouchUpInside];
     [self.contentView addSubview:_joinBtn];
     [_joinBtn mas_makeConstraints:^(MASConstraintMaker *make) {
         make.size.mas_equalTo(CGSizeMake(40, 40));
         make.right.equalTo(weakself.contentView).offset(-13);
         make.centerY.equalTo(weakself.contentView);
+    }];
+    
+    UIView *separatorLine = [[UIView alloc]init];
+    separatorLine.backgroundColor = [UIColor colorWithRed:0.78 green:0.78 blue:0.78 alpha:1.0];
+    [self.contentView addSubview:separatorLine];
+    [separatorLine mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.equalTo(_groupName);
+        make.bottom.right.equalTo(weakself.contentView);
+        make.height.mas_equalTo(0.5);
     }];
 }
 

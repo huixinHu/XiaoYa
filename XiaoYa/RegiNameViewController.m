@@ -48,6 +48,18 @@
 //注册完成
 - (void)next{
     [self.view endEditing:YES];
+    for (int i = 0; i < self.name.text.length; i++) {
+        int a  = [self.name.text characterAtIndex:i];
+        if (a < 0x4e00 || a > 0x9fff) {
+            self.prompt.text = @"只允许中文输入";
+            return;
+        }
+    }
+    if (self.name.text.length >= 4) {
+        self.prompt.text = @"姓名最大长度不超过四个字";
+        return;
+    }
+    
     NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"REGISTER",@"type",self.name.text,@"name", self.pwd,@"password",nil];
     __weak typeof (self)weakself = self;
     dispatch_group_t group = dispatch_group_create();
@@ -74,10 +86,9 @@
 - (void)login{
     NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"LOGIN",@"type",self.phoneNum,@"mobile",self.pwd,@"password", nil];
     [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict success:^(NSURLSessionDataTask *task, id responseObject) {
-        NSDictionary *responseDict = (NSDictionary *)responseObject;
-        NSLog(@"登录dataID:%@",[responseDict objectForKey:@"identity"]);
+        NSLog(@"登录dataID:%@",[responseObject objectForKey:@"identity"]);
         dispatch_async(dispatch_get_main_queue(), ^{
-            if ([[responseDict objectForKey:@"state"]boolValue] == 0) {
+            if ([[responseObject objectForKey:@"state"]boolValue] == 0) {
                 _prompt.text = @"登录失败";
             }else {
                 [self dismissViewControllerAnimated:YES completion:^{
@@ -97,6 +108,7 @@
 }
 
 - (void)textFieldValueChanged{
+    self.prompt.text = @" ";
     if (self.name.text.length > 0) {
         self.nextStep.enabled = YES;
         self.nextStep.backgroundColor = [Utils colorWithHexString:@"00a7fa"];

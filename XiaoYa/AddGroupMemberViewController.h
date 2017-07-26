@@ -8,6 +8,14 @@
 
 #import <UIKit/UIKit.h>
 
+@class AddGroupMemberViewController;
+@protocol AddGroupMemberViewControllerDelegate <NSObject>
+//传回添加的model
+- (void)AddGroupMemberViewController:(AddGroupMemberViewController*)viewController addMembersFinish:(NSMutableArray *)modelArray;
+
+@end
+
 @interface AddGroupMemberViewController : UIViewController
+@property (nonatomic , weak) id <AddGroupMemberViewControllerDelegate> delegate;
 
 @end

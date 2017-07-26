@@ -52,7 +52,8 @@
 }
 
 - (void)back{
-    [self.navigationController popViewControllerAnimated:YES];
+//    [self.navigationController popViewControllerAnimated:YES];
+    [self dismissViewControllerAnimated:YES completion:nil];
 }
 /*
 - (void)timerSetting{
@@ -106,26 +107,26 @@
 //}
 
 //导航栏右按钮
-- (void)timerBtnClicked{
-    NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"GETSME",@"type",self.phoneNum,@"mobile", nil];
-    __weak typeof (self)weakself = self;
-    dispatch_async(dispatch_get_global_queue(0, 0), ^{
-        [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict success:^(NSURLSessionDataTask *task, id responseObject) {
-        NSDictionary *responseDic = (NSDictionary *)responseObject;
-        NSLog(@"dataMessage:%@",[responseDic objectForKey:@"message"]);
-        dispatch_async(dispatch_get_main_queue(), ^{
-            if ([[responseDic objectForKey:@"state"]boolValue] == 0){
-                if ([[responseDic objectForKey:@"message"] isEqualToString:@"验证码发送失败！"]){
-                    weakself.prompt.text = @"验证码获取失败！";
-                }
-            }
-        });
-    } failure:^(NSURLSessionDataTask *task, NSError *error) {
-        NSLog(@"Error: %@", error);
-    } refresh:NO];
-    });    
+//- (void)timerBtnClicked{
+//    NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"GETSME",@"type",self.phoneNum,@"mobile", nil];
+//    __weak typeof (self)weakself = self;
+//    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+//        [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict success:^(NSURLSessionDataTask *task, id responseObject) {
+//        NSDictionary *responseDic = (NSDictionary *)responseObject;
+//        NSLog(@"dataMessage:%@",[responseDic objectForKey:@"message"]);
+//        dispatch_async(dispatch_get_main_queue(), ^{
+//            if ([[responseDic objectForKey:@"state"]boolValue] == 0){
+//                if ([[responseDic objectForKey:@"message"] isEqualToString:@"验证码发送失败！"]){
+//                    weakself.prompt.text = @"验证码获取失败！";
+//                }
+//            }
+//        });
+//    } failure:^(NSURLSessionDataTask *task, NSError *error) {
+//        NSLog(@"Error: %@", error);
+//    } refresh:NO];
+//    });    
 //    [self timerSetting];
-}
+//}
 
 //下一步
 - (void)next{
@@ -181,10 +182,23 @@
     //导航栏
     self.navigationItem.title = @"注册";
     self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc]initWithImage:[[UIImage imageNamed:@"导航栏返回图标"]imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal] style:UIBarButtonItemStyleDone target:self action:@selector(back)];
-    __weak typeof(self)weakself = self;
+    __weak typeof(self)weakself = self;//注意循环引用
     HXButton *timerBtn = [[HXButton alloc]initWithFrame:CGRectMake(0, 0, 80, 30) timerCount:60 timerInerval:1.0 networkRequest:^{
-        __strong typeof(weakself)strongself = weakself;
-        [strongself timerBtnClicked];
+        NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"GETSME",@"type",weakself.phoneNum,@"mobile", nil];
+        dispatch_async(dispatch_get_global_queue(0, 0), ^{
+            [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict success:^(NSURLSessionDataTask *task, id responseObject) {
+                NSLog(@"dataMessage:%@",[responseObject objectForKey:@"message"]);
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    if ([[responseObject objectForKey:@"state"]boolValue] == 0){
+                        if ([[responseObject objectForKey:@"message"] isEqualToString:@"验证码发送失败！"]){
+                            weakself.prompt.text = @"验证码获取失败！";
+                        }
+                    }
+                });
+            } failure:^(NSURLSessionDataTask *task, NSError *error) {
+                NSLog(@"Error: %@", error);
+            } refresh:NO];
+        });
     }];
     _timerBtn = timerBtn;
 //    _timerBtn.titleLabel.font = [UIFont systemFontOfSize:15];
@@ -253,7 +267,7 @@
     //必须要在vc的dealloc方法中调用btn 的timer销毁方法和runloop的退出方法，保证vc pop的时候btn可以马上销毁
     [self.timerBtn.timer invalidate];
     CFRunLoopStop(self.timerBtn.runloop);
-    
+    //btn这里有点问题，走完注册流程释放不掉
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UITextFieldTextDidChangeNotification object:self.textCode];
 }
 

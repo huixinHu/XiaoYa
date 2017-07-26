@@ -4,7 +4,7 @@
 //
 //  Created by commet on 2017/7/11.
 //  Copyright © 2017年 commet. All rights reserved.
-//
+// 群首页群数据模型
 
 #import "GroupListModel.h"
 

@@ -45,6 +45,8 @@
 }
 
 - (void)initSubView{
+    self.selectionStyle = UITableViewCellSelectionStyleNone;
+    
     __weak typeof(self)weakself = self;
     UIImageView *avatar = [[UIImageView alloc]init];
     _avatar = avatar;

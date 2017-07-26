@@ -13,6 +13,8 @@
 #import "Utils.h"
 #import "Masonry.h"
 #import "JoinGroupViewController.h"
+#import "GroupMemberModel.h"
+#import "TxAvatar.h"
 
 @interface GroupHomePageViewController ()<UITableViewDelegate,UITableViewDataSource>
 @property (nonatomic ,weak)UIImageView *menu;
@@ -35,8 +37,9 @@
     // Dispose of any resources that can be recreated.
 }
 
-- (void)create{
-    GroupCreateViewController *createVC = [[GroupCreateViewController alloc]init];
+- (void)create{    
+    GroupMemberModel *managerModel = [GroupMemberModel memberModelWithDict:@{@"identity" :@"17,胡卉馨,15918887876"}];
+    GroupCreateViewController *createVC = [[GroupCreateViewController alloc]initWithGroupManager:managerModel];
     createVC.hidesBottomBarWhenPushed = YES;//从下级vc开始，tabbar都隐藏掉
     [self.navigationController pushViewController:createVC animated:YES];
     _menuBtn.selected = NO;
@@ -64,7 +67,7 @@
     GroupListModel *model = self.groupModels[indexPath.row];
     GroupHomePageCell *cell = [GroupHomePageCell groupHomePageCellWithTableView:tableView];
     cell.group = model;
-    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+//    cell.selectionStyle = UITableViewCellSelectionStyleNone;
     return cell;
 }
 

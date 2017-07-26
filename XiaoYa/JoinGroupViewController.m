@@ -11,12 +11,17 @@
 #import "Utils.h"
 #import "Masonry.h"
 #import "HXTextField.h"
+#import "HXNetworking.h"
+#import "GroupSearchModel.h"
+#import "UIAlertController+Appearance.h"
 
-@interface JoinGroupViewController ()<UITextFieldDelegate ,UITableViewDelegate ,UITableViewDataSource>
+@interface JoinGroupViewController ()<UITextFieldDelegate ,UITableViewDelegate ,UITableViewDataSource ,GroupSearchCellDelegate>
 @property (nonatomic ,weak) HXTextField *searchTxf;
 @property (nonatomic ,weak) UIButton *searchBtn;
 @property (nonatomic ,weak) UITableView *groupTable;
 @property (nonatomic ,weak) UILabel *prompt;
+@property (nonatomic ,weak) UILabel *noResult;
+
 @property (nonatomic ,strong)NSMutableArray *groupModels;
 
 @end
@@ -34,13 +39,58 @@
     singleTap.cancelsTouchesInView = NO;
 }
 
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
+- (void)cancel{
+    [self.navigationController popViewControllerAnimated:YES];
 }
 
-- (void)search{
-    self.prompt.hidden = NO;
+- (void)search{    
+    __weak typeof(self) weakself = self;
+    NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"GETGROUP",@"type",self.searchTxf.text,@"groupId", nil];
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict success:^(NSURLSessionDataTask *task, id responseObject) {
+            [weakself.groupModels removeAllObjects];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if ([[responseObject objectForKey:@"state"]boolValue] == 0){
+                    weakself.noResult.hidden = NO;
+                    self.prompt.hidden = YES;
+                }else {
+                    GroupSearchModel *model = [GroupSearchModel groupModelWithDict:responseObject];
+                    [weakself.groupModels addObject:model];
+                    weakself.noResult.hidden = YES;
+                    self.prompt.hidden = NO;
+                }
+                [weakself.groupTable reloadData];
+            });
+        } failure:^(NSURLSessionDataTask *task, NSError *error) {
+            NSLog(@"Error: %@", error);
+        } refresh:NO];
+    });
+}
+
+#pragma mark groupSearchDelegate
+- (void)groupSearchCell:(GroupSearchTableViewCell *)cell selectIndex:(NSIndexPath *)indexPath{
+    GroupSearchModel *selectedModel = self.groupModels[indexPath.row];
+    NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"JOINGROUP",@"type",@17,@"userId", selectedModel.groupId, @"groupId",nil];
+    
+    __weak typeof(self) weakself = self;
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict success:^(NSURLSessionDataTask *task, id responseObject) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if ([[responseObject objectForKey:@"state"]boolValue] == 0){
+                    //加入失败的交互待完善
+                    void (^otherBlock)(UIAlertAction *action) = ^(UIAlertAction *action){
+                    };
+                    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"加入群组失败" message:@"请确定用户、群组信息无误" preferredStyle:UIAlertControllerStyleAlert cancelTitle:nil cancelBlock:nil otherTitles:@[@"确定"] otherBlocks:@[otherBlock]];
+                    [weakself presentViewController:alert animated:YES completion:nil];
+                }else {//成功
+                    NSLog(@"%@", [responseObject objectForKey:@"message"]);
+                }
+            });
+        } failure:^(NSURLSessionDataTask *task, NSError *error) {
+            //这里后台是不是有点问题？加入已经加入的群组直接来到这里
+            NSLog(@"Error: %@", error);
+        } refresh:NO];
+    });
 }
 
 #pragma mark tableview datasource &delegate
@@ -54,10 +104,10 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
     GroupSearchTableViewCell *cell = [GroupSearchTableViewCell GroupSearchCellWithTableView:tableView];
-    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    cell.model = self.groupModels[indexPath.row];
+    cell.delegate = self;
     return cell;
 }
-
 
 #pragma mark viewsSetting
 - (void)viewsSetting{
@@ -114,6 +164,7 @@
         make.top.equalTo(_searchTxf.mas_bottom).offset(30);
     }];
     [_groupTable setTableFooterView:[[UIView alloc] initWithFrame:CGRectZero]];
+    _groupTable.separatorStyle = UITableViewCellSeparatorStyleNone;
     
     UILabel *prompt = [[UILabel alloc]init];
     _prompt = prompt;
@@ -126,31 +177,36 @@
         make.top.equalTo(_searchTxf.mas_bottom).offset(7.8);
     }];
     _prompt.hidden = YES;
-}
-
-- (BOOL)textFieldShouldReturn:(UITextField *)textField {
-    [textField resignFirstResponder];
-    return YES;
-}
-
-- (void)textFieldValueChanged{
-    if (self.searchTxf.text.length > 0) {
-        self.searchBtn.enabled = YES;
-    }else{
-        self.searchBtn.enabled = NO;
-    }
-}
-
-- (void)cancel{
-    [self.navigationController popViewControllerAnimated:YES];
+    
+    UILabel *noResult = [[UILabel alloc]init];
+    _noResult = noResult;
+    _noResult.text = @"没有搜索到合适结果";
+    _noResult.font = [UIFont systemFontOfSize:20];
+    _noResult.textColor = [Utils colorWithHexString:@"#999999"];
+    [self.view addSubview:_noResult];
+    [_noResult mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.center.equalTo(weakself.view);
+    }];
+    _noResult.hidden = YES;
 }
 
 - (void)fingerTapped:(UITapGestureRecognizer *)gestureRecognizer{
     [self.view endEditing:YES];
 }
 
-- (void)dealloc{
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:UITextFieldTextDidChangeNotification object:self.searchTxf];
+#pragma mark textfield
+- (BOOL)textFieldShouldReturn:(UITextField *)textField {
+    [textField resignFirstResponder];
+    return YES;
+}
+
+- (void)textFieldValueChanged{
+    self.noResult.hidden = YES;
+    if (self.searchTxf.text.length > 0) {
+        self.searchBtn.enabled = YES;
+    }else{
+        self.searchBtn.enabled = NO;
+    }
 }
 
 #pragma mark lazyload
@@ -159,5 +215,14 @@
         _groupModels = [NSMutableArray array];
     }
     return _groupModels;
+}
+
+- (void)dealloc{
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:UITextFieldTextDidChangeNotification object:self.searchTxf];
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
 }
 @end

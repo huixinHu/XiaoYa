@@ -76,26 +76,6 @@
     });
 }
 
-- (void)timerBtnClicked{
-    NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"RESETSME",@"type",self.phoneNum,@"mobile", nil];
-    __weak typeof (self)weakself = self;
-    dispatch_async(dispatch_get_global_queue(0, 0), ^{
-        [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict success:^(NSURLSessionDataTask *task, id responseObject) {
-            NSDictionary *responseDic = (NSDictionary *)responseObject;
-            NSLog(@"dataMessage:%@",[responseDic objectForKey:@"message"]);
-            dispatch_async(dispatch_get_main_queue(), ^{
-                if ([[responseDic objectForKey:@"state"]boolValue] == 0){
-                    if ([[responseDic objectForKey:@"message"] isEqualToString:@"验证码发送失败！"]){
-                        weakself.prompt.text = @"验证码获取失败！";
-                    }
-                }
-            });
-        } failure:^(NSURLSessionDataTask *task, NSError *error) {
-            NSLog(@"Error: %@", error);
-        } refresh:NO];
-    });
-}
-
 #pragma mark textfield
 - (BOOL)textFieldShouldReturn:(UITextField *)textField {
     [textField resignFirstResponder];
@@ -126,8 +106,21 @@
     self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc]initWithImage:[[UIImage imageNamed:@"导航栏返回图标"]imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal] style:UIBarButtonItemStyleDone target:self action:@selector(back)];
     __weak typeof(self)weakself = self;
     HXButton *timerBtn = [[HXButton alloc]initWithFrame:CGRectMake(0, 0, 80, 30) timerCount:60 timerInerval:1.0 networkRequest:^{
-        __strong typeof(weakself)strongself = weakself;
-        [strongself timerBtnClicked];
+        NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"RESETSME",@"type",weakself.phoneNum,@"mobile", nil];
+        dispatch_async(dispatch_get_global_queue(0, 0), ^{
+            [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict success:^(NSURLSessionDataTask *task, id responseObject) {
+                NSLog(@"dataMessage:%@",[responseObject objectForKey:@"message"]);
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    if ([[responseObject objectForKey:@"state"]boolValue] == 0){
+                        if ([[responseObject objectForKey:@"message"] isEqualToString:@"验证码发送失败！"]){
+                            weakself.prompt.text = @"验证码获取失败！";
+                        }
+                    }
+                });
+            } failure:^(NSURLSessionDataTask *task, NSError *error) {
+                NSLog(@"Error: %@", error);
+            } refresh:NO];
+        });
     }];
     _timerBtn = timerBtn;
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc]initWithCustomView:_timerBtn];

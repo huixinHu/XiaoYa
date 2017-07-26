@@ -43,11 +43,10 @@
     __weak typeof (self)weakself = self;
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
         [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict success:^(NSURLSessionDataTask *task, id responseObject) {
-            NSDictionary *responseDict = (NSDictionary *)responseObject;
-            NSLog(@"dataID:%@",[responseDict objectForKey:@"identity"]);
-            NSLog(@"dataMessage:%@",[responseDict objectForKey:@"message"]);
+            NSLog(@"dataID:%@",[responseObject objectForKey:@"identity"]);
+            NSLog(@"dataMessage:%@",[responseObject objectForKey:@"message"]);
             dispatch_async(dispatch_get_main_queue(), ^{
-                if ([[responseDict objectForKey:@"state"]boolValue] == 0){
+                if ([[responseObject objectForKey:@"state"]boolValue] == 0){
                     weakself.prompt.text = @"重置密码失败";
                 }else {
                     for (UIViewController *tempVC in self.navigationController.viewControllers) {

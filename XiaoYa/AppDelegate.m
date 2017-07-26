@@ -48,7 +48,7 @@
     tabbar.viewControllers = @[courseNavVC,groupNavVC,userNavVC];
     
     [self.window makeKeyAndVisible];
-    self.isLogin = NO;//赋初值，未登录
+    self.isLogin = YES;//赋初值，未登录
     return YES;
 }
 

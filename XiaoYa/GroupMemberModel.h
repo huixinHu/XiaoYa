@@ -7,11 +7,15 @@
 //
 
 #import <Foundation/Foundation.h>
-
+#import <UIKit/UIKit.h>
 @interface GroupMemberModel : NSObject
 @property(nonatomic ,copy) NSString *memberName;
-@property(nonatomic ,copy) NSString *memberAvatar;
+@property(nonatomic ,copy) NSString *memberId;
+@property(nonatomic ,copy) NSString *memberPhone;
+@property(nonatomic ,strong) UIImage *memberAvatar;
 
-- (instancetype)initWithDict:(NSDictionary *)dict;
 + (instancetype)memberModelWithDict:(NSDictionary *)dict;
++ (instancetype)ordinaryModelWithDict:(NSDictionary *)dict;
+
++ (instancetype)memberModelWithArray:(NSArray *)arr;
 @end

@@ -7,7 +7,9 @@
 //
 
 #import <UIKit/UIKit.h>
+@class GroupMemberModel;
 
 @interface GroupCreateViewController : UIViewController
+- (instancetype)initWithGroupManager:(GroupMemberModel *)model;
 
 @end

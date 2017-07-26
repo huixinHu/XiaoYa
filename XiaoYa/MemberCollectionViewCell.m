@@ -59,7 +59,7 @@
 
 - (void)setModel:(GroupMemberModel *)model{
     _model = model;
-    self.memberAvatar.image = [UIImage imageNamed:model.memberAvatar];
+    self.memberAvatar.image = model.memberAvatar;
     self.memberName.text = model.memberName;
 }
 @end
