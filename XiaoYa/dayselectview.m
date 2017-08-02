@@ -44,10 +44,8 @@
     _dayselect_tableview.bounces = NO;
     _dayselect_tableview.separatorStyle=UITableViewCellSeparatorStyleNone;
     [self addSubview:_dayselect_tableview];
-    __weak typeof(self) weakself=self;
     [_dayselect_tableview mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.centerX.equalTo(weakself.mas_centerX);
-        make.top.equalTo(weakself.mas_top);
+        make.centerX.top.equalTo(self);
         make.width.mas_equalTo(265);
         make.height.mas_equalTo(40*7);
     }];
@@ -58,17 +56,15 @@
     [line mas_makeConstraints:^(MASConstraintMaker *make) {
         make.width.mas_equalTo(1);
         make.height.mas_equalTo(39);
-        make.centerX.equalTo(weakself.mas_centerX);
-        make.bottom.equalTo(weakself.mas_bottom);
+        make.centerX.bottom.equalTo(self);
     }];
     UIView *line2 = [[UIView alloc] init];
     line2.backgroundColor = [Utils colorWithHexString:@"#D9D9D9"];
     [self addSubview: line2];
     [line2 mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.width.mas_equalTo(weakself.mas_width);
+        make.width.centerX.equalTo(self);
         make.height.mas_equalTo(1);
-        make.centerX.equalTo(weakself.mas_centerX);
-        make.bottom.equalTo(weakself.mas_bottom).offset(-39);
+        make.bottom.equalTo(self).offset(-39);
     }];
     
     UIButton *cancel_btn = [[UIButton alloc] init];
@@ -79,9 +75,9 @@
     [self addSubview:_cancel_btn];
     [_cancel_btn mas_makeConstraints:^(MASConstraintMaker *make) {
         make.height.mas_equalTo(39);
-        make.width.mas_equalTo(weakself.frame.size.width/2);
+        make.width.mas_equalTo(self.frame.size.width/2);
         make.right.equalTo(line.mas_left);
-        make.bottom.equalTo(weakself.mas_bottom);
+        make.bottom.equalTo(self);
     }];    
     
     UIButton *confirm_btn = [[UIButton alloc] init];
@@ -92,9 +88,9 @@
     [self addSubview:_confirm_btn];
     [_confirm_btn mas_makeConstraints:^(MASConstraintMaker *make) {
         make.height.mas_equalTo(39);
-        make.width.mas_equalTo(weakself.frame.size.width/2);
+        make.width.mas_equalTo(self.frame.size.width/2);
         make.left.equalTo(line.mas_right);
-        make.bottom.equalTo(weakself.mas_bottom);
+        make.bottom.equalTo(self);
     }];
     [_cancel_btn addTarget:self action:@selector(dayselectcancel) forControlEvents:UIControlEventTouchUpInside];
     [_confirm_btn addTarget:self action:@selector(dayselectconfirm) forControlEvents:UIControlEventTouchUpInside];

@@ -26,14 +26,13 @@
         [self addSubview:_weekday];
         [self addSubview:_date];
         
-        __weak typeof(self) weakself = self;
         [_weekday mas_makeConstraints:^(MASConstraintMaker *make) {
-            make.centerX.equalTo(weakself.mas_centerX);
-            make.bottom.equalTo(weakself.mas_centerY).offset(-5);
+            make.centerX.equalTo(self.mas_centerX);
+            make.bottom.equalTo(self.mas_centerY).offset(-5);
         }];
         [_date mas_makeConstraints:^(MASConstraintMaker *make) {
-            make.centerX.equalTo(weakself.mas_centerX);
-            make.top.equalTo(weakself.mas_centerY).offset(5);
+            make.centerX.equalTo(self.mas_centerX);
+            make.top.equalTo(self.mas_centerY).offset(5);
         }];
     }
     return self;

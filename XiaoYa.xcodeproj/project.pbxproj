@@ -22,6 +22,10 @@
 		571B825A1DB8AD6C001171EE /* TimeViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 571B82591DB8AD6C001171EE /* TimeViewCell.m */; };
 		572B6D121F166A520069D1D2 /* AddGroupMemberViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 572B6D111F166A520069D1D2 /* AddGroupMemberViewController.m */; };
 		572B6D151F1748590069D1D2 /* JoinGroupViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 572B6D141F1748590069D1D2 /* JoinGroupViewController.m */; };
+		572EA9181F2F2E760052907C /* EventDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 572EA9171F2F2E760052907C /* EventDetailViewController.m */; };
+		572EA91E1F301CF50052907C /* ReasonView.m in Sources */ = {isa = PBXBuildFile; fileRef = 572EA91D1F301CF50052907C /* ReasonView.m */; };
+		572EA9211F305CE30052907C /* EventPublishViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 572EA9201F305CE30052907C /* EventPublishViewController.m */; };
+		572EA9241F3077560052907C /* GroupDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 572EA9231F3077560052907C /* GroupDetailViewController.m */; };
 		573F110B1EE6DE4200E9F99E /* LoginViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 573F110A1EE6DE4200E9F99E /* LoginViewController.m */; };
 		573F110F1EE7157000E9F99E /* HXTextField.m in Sources */ = {isa = PBXBuildFile; fileRef = 573F110E1EE7157000E9F99E /* HXTextField.m */; };
 		573F11121EE7A6AB00E9F99E /* HXButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 573F11111EE7A6AB00E9F99E /* HXButton.m */; };
@@ -80,6 +84,8 @@
 		57D65F651F271F0800D3BE72 /* MemberSearchTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 57D65F641F271F0800D3BE72 /* MemberSearchTableViewCell.m */; };
 		57D65F6B1F2764C500D3BE72 /* GroupSearchModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 57D65F6A1F2764C500D3BE72 /* GroupSearchModel.m */; };
 		57D65F6E1F287ED800D3BE72 /* TxAvatar.m in Sources */ = {isa = PBXBuildFile; fileRef = 57D65F6D1F287ED800D3BE72 /* TxAvatar.m */; };
+		57D65FB51F2E3A5F00D3BE72 /* GroupInfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 57D65FB41F2E3A5F00D3BE72 /* GroupInfoViewController.m */; };
+		57D65FB81F2E3ABB00D3BE72 /* GroupInfoTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 57D65FB71F2E3ABB00D3BE72 /* GroupInfoTableViewCell.m */; };
 		57D69A221DC77040005E73EA /* courses.json in Resources */ = {isa = PBXBuildFile; fileRef = 57D69A211DC77040005E73EA /* courses.json */; };
 		57D69A241DC77278005E73EA /* courses-1.json in Resources */ = {isa = PBXBuildFile; fileRef = 57D69A231DC77278005E73EA /* courses-1.json */; };
 		57D69A2A1DC7832F005E73EA /* CourseModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 57D69A291DC7832F005E73EA /* CourseModel.m */; };
@@ -145,6 +151,14 @@
 		572B6D111F166A520069D1D2 /* AddGroupMemberViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AddGroupMemberViewController.m; sourceTree = "<group>"; };
 		572B6D131F1748590069D1D2 /* JoinGroupViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JoinGroupViewController.h; sourceTree = "<group>"; };
 		572B6D141F1748590069D1D2 /* JoinGroupViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JoinGroupViewController.m; sourceTree = "<group>"; };
+		572EA9161F2F2E760052907C /* EventDetailViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EventDetailViewController.h; sourceTree = "<group>"; };
+		572EA9171F2F2E760052907C /* EventDetailViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EventDetailViewController.m; sourceTree = "<group>"; };
+		572EA91C1F301CF50052907C /* ReasonView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ReasonView.h; sourceTree = "<group>"; };
+		572EA91D1F301CF50052907C /* ReasonView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ReasonView.m; sourceTree = "<group>"; };
+		572EA91F1F305CE30052907C /* EventPublishViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EventPublishViewController.h; sourceTree = "<group>"; };
+		572EA9201F305CE30052907C /* EventPublishViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EventPublishViewController.m; sourceTree = "<group>"; };
+		572EA9221F3077560052907C /* GroupDetailViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GroupDetailViewController.h; sourceTree = "<group>"; };
+		572EA9231F3077560052907C /* GroupDetailViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GroupDetailViewController.m; sourceTree = "<group>"; };
 		573F11091EE6DE4200E9F99E /* LoginViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LoginViewController.h; sourceTree = "<group>"; };
 		573F110A1EE6DE4200E9F99E /* LoginViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LoginViewController.m; sourceTree = "<group>"; };
 		573F110D1EE7157000E9F99E /* HXTextField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HXTextField.h; sourceTree = "<group>"; };
@@ -257,6 +271,10 @@
 		57D65F6A1F2764C500D3BE72 /* GroupSearchModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GroupSearchModel.m; sourceTree = "<group>"; };
 		57D65F6C1F287ED800D3BE72 /* TxAvatar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TxAvatar.h; sourceTree = "<group>"; };
 		57D65F6D1F287ED800D3BE72 /* TxAvatar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TxAvatar.m; sourceTree = "<group>"; };
+		57D65FB31F2E3A5E00D3BE72 /* GroupInfoViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GroupInfoViewController.h; sourceTree = "<group>"; };
+		57D65FB41F2E3A5F00D3BE72 /* GroupInfoViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GroupInfoViewController.m; sourceTree = "<group>"; };
+		57D65FB61F2E3ABB00D3BE72 /* GroupInfoTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GroupInfoTableViewCell.h; sourceTree = "<group>"; };
+		57D65FB71F2E3ABB00D3BE72 /* GroupInfoTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GroupInfoTableViewCell.m; sourceTree = "<group>"; };
 		57D69A211DC77040005E73EA /* courses.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = courses.json; sourceTree = "<group>"; };
 		57D69A231DC77278005E73EA /* courses-1.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "courses-1.json"; sourceTree = "<group>"; };
 		57D69A281DC7832F005E73EA /* CourseModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CourseModel.h; sourceTree = "<group>"; };
@@ -356,6 +374,7 @@
 		571B82041DB4657A001171EE /* views */ = {
 			isa = PBXGroup;
 			children = (
+				57D65FB91F2F1ADB00D3BE72 /* 聊天 */,
 				57D49D201F1214AE0063C861 /* 群组 */,
 				577FA5C61DEC263D00A0AEF7 /* 事务管理 */,
 				E2B52ACE1DDAAA5E005ABBB7 /* 课程管理 */,
@@ -371,6 +390,7 @@
 				573F110C1EE6E2DE00E9F99E /* 日程-一期 */,
 				577C67171EE97F0A0006E783 /* 登录注册 */,
 				57D49D1C1F0FB8040063C861 /* 群组 */,
+				57D65FBA1F2F1B8E00D3BE72 /* 聊天 */,
 			);
 			name = controllers;
 			sourceTree = "<group>";
@@ -603,6 +623,32 @@
 				573F11111EE7A6AB00E9F99E /* HXButton.m */,
 			);
 			name = "其他";
+			sourceTree = "<group>";
+		};
+		57D65FB91F2F1ADB00D3BE72 /* 聊天 */ = {
+			isa = PBXGroup;
+			children = (
+				57D65FB61F2E3ABB00D3BE72 /* GroupInfoTableViewCell.h */,
+				57D65FB71F2E3ABB00D3BE72 /* GroupInfoTableViewCell.m */,
+				572EA91C1F301CF50052907C /* ReasonView.h */,
+				572EA91D1F301CF50052907C /* ReasonView.m */,
+			);
+			name = "聊天";
+			sourceTree = "<group>";
+		};
+		57D65FBA1F2F1B8E00D3BE72 /* 聊天 */ = {
+			isa = PBXGroup;
+			children = (
+				57D65FB31F2E3A5E00D3BE72 /* GroupInfoViewController.h */,
+				57D65FB41F2E3A5F00D3BE72 /* GroupInfoViewController.m */,
+				572EA91F1F305CE30052907C /* EventPublishViewController.h */,
+				572EA9201F305CE30052907C /* EventPublishViewController.m */,
+				572EA9161F2F2E760052907C /* EventDetailViewController.h */,
+				572EA9171F2F2E760052907C /* EventDetailViewController.m */,
+				572EA9221F3077560052907C /* GroupDetailViewController.h */,
+				572EA9231F3077560052907C /* GroupDetailViewController.m */,
+			);
+			name = "聊天";
 			sourceTree = "<group>";
 		};
 		A5DCDCC5CF0F276D5924EB34 /* Pods */ = {
@@ -874,8 +920,10 @@
 				577C67071EE870F10006E783 /* NSTimer+Addition.m in Sources */,
 				577C670D1EE970D00006E783 /* RegiNameViewController.m in Sources */,
 				571A3B361DE0D08A009042BC /* NSDate+Calendar.m in Sources */,
+				572EA9241F3077560052907C /* GroupDetailViewController.m in Sources */,
 				572B6D121F166A520069D1D2 /* AddGroupMemberViewController.m in Sources */,
 				573F110F1EE7157000E9F99E /* HXTextField.m in Sources */,
+				57D65FB51F2E3A5F00D3BE72 /* GroupInfoViewController.m in Sources */,
 				57D49D281F13DC890063C861 /* GroupListModel.m in Sources */,
 				579C2FF41DAD02EF00E4EE54 /* CourseTableViewController.m in Sources */,
 				571A3B331DE0D07C009042BC /* MonthPicker.m in Sources */,
@@ -899,6 +947,7 @@
 				577C67131EE9752A0006E783 /* ResetTextCodeViewController.m in Sources */,
 				57D65F6B1F2764C500D3BE72 /* GroupSearchModel.m in Sources */,
 				E26B70121E6AFF75000A08CB /* dayselectview.m in Sources */,
+				57D65FB81F2E3ABB00D3BE72 /* GroupInfoTableViewCell.m in Sources */,
 				57D49D1F1F0FB9660063C861 /* GroupHomePageViewController.m in Sources */,
 				577430961E9374020027D471 /* EventKitManager.m in Sources */,
 				577FA5DD1DEEA9F000A0AEF7 /* RepeatSetting.m in Sources */,
@@ -917,6 +966,7 @@
 				577FA5C51DEBDE0400A0AEF7 /* BusinessCourseManage.m in Sources */,
 				E2F0B70B1DD3653F00AEE343 /* DayViewCell.m in Sources */,
 				577C66FD1EE828D30006E783 /* RegiTextCodeViewController.m in Sources */,
+				572EA91E1F301CF50052907C /* ReasonView.m in Sources */,
 				57BDFA181E326E0500C0E254 /* UILabel+AlertActionFont.m in Sources */,
 				577C67101EE974060006E783 /* ResetPhoneViewController.m in Sources */,
 				574C2C051E9F9C4800960399 /* TFHpple.m in Sources */,
@@ -929,9 +979,11 @@
 				577FA5D11DEDD5EB00A0AEF7 /* PublicTemplateCell.m in Sources */,
 				57D49D2C1F14BFDD0063C861 /* GroupCreateViewController.m in Sources */,
 				577FA5D71DEE7C1400A0AEF7 /* RemindCell.m in Sources */,
+				572EA9181F2F2E760052907C /* EventDetailViewController.m in Sources */,
 				E26B70071E6AFF60000A08CB /* CourseTimeCell.m in Sources */,
 				571B825A1DB8AD6C001171EE /* TimeViewCell.m in Sources */,
 				571B82031DB38BCE001171EE /* Utils.m in Sources */,
+				572EA9211F305CE30052907C /* EventPublishViewController.m in Sources */,
 				571A3B2F1DE0D071009042BC /* CalendarView.m in Sources */,
 				57D49D2F1F15178D0063C861 /* MemberCollectionViewCell.m in Sources */,
 				57EA0A221F20E9490003BE87 /* LoginManager.m in Sources */,

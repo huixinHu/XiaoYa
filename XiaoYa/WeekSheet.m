@@ -28,7 +28,6 @@
 
 
 - (void)commonInit{
-    __weak typeof(self) weakself = self;
     [self drawSomething];
     
     CGFloat margin = 5;
@@ -41,7 +40,7 @@
     _weekTableView.rowHeight = 30;
     [self addSubview:_weekTableView];
     [_weekTableView mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.edges.equalTo(weakself).with.insets(UIEdgeInsetsMake(margin + 5, margin, margin, margin));
+        make.edges.equalTo(self).with.insets(UIEdgeInsetsMake(margin + 5, margin, margin, margin));
     }];
     
     NSIndexPath *selectdIdxPath = [NSIndexPath indexPathForRow:0 inSection:0];

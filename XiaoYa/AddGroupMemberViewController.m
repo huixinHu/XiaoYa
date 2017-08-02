@@ -142,12 +142,11 @@
 }
 
 - (void)searchPartsSetting{
-    __weak typeof(self) weakself = self;
     UIView *bg = [[UIView alloc]init];
     bg.backgroundColor = [UIColor whiteColor];
     [self.view addSubview:bg];
     [bg mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.width.top.centerX.equalTo(weakself.view);
+        make.width.top.centerX.equalTo(self.view);
         make.height.mas_equalTo(60);
     }];
     UIImageView *searchImg = [[UIImageView alloc]initWithImage:[UIImage imageNamed:@"放大镜-灰"]];
@@ -200,7 +199,6 @@
 
 - (void)searchListSetting{
     //设置搜索结果视图-tableview
-    __weak typeof(self) weakself = self;
     UITableView *memberList = [[UITableView alloc]init];
     _memberList = memberList;
     _memberList.delegate = self;
@@ -209,7 +207,7 @@
     _memberList.backgroundColor = [Utils colorWithHexString:@"#F0F0F6"];
     [self.view addSubview:_memberList];
     [_memberList mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.width.centerX.bottom.equalTo(weakself.view);
+        make.width.centerX.bottom.equalTo(self.view);
         make.top.equalTo(_searchTxf.mas_bottom).offset(30);
     }];
     [_memberList setTableFooterView:[[UIView alloc] initWithFrame:CGRectZero]];
@@ -222,7 +220,7 @@
     _noResult.textColor = [Utils colorWithHexString:@"#999999"];
     [self.view addSubview:_noResult];
     [_noResult mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.center.equalTo(weakself.view);
+        make.center.equalTo(self.view);
     }];
     _noResult.hidden = YES;
 }

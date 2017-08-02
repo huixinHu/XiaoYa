@@ -154,11 +154,10 @@
     UIView *background = [[UIView alloc]init];
     background.backgroundColor = [UIColor whiteColor];
     [self.view addSubview:background];
-    __weak typeof(self) weakself = self;
     [background mas_makeConstraints:^(MASConstraintMaker *make) {
         make.size.mas_equalTo(CGSizeMake(kScreenWidth, 80));
-        make.top.equalTo(weakself.view.mas_top).offset(10);
-        make.centerX.equalTo(weakself.view.mas_centerX);
+        make.top.equalTo(self.view.mas_top).offset(10);
+        make.centerX.equalTo(self.view.mas_centerX);
     }];
     
     UIView *line1 = [[UIView alloc]init];
@@ -166,24 +165,21 @@
     [background addSubview:line1];
     [line1 mas_makeConstraints:^(MASConstraintMaker *make) {
         make.size.mas_equalTo(CGSizeMake(kScreenWidth, 0.5));
-        make.top.equalTo(background.mas_top);
-        make.centerX.equalTo(background.mas_centerX);
+        make.top.centerX.equalTo(background);
     }];
     UIView *line2 = [[UIView alloc]init];
     line2.backgroundColor = [Utils colorWithHexString:@"#d9d9d9"];
     [background addSubview:line2];
     [line2 mas_makeConstraints:^(MASConstraintMaker *make) {
         make.size.mas_equalTo(CGSizeMake(kScreenWidth, 0.5));
-        make.bottom.equalTo(background.mas_bottom);
-        make.centerX.equalTo(background.mas_centerX);
+        make.bottom.centerX.equalTo(background);
     }];
     UIView *line3 = [[UIView alloc]init];
     line3.backgroundColor = [Utils colorWithHexString:@"#d9d9d9"];
     [background addSubview:line3];
     [line3 mas_makeConstraints:^(MASConstraintMaker *make) {
         make.size.mas_equalTo(CGSizeMake(kScreenWidth-13, 0.5));
-        make.centerY.equalTo(background.mas_centerY);
-        make.right.equalTo(background.mas_right);
+        make.centerY.right.equalTo(background);
     }];
     
     HXTextField *account = [[HXTextField alloc]init];
@@ -234,7 +230,7 @@
     [self.view addSubview:_prompt];
     [_prompt mas_makeConstraints:^(MASConstraintMaker *make) {
         make.width.mas_equalTo(kScreenWidth-26);
-        make.centerX.equalTo(weakself.view.mas_centerX);
+        make.centerX.equalTo(self.view.mas_centerX);
         make.top.equalTo(background.mas_bottom).offset(5);
     }];
 }
@@ -249,11 +245,10 @@
     _btn.layer.cornerRadius = 5.0;
     _btn.enabled = NO;
     [self.view addSubview:_btn];
-    __weak typeof(self) weakself = self;
     [_btn mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(_prompt.mas_bottom).offset(5);
-        make.left.equalTo(weakself.view.mas_left).offset(13);
-        make.right.equalTo(weakself.view.mas_right).offset(-13);
+        make.left.equalTo(self.view.mas_left).offset(13);
+        make.right.equalTo(self.view.mas_right).offset(-13);
         make.height.mas_equalTo(40);
     }];
     
@@ -265,7 +260,7 @@
     [findPwd mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(_btn.mas_bottom).offset(10);
         make.size.mas_equalTo(CGSizeMake(60, 36));
-        make.right.equalTo(weakself.view.mas_right).offset(-13);
+        make.right.equalTo(self.view.mas_right).offset(-13);
     }];
     [findPwd addTarget:self action:@selector(resetPwd) forControlEvents:UIControlEventTouchUpInside];
 }

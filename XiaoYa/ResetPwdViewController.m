@@ -123,13 +123,12 @@
     _pwd = pwd;
     _pwd.backgroundColor = [UIColor whiteColor];
     UIView *lv = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 13, 20)];
-    [_pwd appearanceWithTextColor:[Utils colorWithHexString:@"#333333"] textFontSize:14.0 placeHolderColor:[Utils colorWithHexString:@"#d9d9d9"] placeHolderFontSize:14.0 placeHolderText:@"请设置登录密码" leftView:lv];
+    [_pwd appearanceWithTextColor:[Utils colorWithHexString:@"#333333"] textFontSize:14.0 placeHolderColor:[Utils colorWithHexString:@"#d9d9d9"] placeHolderFontSize:14.0 placeHolderText:@"请设置新密码" leftView:lv];
     [self.view addSubview:_pwd];
-    __weak typeof (self)weakself = self;
     [_pwd mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.width.mas_equalTo(kScreenWidth-40);
-        make.top.equalTo(weakself.view.mas_top).offset(40);
-        make.height.mas_equalTo(40);
+        make.size.mas_equalTo(CGSizeMake(kScreenWidth-40, 40));
+        make.top.equalTo(self.view).offset(40);
+        make.left.equalTo(self.view);
     }];
     _pwd.keyboardType = UIKeyboardTypeASCIICapable;
     _pwd.delegate = self;
@@ -140,8 +139,8 @@
     lab.font = [UIFont systemFontOfSize:13];
     [self.view addSubview:lab];
     [lab mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.centerX.equalTo(weakself.view.mas_centerX);
-        make.centerY.equalTo(weakself.view.mas_top).offset(20);
+        make.centerX.equalTo(self.view);
+        make.centerY.equalTo(self.view.mas_top).offset(20);
     }];
     
     UILabel *prompt = [[UILabel alloc]init];
@@ -152,13 +151,13 @@
     [self.view addSubview:_prompt];
     [_prompt mas_makeConstraints:^(MASConstraintMaker *make) {
         make.width.mas_equalTo(kScreenWidth-26);
-        make.centerX.equalTo(weakself.view.mas_centerX);
+        make.centerX.equalTo(self.view);
         make.top.equalTo(_pwd.mas_bottom).offset(5);
     }];
     
     UIButton *nextStep = [[UIButton alloc]init];
     _nextStep = nextStep;
-    [_nextStep setTitle:@"下一步" forState:UIControlStateNormal];
+    [_nextStep setTitle:@"完成" forState:UIControlStateNormal];
     [_nextStep addTarget:self action:@selector(next) forControlEvents:UIControlEventTouchUpInside];
     _nextStep.titleLabel.font = [UIFont systemFontOfSize:15];
     _nextStep.backgroundColor = [Utils colorWithHexString:@"78cbf8"];
@@ -167,9 +166,8 @@
     [self.view addSubview:_nextStep];
     [_nextStep mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(_prompt.mas_bottom).offset(20);
-        make.left.equalTo(weakself.view.mas_left).offset(13);
-        make.right.equalTo(weakself.view.mas_right).offset(-13);
-        make.height.mas_equalTo(40);
+        make.size.mas_equalTo(CGSizeMake(kScreenWidth - 26, 40));
+        make.centerX.equalTo(self.view);
     }];
     
     UIButton *eye = [[UIButton alloc]init];
@@ -182,7 +180,7 @@
     [_eye mas_makeConstraints:^(MASConstraintMaker *make) {
         make.size.mas_equalTo(CGSizeMake(40, 40));
         make.left.equalTo(_pwd.mas_right);
-        make.centerY.equalTo(_pwd.mas_centerY);
+        make.centerY.equalTo(_pwd);
     }];
 }
 

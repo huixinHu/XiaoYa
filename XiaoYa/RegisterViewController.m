@@ -111,11 +111,10 @@
     UIView *lv = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 13, 20)];
     [_phoneNumber appearanceWithTextColor:[Utils colorWithHexString:@"#333333"] textFontSize:14.0 placeHolderColor:[Utils colorWithHexString:@"#d9d9d9"] placeHolderFontSize:14.0 placeHolderText:@"请输入您的手机号码" leftView:lv];
     [self.view addSubview:_phoneNumber];
-    __weak typeof (self)weakself = self;
     [_phoneNumber mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.width.mas_equalTo(kScreenWidth);
-        make.top.equalTo(weakself.view.mas_top).offset(10);
-        make.height.mas_equalTo(40);
+        make.size.mas_equalTo(CGSizeMake(kScreenWidth, 40));
+        make.top.equalTo(self.view.mas_top).offset(10);
+        make.centerX.equalTo(self.view);
     }];
     _phoneNumber.keyboardType = UIKeyboardTypeNumberPad;
     _phoneNumber.delegate = self;
@@ -128,7 +127,7 @@
     [self.view addSubview:_phonePrompt];
     [_phonePrompt mas_makeConstraints:^(MASConstraintMaker *make) {
         make.width.mas_equalTo(kScreenWidth-26);
-        make.centerX.equalTo(weakself.view.mas_centerX);
+        make.centerX.equalTo(self.view.mas_centerX);
         make.top.equalTo(_phoneNumber.mas_bottom).offset(5);
     }];
     
@@ -143,9 +142,8 @@
     [self.view addSubview:_checkCode];
     [_checkCode mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(_phonePrompt.mas_bottom).offset(5);
-        make.left.equalTo(weakself.view.mas_left).offset(13);
-        make.right.equalTo(weakself.view.mas_right).offset(-13);
-        make.height.mas_equalTo(40);
+        make.size.mas_equalTo(CGSizeMake(kScreenWidth - 26, 40));
+        make.centerX.equalTo(self.view);
     }];
     
     UIButton *userAgreement = [[UIButton alloc]init];
@@ -157,7 +155,7 @@
     [_userAgreement mas_makeConstraints:^(MASConstraintMaker *make) {
         make.size.mas_equalTo(CGSizeMake(36, 36));
         make.top.equalTo(_checkCode.mas_bottom).offset(10);
-        make.left.equalTo(weakself.view.mas_left).offset(5);
+        make.left.equalTo(self.view.mas_left).offset(5);
     }];
     UILabel *lab1 = [[UILabel alloc]init];
     lab1.textColor = [Utils colorWithHexString:@"#999999"];
@@ -165,8 +163,8 @@
     lab1.font = [UIFont systemFontOfSize:13];
     [self.view addSubview:lab1];
     [lab1 mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.centerY.equalTo(weakself.userAgreement.mas_centerY);
-        make.left.equalTo(weakself.userAgreement.mas_right).offset(5);
+        make.centerY.equalTo(self.userAgreement.mas_centerY);
+        make.left.equalTo(self.userAgreement.mas_right).offset(5);
     }];
     UILabel *lab2 = [[UILabel alloc]init];
     lab2.textColor = [Utils colorWithHexString:@"#00a7fa"];

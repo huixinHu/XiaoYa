@@ -68,16 +68,15 @@
         [self addSubview:_event];
         [self addSubview:_place];
         
-        __weak typeof(self) weakself = self;
         [_event mas_makeConstraints:^(MASConstraintMaker *make) {
-            make.width.equalTo(weakself.mas_width);
-            make.centerX.equalTo(weakself.mas_centerX);
-            make.centerY.equalTo(weakself.mas_centerY).offset(-10);
+            make.width.equalTo(self.mas_width);
+            make.centerX.equalTo(self.mas_centerX);
+            make.centerY.equalTo(self.mas_centerY).offset(-10);
         }];
         [_place mas_makeConstraints:^(MASConstraintMaker *make) {
-            make.width.equalTo(weakself.mas_width);
-            make.centerX.equalTo(weakself.mas_centerX);
-            make.centerY.equalTo(weakself.mas_centerY).offset(10);
+            make.width.equalTo(self.mas_width);
+            make.centerX.equalTo(self.mas_centerX);
+            make.centerY.equalTo(self.mas_centerY).offset(10);
         }];
         
         self.businessArray = [businessArr mutableCopy];
@@ -90,7 +89,7 @@
                 self.isOverlap = YES;
             }
             [_event mas_updateConstraints:^(MASConstraintMaker *make) {
-                make.centerY.equalTo(weakself.mas_centerY);
+                make.centerY.equalTo(self.mas_centerY);
             }];
         }else if(type == 1){//1课程
             CourseModel *courseMdl = courseArr.firstObject;

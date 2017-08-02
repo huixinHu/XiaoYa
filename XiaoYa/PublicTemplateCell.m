@@ -43,11 +43,10 @@
     UIView *bottomSeparate = [[UIView alloc]init];
     bottomSeparate.backgroundColor = [UIColor colorWithRed:0.78 green:0.78 blue:0.8 alpha:1.0];//系统分割线颜色
     [self.contentView addSubview:bottomSeparate];
-    __weak typeof(self)weakself = self;
     [bottomSeparate mas_makeConstraints:^(MASConstraintMaker *make) {
         make.height.mas_equalTo(0.5);
-        make.width.mas_equalTo(weakself.contentView.mas_width);
-        make.left.bottom.equalTo(weakself.contentView);
+        make.width.mas_equalTo(self.contentView.mas_width);
+        make.left.bottom.equalTo(self.contentView);
     }];
     
     //事件描述
@@ -58,8 +57,8 @@
     _item.textColor = [Utils colorWithHexString:@"#333333"];
     [self.contentView addSubview:_item];
     [_item mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.left.equalTo(weakself.contentView.mas_left).offset(22);
-        make.centerY.equalTo(weakself.contentView.mas_centerY);
+        make.left.equalTo(self.contentView.mas_left).offset(22);
+        make.centerY.equalTo(self.contentView.mas_centerY);
     }];
     //按钮
     UIButton * choiceBtn = [[UIButton alloc]init];
@@ -69,8 +68,8 @@
     [self.contentView addSubview:_choiceBtn];
     [_choiceBtn mas_makeConstraints:^(MASConstraintMaker *make) {
         make.width.height.mas_equalTo(40);
-        make.centerY.equalTo(weakself.contentView.mas_centerY);
-        make.right.equalTo(weakself.contentView.mas_right).offset(-5);
+        make.centerY.equalTo(self.contentView.mas_centerY);
+        make.right.equalTo(self.contentView.mas_right).offset(-5);
     }];
 }
 

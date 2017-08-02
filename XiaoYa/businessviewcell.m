@@ -23,12 +23,11 @@
             UIView *horizonline = [[UIView alloc] init];
             horizonline.backgroundColor = [Utils colorWithHexString:@"#D9D9D9"];
             [self addSubview:horizonline];
-            __weak typeof(self) weakself = self;
             [horizonline mas_makeConstraints:^(MASConstraintMaker *make) {
                 make.height.mas_equalTo(0.5);
                 make.width.mas_equalTo(500.0 / 750.0 * kScreenWidth);
-                make.centerX.equalTo(weakself.mas_centerX);
-                make.top.equalTo(weakself.mas_top).offset(40*(i+1));
+                make.centerX.equalTo(self.mas_centerX);
+                make.top.equalTo(self.mas_top).offset(40*(i+1));
             }];
             
             UIImageView *arrow = [[UIImageView alloc] init];
@@ -55,10 +54,9 @@
             UIImageView *iconview = [[UIImageView alloc]init];
             iconview.image = [UIImage imageNamed:array[0]];
             [self addSubview:iconview];
-            __weak typeof(self) weakself = self;
             [iconview mas_makeConstraints:^(MASConstraintMaker *make) {
-                make.right.equalTo(weakself.mas_centerX).offset(-250/750.0*kScreenWidth-12);
-                make.centerY.equalTo(weakself.mas_centerY);
+                make.right.equalTo(self.mas_centerX).offset(-250/750.0*kScreenWidth-12);
+                make.centerY.equalTo(self.mas_centerY);
             }];
         }
         
@@ -69,12 +67,11 @@
         _button1.titleLabel.font = [UIFont systemFontOfSize:14];
         _button1.contentVerticalAlignment =UIControlContentVerticalAlignmentBottom;
         [self addSubview:_button1];
-        __weak typeof(self) weakself = self;
         [_button1 mas_makeConstraints:^(MASConstraintMaker *make) {
             make.width.mas_equalTo(500.0 / 750.0 * kScreenWidth);
             make.height.mas_equalTo(40);
-            make.bottom.equalTo(weakself.mas_top).offset(40);
-            make.centerX.equalTo(weakself.mas_centerX);
+            make.bottom.equalTo(self.mas_top).offset(40);
+            make.centerX.equalTo(self.mas_centerX);
         }];
         
         
@@ -89,8 +86,8 @@
         [_button2 mas_makeConstraints:^(MASConstraintMaker *make) {
             make.width.mas_equalTo(500.0 / 750.0 * kScreenWidth);
             make.height.mas_equalTo(40);
-            make.bottom.equalTo(weakself.mas_top).offset(80);
-            make.centerX.equalTo(weakself.mas_centerX);
+            make.bottom.equalTo(self.mas_top).offset(80);
+            make.centerX.equalTo(self.mas_centerX);
         }];
         
         //顶部底部两条灰线
@@ -98,17 +95,17 @@
         line1.backgroundColor = [Utils colorWithHexString:@"d9d9d9"];
         [self addSubview:line1];
         [line1 mas_makeConstraints:^(MASConstraintMaker *make) {
-            make.width.left.equalTo(weakself);
+            make.width.left.equalTo(self);
             make.height.mas_equalTo(0.5);
-            make.top.equalTo(weakself.mas_top);
+            make.top.equalTo(self.mas_top);
         }];
         UIView *line2 = [[UIView alloc]init];
         line2.backgroundColor = [Utils colorWithHexString:@"d9d9d9"];
         [self addSubview:line2];
         [line2 mas_makeConstraints:^(MASConstraintMaker *make) {
-            make.width.left.equalTo(weakself);
+            make.width.left.equalTo(self);
             make.height.mas_equalTo(0.5);
-            make.bottom.equalTo(weakself.mas_bottom);
+            make.bottom.equalTo(self.mas_bottom);
         }];
     }
     return self;

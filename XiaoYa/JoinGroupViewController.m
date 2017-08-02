@@ -125,7 +125,6 @@
     self.edgesForExtendedLayout = UIRectEdgeNone;
     
     //设置搜索框
-    __weak typeof(self)weakself = self;
     HXTextField *searchTxf = [[HXTextField alloc]init];
     _searchTxf = searchTxf;
     _searchTxf.backgroundColor = [UIColor whiteColor];
@@ -144,9 +143,9 @@
     [self.view addSubview:_searchTxf];
     [_searchTxf mas_makeConstraints:^(MASConstraintMaker *make) {
         make.height.mas_equalTo(30);
-        make.top.equalTo(weakself.view).offset(10);
-        make.left.equalTo(weakself.view).offset(13);
-        make.right.equalTo(weakself.view).offset(-13);
+        make.top.equalTo(self.view).offset(10);
+        make.left.equalTo(self.view).offset(13);
+        make.right.equalTo(self.view).offset(-13);
     }];
     _searchTxf.delegate = self;
     _searchBtn.enabled = NO;
@@ -160,7 +159,7 @@
     _groupTable.backgroundColor = [Utils colorWithHexString:@"#F0F0F6"];
     [self.view addSubview:_groupTable];
     [_groupTable mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.width.centerX.bottom.equalTo(weakself.view);
+        make.width.centerX.bottom.equalTo(self.view);
         make.top.equalTo(_searchTxf.mas_bottom).offset(30);
     }];
     [_groupTable setTableFooterView:[[UIView alloc] initWithFrame:CGRectZero]];
@@ -185,7 +184,7 @@
     _noResult.textColor = [Utils colorWithHexString:@"#999999"];
     [self.view addSubview:_noResult];
     [_noResult mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.center.equalTo(weakself.view);
+        make.center.equalTo(self.view);
     }];
     _noResult.hidden = YES;
 }

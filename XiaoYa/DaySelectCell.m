@@ -7,7 +7,6 @@
 //
 
 #import "DaySelectCell.h"
-#import "Masonry.h"
 #import "Utils.h"
 @implementation DaySelectCell
 + (instancetype)DaySelectCellWithTableView:(UITableView *)tableview{

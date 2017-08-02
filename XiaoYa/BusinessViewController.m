@@ -41,14 +41,14 @@
 @property (nonatomic,weak) UIButton *delete_btn;//删除按钮
 @property (nonatomic,weak) UIButton *remind_btn;//提醒按钮
 @property (nonatomic,weak) UIView *coverLayer;//日历弹出时背后的半透明遮罩
-
-@property (nonatomic , strong) NSDate *currentDate;//当前日期
-@property (nonatomic , strong) NSDate *lastSelectedDate;//上一次选择的日期
-@property (nonatomic , strong) NSDate *firstDateOfTerm;//传入本学期第一天的日期
 @property (nonatomic , weak) DatePicker *datePicker;//自定义的日期选择器
 @property (nonatomic , weak) SectionSelect *selectSection;//自定义时间段（节）选择器
 @property (nonatomic , weak) RemindSelect *settingRemind;//提醒
 @property (nonatomic , weak) RepeatSetting *settingRepeat;//重复
+
+@property (nonatomic , strong) NSDate *currentDate;//当前日期
+@property (nonatomic , strong) NSDate *lastSelectedDate;//上一次选择的日期
+@property (nonatomic , strong) NSDate *firstDateOfTerm;//传入本学期第一天的日期
 //@property (nonatomic , strong) NSMutableArray *sectionArray;//选择节数数组
 @property (nonatomic , strong) NSMutableArray *sections;//二维数组，对不连续的节数分连续段储存
 @property (nonatomic , strong) BusinessModel *busModel;
@@ -531,8 +531,7 @@
     coverLayer.backgroundColor = [UIColor colorWithRed:88/255.0 green:88/255.0  blue:88/255.0  alpha:0.5];
     _coverLayer = coverLayer;
     AppDelegate *app = (AppDelegate *)[[UIApplication  sharedApplication] delegate];
-    UIWindow *theWindow = app.window;//全屏遮罩要加到window上
-    [theWindow addSubview:_coverLayer];
+    [app.window addSubview:_coverLayer];
     
     CGFloat width = 265;
     CGFloat height = 318;

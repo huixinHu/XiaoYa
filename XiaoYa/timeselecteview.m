@@ -142,9 +142,8 @@
     _titleview = titleview;
     _titleview.backgroundColor = [Utils colorWithHexString:@"#39B9F8"];
     [self addSubview:_titleview];
-    __weak typeof(self) weakself = self;
     [_titleview mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.and.width.centerX.equalTo(weakself);
+        make.top.and.width.centerX.equalTo(self);
         make.height.mas_equalTo(67);
     }];
     
@@ -167,7 +166,7 @@
     [self addSubview:_timetable];
     [timetable mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(_titleview.mas_bottom);
-        make.width.and.centerX.equalTo(weakself);
+        make.width.and.centerX.equalTo(self);
         make.height.mas_equalTo((716-134-76)/2);
     }];
     
@@ -175,10 +174,10 @@
     line1.backgroundColor = [Utils colorWithHexString:@"#D9D9D9"];
     [self addSubview: line1];
     [line1 mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.width.equalTo(weakself.mas_width);
+        make.width.equalTo(self.mas_width);
         make.height.mas_equalTo(0.5);
-        make.centerX.equalTo(weakself.mas_centerX);
-        make.bottom.equalTo(weakself.mas_bottom).offset(-38);
+        make.centerX.equalTo(self.mas_centerX);
+        make.bottom.equalTo(self.mas_bottom).offset(-38);
     }];
     UIView *line2 = [[UIView alloc] init];//竖线
     line2.backgroundColor = [Utils colorWithHexString:@"#D9D9D9"];
@@ -186,8 +185,8 @@
     [line2 mas_makeConstraints:^(MASConstraintMaker *make) {
         make.width.mas_equalTo(0.5);
         make.height.mas_equalTo(38);
-        make.centerX.equalTo(weakself.mas_centerX);
-        make.bottom.equalTo(weakself.mas_bottom);
+        make.centerX.equalTo(self.mas_centerX);
+        make.bottom.equalTo(self.mas_bottom);
     }];
     //添加取消和确认按钮
     UIButton *cancel_btn = [[UIButton alloc] init];
@@ -198,7 +197,7 @@
     [self addSubview:_cancel_btn];
     [_cancel_btn mas_makeConstraints:^(MASConstraintMaker *make) {
         make.height.mas_equalTo(38);
-        make.width.mas_equalTo(weakself.frame.size.width/2);
+        make.width.mas_equalTo(self.frame.size.width/2);
         make.right.equalTo(line2.mas_left);
         make.top.equalTo(line1.mas_bottom);
     }];
@@ -210,7 +209,7 @@
     [self addSubview:_confirm_btn];
     [_confirm_btn mas_makeConstraints:^(MASConstraintMaker *make) {
         make.height.mas_equalTo(38);
-        make.width.mas_equalTo(weakself.frame.size.width/2);
+        make.width.mas_equalTo(self.frame.size.width/2);
         make.left.equalTo(line2.mas_right);
         make.top.equalTo(line1.mas_bottom);
     }];

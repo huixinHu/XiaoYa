@@ -53,15 +53,14 @@
 - (void)initSubView{
     self.selectionStyle = UITableViewCellSelectionStyleNone;
     
-    __weak typeof(self)weakself = self;
     UIImageView *avatar = [[UIImageView alloc]init];
     _avatar = avatar;
     _avatar.backgroundColor = [UIColor yellowColor];
     [self.contentView addSubview:_avatar];
     [_avatar mas_makeConstraints:^(MASConstraintMaker *make) {
         make.size.mas_equalTo(CGSizeMake(50, 50));
-        make.centerY.equalTo(weakself.contentView.mas_centerY);
-        make.left.equalTo(weakself.contentView.mas_left).offset(10);
+        make.centerY.equalTo(self.contentView.mas_centerY);
+        make.left.equalTo(self.contentView.mas_left).offset(10);
     }];
     
     UILabel *groupName = [[UILabel alloc]init];
@@ -73,8 +72,8 @@
     [self.contentView addSubview:_groupName];
     [_groupName mas_makeConstraints:^(MASConstraintMaker *make) {
         make.left.equalTo(_avatar.mas_right).offset(13);
-        make.top.equalTo(weakself.contentView).offset(13);
-        make.right.equalTo(weakself.contentView.mas_right).offset(-60);
+        make.top.equalTo(self.contentView).offset(13);
+        make.right.equalTo(self.contentView.mas_right).offset(-60);
     }];
     
     UILabel *groupManager = [[UILabel alloc]init];
@@ -87,7 +86,7 @@
     [_groupManager mas_makeConstraints:^(MASConstraintMaker *make) {
         make.left.equalTo(_groupName);
         make.top.equalTo(_groupName.mas_bottom).offset(8);
-        make.right.equalTo(weakself.contentView.mas_right).offset(-60);
+        make.right.equalTo(self.contentView.mas_right).offset(-60);
     }];
     
     UIButton *joinBtn = [[UIButton alloc]init];
@@ -99,8 +98,8 @@
     [self.contentView addSubview:_joinBtn];
     [_joinBtn mas_makeConstraints:^(MASConstraintMaker *make) {
         make.size.mas_equalTo(CGSizeMake(40, 40));
-        make.right.equalTo(weakself.contentView).offset(-13);
-        make.centerY.equalTo(weakself.contentView);
+        make.right.equalTo(self.contentView).offset(-13);
+        make.centerY.equalTo(self.contentView);
     }];
     
     UIView *separatorLine = [[UIView alloc]init];
@@ -108,7 +107,7 @@
     [self.contentView addSubview:separatorLine];
     [separatorLine mas_makeConstraints:^(MASConstraintMaker *make) {
         make.left.equalTo(_groupName);
-        make.bottom.right.equalTo(weakself.contentView);
+        make.bottom.right.equalTo(self.contentView);
         make.height.mas_equalTo(0.5);
     }];
 }

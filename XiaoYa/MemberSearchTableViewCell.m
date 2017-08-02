@@ -57,7 +57,6 @@
 
 - (void)commonInit{
     self.selectionStyle = UITableViewCellSelectionStyleNone;
-    __weak typeof(self) weakself = self;
     
     UIButton * selectBtn = [[UIButton alloc]init];
     _selectBtn = selectBtn;
@@ -67,8 +66,8 @@
     [self.contentView addSubview:_selectBtn];
     [_selectBtn mas_makeConstraints:^(MASConstraintMaker *make) {
         make.size.mas_equalTo(CGSizeMake(40, 40));
-        make.centerY.equalTo(weakself.contentView);
-        make.left.equalTo(weakself.contentView).offset(7);
+        make.centerY.equalTo(self.contentView);
+        make.left.equalTo(self.contentView).offset(7);
     }];
     
     UIImageView *memberAvatar = [[UIImageView alloc]init];
@@ -76,7 +75,7 @@
     [self.contentView addSubview:_memberAvatar];
     [_memberAvatar mas_makeConstraints:^(MASConstraintMaker *make) {
         make.size.mas_equalTo(CGSizeMake(35, 35));
-        make.centerY.equalTo(weakself.contentView);
+        make.centerY.equalTo(self.contentView);
         make.left.equalTo(_selectBtn.mas_right);
     }];
     
@@ -87,7 +86,7 @@
     _memberInfo.textColor = [Utils colorWithHexString:@"#333333"];
     [self.contentView addSubview:_memberInfo];
     [_memberInfo mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.centerY.equalTo(weakself.contentView);
+        make.centerY.equalTo(self.contentView);
         make.left.equalTo(_memberAvatar.mas_right).offset(15);
     }];
     
@@ -96,7 +95,7 @@
     [self.contentView addSubview:separatorLine];
     [separatorLine mas_makeConstraints:^(MASConstraintMaker *make) {
         make.left.equalTo(_memberInfo);
-        make.bottom.right.equalTo(weakself.contentView);
+        make.bottom.right.equalTo(self.contentView);
         make.height.mas_equalTo(0.5);
     }];
 }

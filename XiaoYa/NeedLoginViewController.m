@@ -67,7 +67,6 @@
     [cancel addTarget:self action:@selector(cancel) forControlEvents:UIControlEventTouchUpInside];
     self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc]initWithCustomView:cancel];
     
-    __weak typeof(self)weakself = self;
     UIButton *loginBtn = [[UIButton alloc]init];
     _loginBtn = loginBtn;
     [_loginBtn setTitle:@"立即登录" forState:UIControlStateNormal];
@@ -78,8 +77,8 @@
     [self.view addSubview:_loginBtn];
     [_loginBtn mas_makeConstraints:^(MASConstraintMaker *make) {
         make.size.mas_equalTo(CGSizeMake(125, 40));
-        make.top.equalTo(weakself.view.mas_centerY);
-        make.centerX.equalTo(weakself.view);
+        make.top.equalTo(self.view.mas_centerY);
+        make.centerX.equalTo(self.view);
     }];
     
     UILabel *text1 = [[UILabel alloc]init];
@@ -88,7 +87,7 @@
     text1.text = @"登陆后才能进行相关操作";
     [self.view addSubview:text1];
     [text1 mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.centerX.equalTo(weakself.view);
+        make.centerX.equalTo(self.view);
         make.bottom.equalTo(_loginBtn.mas_top).offset(-20);
     }];
     
@@ -98,14 +97,14 @@
     text2.text = @"您还未登录";
     [self.view addSubview:text2];
     [text2 mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.centerX.equalTo(weakself.view);
+        make.centerX.equalTo(self.view);
         make.bottom.equalTo(text1.mas_top).offset(-15);
     }];
     
     UIImageView *img = [[UIImageView alloc]initWithImage:[UIImage imageNamed:@"未登录头像"]];
     [self.view addSubview:img];
     [img mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.centerX.equalTo(weakself.view);
+        make.centerX.equalTo(self.view);
         make.size.mas_equalTo(CGSizeMake(100, 100));
         make.bottom.equalTo(text2.mas_top).offset(-15);
     }];

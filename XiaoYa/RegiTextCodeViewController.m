@@ -214,9 +214,9 @@
     [_textCode appearanceWithTextColor:[Utils colorWithHexString:@"#333333"] textFontSize:14.0 placeHolderColor:[Utils colorWithHexString:@"#d9d9d9"] placeHolderFontSize:14.0 placeHolderText:@"请输入短信验证码" leftView:lv];
     [self.view addSubview:_textCode];
     [_textCode mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.width.mas_equalTo(kScreenWidth);
-        make.top.equalTo(weakself.view.mas_top).offset(40);
-        make.height.mas_equalTo(40);
+        make.size.mas_equalTo(CGSizeMake(kScreenWidth, 40));
+        make.top.equalTo(self.view).offset(40);
+        make.centerX.equalTo(self.view);
     }];
     _textCode.keyboardType = UIKeyboardTypeNumberPad;
     _textCode.delegate = self;
@@ -227,8 +227,8 @@
     lab.font = [UIFont systemFontOfSize:13];
     [self.view addSubview:lab];
     [lab mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.centerX.equalTo(weakself.view.mas_centerX);
-        make.centerY.equalTo(weakself.view.mas_top).offset(20);
+        make.centerX.equalTo(self.view.mas_centerX);
+        make.centerY.equalTo(self.view.mas_top).offset(20);
     }];
     
     UILabel *prompt = [[UILabel alloc]init];
@@ -239,7 +239,7 @@
     [self.view addSubview:_prompt];
     [_prompt mas_makeConstraints:^(MASConstraintMaker *make) {
         make.width.mas_equalTo(kScreenWidth-26);
-        make.centerX.equalTo(weakself.view.mas_centerX);
+        make.centerX.equalTo(self.view.mas_centerX);
         make.top.equalTo(_textCode.mas_bottom).offset(5);
     }];
     
@@ -254,9 +254,8 @@
     [self.view addSubview:_nextStep];
     [_nextStep mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(_prompt.mas_bottom).offset(5);
-        make.left.equalTo(weakself.view.mas_left).offset(13);
-        make.right.equalTo(weakself.view.mas_right).offset(-13);
-        make.height.mas_equalTo(40);
+        make.size.mas_equalTo(CGSizeMake(kScreenWidth - 26, 40));
+        make.centerX.equalTo(self.view);
     }];
 }
 

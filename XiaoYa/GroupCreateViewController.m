@@ -235,13 +235,12 @@ static NSString *identifier = @"collectionCell";
 }
 
 - (void)avatarAndNameSetting{
-    __weak typeof(self)weakself = self;
     UIView *bg = [[UIView alloc]init];
     bg.backgroundColor = [UIColor whiteColor];
     [self.view addSubview:bg];
     [bg mas_makeConstraints:^(MASConstraintMaker *make) {
         make.height.mas_equalTo(180);
-        make.width.centerX.top.equalTo(weakself.view);
+        make.width.centerX.top.equalTo(self.view);
     }];
     
     UIButton *avatar = [[UIButton alloc]init];
@@ -306,14 +305,13 @@ static NSString *identifier = @"collectionCell";
 }
 
 - (void)teamerListSetting{
-    __weak typeof(self)weakself = self;
     UIView *bg2 = [[UIView alloc]init];
     bg2.backgroundColor = [UIColor whiteColor];
     [self.view addSubview:bg2];
     [bg2 mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.width.centerX.equalTo(weakself.view);
-        make.top.equalTo(weakself.view).offset(190);
-        make.bottom.equalTo(weakself.view).offset(-40);
+        make.width.centerX.equalTo(self.view);
+        make.top.equalTo(self.view).offset(190);
+        make.bottom.equalTo(self.view).offset(-40);
     }];
     
     UILabel *lab = [[UILabel alloc]init];
@@ -335,7 +333,7 @@ static NSString *identifier = @"collectionCell";
     [createGroup addTarget:self action:@selector(groupCreate) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:createGroup];
     [createGroup mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.width.centerX.bottom.equalTo(weakself.view);
+        make.width.centerX.bottom.equalTo(self.view);
         make.height.mas_equalTo(40);
     }];
     _createGroup.enabled = NO;
@@ -361,14 +359,13 @@ static NSString *identifier = @"collectionCell";
 }
 
 - (void)coverViewsSetting{
-    __weak typeof(self) weakself = self;
     UIView *bg = [[UIView alloc]init];
     bg.tag = 100;
     bg.backgroundColor = [UIColor whiteColor];
     [self.coverLayer addSubview:bg];
     [bg mas_makeConstraints:^(MASConstraintMaker *make) {
         make.size.mas_equalTo(CGSizeMake(kScreenWidth, 125));
-        make.centerX.bottom.mas_equalTo(weakself.view);
+        make.centerX.bottom.mas_equalTo(self.view);
     }];
     
     UIButton *avatar2 = [self groupAvatarBtnWithBgImage:[UIImage imageNamed:@"删除圆"]];

@@ -15,6 +15,7 @@
 #import "JoinGroupViewController.h"
 #import "GroupMemberModel.h"
 #import "TxAvatar.h"
+#import "GroupInfoViewController.h"
 
 @interface GroupHomePageViewController ()<UITableViewDelegate,UITableViewDataSource>
 @property (nonatomic ,weak)UIImageView *menu;
@@ -72,7 +73,10 @@
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
-    NSLog(@"clicked table");
+    GroupListModel *model = self.groupModels[indexPath.row];
+    GroupInfoViewController *groupInfoVC = [[GroupInfoViewController alloc]initWithGroupName:model.groupName];
+    groupInfoVC.hidesBottomBarWhenPushed = YES;
+    [self.navigationController pushViewController:groupInfoVC animated:YES];
 }
 
 #pragma mark views setting
@@ -111,15 +115,14 @@
 }
 
 - (void)menuSetting{
-    __weak typeof(self) weakself = self;
     UIImageView *menu = [[UIImageView alloc] init];
     _menu = menu;
     _menu.image = [self drawMenu];
     [self.view addSubview:_menu];
     [_menu mas_makeConstraints:^(MASConstraintMaker *make) {
         make.size.mas_equalTo(CGSizeMake(113, 106));
-        make.right.equalTo(weakself.view.mas_right).offset(-20);
-        make.top.equalTo(weakself.view);
+        make.right.equalTo(self.view).offset(-20);
+        make.top.equalTo(self.view);
     }];
     _menu.userInteractionEnabled = YES;
     _menu.hidden = YES;
@@ -160,7 +163,6 @@
 }
 
 - (void)grouplistSetting{
-    __weak typeof(self)weakself = self;
     UITableView *groupTable = [[UITableView alloc]init];
     _groupTable = groupTable;
     _groupTable.delegate = self;
@@ -169,7 +171,7 @@
     _groupTable.backgroundColor = [Utils colorWithHexString:@"#F0F0F6"];
     [self.view addSubview:_groupTable];
     [_groupTable mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.width.height.top.centerX.equalTo(weakself.view);
+        make.width.height.top.centerX.equalTo(self.view);
     }];
     
     [_groupTable setTableFooterView:[[UIView alloc] initWithFrame:CGRectZero]];

@@ -32,14 +32,13 @@
         [self addSubview:_time];
         [self addSubview:_number];
         
-        __weak typeof(self) weakself = self;
         [_time mas_makeConstraints:^(MASConstraintMaker *make) {
-            make.centerX.equalTo(weakself.mas_centerX);
-            make.bottom.equalTo(weakself.mas_centerY).offset(-3);
+            make.centerX.equalTo(self.mas_centerX);
+            make.bottom.equalTo(self.mas_centerY).offset(-3);
         }];
         [_number mas_makeConstraints:^(MASConstraintMaker *make) {
-            make.centerX.equalTo(weakself.mas_centerX);
-            make.top.equalTo(weakself.mas_centerY).offset(3);
+            make.centerX.equalTo(self.mas_centerX);
+            make.top.equalTo(self.mas_centerY).offset(3);
         }];
     }
     return self;

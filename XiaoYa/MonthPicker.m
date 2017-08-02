@@ -79,11 +79,10 @@
     _pickerview.dataSource = self;
     _pickerview.delegate = self;
     [self addSubview:_pickerview];
-    __weak typeof(self) weakself = self;
     [_pickerview mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.centerX.equalTo(weakself.mas_centerX);
+        make.centerX.equalTo(self.mas_centerX);
         make.size.mas_equalTo(CGSizeMake(265, 200));
-        make.top.equalTo(weakself.mas_top).offset(80);
+        make.top.equalTo(self.mas_top).offset(80);
     }];
     
     UIButton *confirm = [[UIButton alloc]init];

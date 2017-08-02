@@ -35,14 +35,13 @@
     }else{
         self.fold.hidden = YES;
     }
-    __weak typeof(self)weakself = self;
     if ([self.number.text isEqual: @""]) {
         [_time mas_updateConstraints:^(MASConstraintMaker *make) {
-            make.centerY.equalTo(weakself.contentView.mas_centerY);
+            make.centerY.equalTo(self.contentView.mas_centerY);
         }];
     }else{
         [_time mas_updateConstraints:^(MASConstraintMaker *make) {
-            make.centerY.equalTo(weakself.contentView.mas_centerY).offset(-8);
+            make.centerY.equalTo(self.contentView.mas_centerY).offset(-8);
         }];
     }
 }
@@ -69,11 +68,10 @@
     UIView *bottomSeparate = [[UIView alloc]init];
     bottomSeparate.backgroundColor = [UIColor colorWithRed:0.78 green:0.78 blue:0.8 alpha:1.0];//系统分割线颜色
     [self.contentView addSubview:bottomSeparate];
-    __weak typeof(self)weakself = self;
     [bottomSeparate mas_makeConstraints:^(MASConstraintMaker *make) {
         make.height.mas_equalTo(0.5);
         make.width.mas_equalTo(586 / 750.0 * kScreenWidth);
-        make.left.bottom.equalTo(weakself.contentView);
+        make.left.bottom.equalTo(self.contentView);
     }];
     //竖分割线
     UIView *horSeparate = [[UIView alloc]init];
@@ -82,8 +80,8 @@
     [horSeparate mas_makeConstraints:^(MASConstraintMaker *make) {
         make.width.mas_equalTo(0.5);
         make.height.mas_equalTo(39);//和单元格行高相同
-        make.left.equalTo(weakself.contentView).offset(40);
-        make.top.equalTo(weakself.contentView);
+        make.left.equalTo(self.contentView).offset(40);
+        make.top.equalTo(self.contentView);
     }];
     //时间和节数。参照timeViewCell.m
     UILabel *time = [[UILabel alloc]init];
@@ -99,12 +97,12 @@
     [self.contentView addSubview:_number];
     
     [_time mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.centerX.equalTo(weakself.contentView.mas_left).offset(20);
-        make.centerY.equalTo(weakself.contentView.mas_centerY).offset(-8);
+        make.centerX.equalTo(self.contentView.mas_left).offset(20);
+        make.centerY.equalTo(self.contentView.mas_centerY).offset(-8);
     }];
     [_number mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.centerX.equalTo(weakself.contentView.mas_left).offset(20);
-        make.centerY.equalTo(weakself.contentView.mas_centerY).offset(8);
+        make.centerX.equalTo(self.contentView.mas_left).offset(20);
+        make.centerY.equalTo(self.contentView.mas_centerY).offset(8);
     }];
     //事件描述
     UILabel *event = [[UILabel alloc]init];
@@ -114,8 +112,8 @@
     _event.textColor = [Utils colorWithHexString:@"#333333"];
     [self.contentView addSubview:_event];
     [_event mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.centerX.equalTo(weakself.contentView.mas_centerX);
-        make.centerY.equalTo(weakself.contentView.mas_centerY);
+        make.centerX.equalTo(self.contentView.mas_centerX);
+        make.centerY.equalTo(self.contentView.mas_centerY);
     }];
     //复选按钮
     UIButton * mutipleChoice = [[UIButton alloc]init];
@@ -125,8 +123,8 @@
     [self.contentView addSubview:_mutipleChoice];
     [_mutipleChoice mas_makeConstraints:^(MASConstraintMaker *make) {
         make.width.height.mas_equalTo(40);
-        make.centerY.equalTo(weakself.contentView.mas_centerY);
-        make.right.equalTo(weakself.contentView.mas_right).offset(-5);
+        make.centerY.equalTo(self.contentView.mas_centerY);
+        make.right.equalTo(self.contentView.mas_right).offset(-5);
     }];
     [_mutipleChoice addTarget:self action:@selector(mutipleClicked:) forControlEvents:UIControlEventTouchUpInside];
     
@@ -142,7 +140,7 @@
     [_conflict mas_makeConstraints:^(MASConstraintMaker *make) {
         make.width.mas_equalTo(506 / 750.0 * kScreenWidth);
         make.height.mas_equalTo(12);
-        make.top.equalTo(weakself.contentView);
+        make.top.equalTo(self.contentView);
         make.left.equalTo(horSeparate.mas_right);
     }];
     //折角

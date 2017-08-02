@@ -105,11 +105,10 @@
     UIView *lv = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 13, 20)];
     [_phoneNumber appearanceWithTextColor:[Utils colorWithHexString:@"#333333"] textFontSize:14.0 placeHolderColor:[Utils colorWithHexString:@"#d9d9d9"] placeHolderFontSize:14.0 placeHolderText:@"请输入您的手机号码" leftView:lv];
     [self.view addSubview:_phoneNumber];
-    __weak typeof (self)weakself = self;
     [_phoneNumber mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.width.mas_equalTo(kScreenWidth);
-        make.top.equalTo(weakself.view.mas_top).offset(10);
-        make.height.mas_equalTo(40);
+        make.size.mas_equalTo(CGSizeMake(kScreenWidth, 40));
+        make.top.equalTo(self.view).offset(10);
+        make.centerX.equalTo(self.view);
     }];
     _phoneNumber.keyboardType = UIKeyboardTypeNumberPad;
     _phoneNumber.delegate = self;
@@ -122,7 +121,7 @@
     [self.view addSubview:_phonePrompt];
     [_phonePrompt mas_makeConstraints:^(MASConstraintMaker *make) {
         make.width.mas_equalTo(kScreenWidth-26);
-        make.centerX.equalTo(weakself.view.mas_centerX);
+        make.centerX.equalTo(self.view.mas_centerX);
         make.top.equalTo(_phoneNumber.mas_bottom).offset(5);
     }];
     
@@ -137,9 +136,8 @@
     [self.view addSubview:_checkCode];
     [_checkCode mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(_phonePrompt.mas_bottom).offset(5);
-        make.left.equalTo(weakself.view.mas_left).offset(13);
-        make.right.equalTo(weakself.view.mas_right).offset(-13);
-        make.height.mas_equalTo(40);
+        make.size.mas_equalTo(CGSizeMake(kScreenWidth - 26, 40));
+        make.centerX.equalTo(self.view);
     }];
 }
 

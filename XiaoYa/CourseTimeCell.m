@@ -46,7 +46,6 @@
 
 - (void)commonInit{
     self.backgroundColor = [UIColor whiteColor];
-    __weak typeof(self) weakself = self;
     //添加竖线
     for(int i =0;i<2;i++){
         UIView *verticalline = [[UIView alloc] init];
@@ -55,8 +54,8 @@
         [verticalline mas_makeConstraints:^(MASConstraintMaker *make) {
             make.height.mas_equalTo(160);
             make.width.mas_equalTo(0.5);
-            make.left.equalTo(weakself.contentView.mas_left).offset((60  + 65 * i)/2);
-            make.centerY.equalTo(weakself.contentView.mas_centerY);
+            make.left.equalTo(self.contentView.mas_left).offset((60  + 65 * i)/2);
+            make.centerY.equalTo(self.contentView);
         }];
     }
     //添加横线和箭头
@@ -67,8 +66,8 @@
         [horizonline mas_makeConstraints:^(MASConstraintMaker *make) {
             make.height.mas_equalTo(0.5);
             make.width.mas_equalTo(500.0 *scaletowidth);
-            make.left.equalTo(weakself.contentView.mas_left).offset(125.0 /2);
-            make.top.equalTo(weakself.contentView.mas_top).offset(40 * (i+1));
+            make.left.equalTo(self.contentView).offset(125.0 /2);
+            make.top.equalTo(self.contentView).offset(40 * (i+1));
         }];
         
         UIImageView *arrow = [[UIImageView alloc] init];
@@ -76,7 +75,7 @@
         [self addSubview:arrow];
         [arrow mas_makeConstraints:^(MASConstraintMaker *make) {
             make.left.equalTo(horizonline.mas_right);
-            make.bottom.equalTo(horizonline.mas_bottom);
+            make.bottom.equalTo(horizonline);
         }];
     }
 
@@ -86,8 +85,8 @@
     _delete_btn.backgroundColor = [UIColor whiteColor];
     [self addSubview:_delete_btn];
     [_delete_btn mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.centerY.equalTo(weakself.mas_centerY);
-        make.centerX.equalTo(weakself.mas_left).offset(30.0/2);
+        make.centerY.equalTo(self.contentView);
+        make.centerX.equalTo(self.contentView.mas_left).offset(30.0/2);
         make.width.mas_equalTo(30);
         make.height.mas_equalTo(60);
     }];
@@ -100,10 +99,9 @@
     coursetime.textAlignment = NSTextAlignmentCenter;
     [self addSubview:coursetime];
     [coursetime mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.height.equalTo(weakself.contentView.mas_height);
+        make.height.centerY.equalTo(self.contentView);
         make.width.mas_equalTo(65.0 /2);
         make.left.mas_equalTo(60.0 /2);
-        make.centerY.equalTo(weakself.contentView.mas_centerY);
     }];
     
     //设置三个显示的button和一个field
@@ -135,28 +133,28 @@
     [_place setTextAlignment:NSTextAlignmentCenter];
     
     [_weeks mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.centerX.equalTo(weakself.contentView.mas_centerX);
+        make.centerX.equalTo(self.contentView);
         make.width.mas_equalTo(500.0 /2);
         make.height.mas_equalTo(40);
-        make.top.equalTo(weakself.contentView.mas_top);
+        make.top.equalTo(self.contentView.mas_top);
     }];
     [_weekDay mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.centerX.equalTo(weakself.contentView.mas_centerX);
+        make.centerX.equalTo(self.contentView);
         make.width.mas_equalTo(500.0 /2);
         make.height.mas_equalTo(40);
         make.top.equalTo(_weeks.mas_bottom);
     }];
-    [courseTime mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.centerX.equalTo(weakself.contentView.mas_centerX);
+    [_courseTime mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.centerX.equalTo(self.contentView);
         make.width.mas_equalTo(500.0 /2);
         make.height.mas_equalTo(40);
         make.top.equalTo(_weekDay.mas_bottom);
     }];
     [_place mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.centerX.equalTo(weakself.mas_centerX);
+        make.centerX.equalTo(self.contentView);
         make.width.mas_equalTo(500.0 /2);
         make.height.mas_equalTo(40);
-        make.top.equalTo(courseTime.mas_bottom);
+        make.top.equalTo(_courseTime.mas_bottom);
     }];
 }
 

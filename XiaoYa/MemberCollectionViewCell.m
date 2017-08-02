@@ -25,13 +25,12 @@
 }
 
 - (void)commonInit{
-    __weak typeof(self) weakself = self;
     UIImageView *memberAvatar = [[UIImageView alloc]init];
     _memberAvatar = memberAvatar;
     [self.contentView addSubview:_memberAvatar];
     [_memberAvatar mas_makeConstraints:^(MASConstraintMaker *make) {
         make.size.mas_equalTo(CGSizeMake(50, 50));
-        make.centerX.top.equalTo(weakself.contentView);
+        make.centerX.top.equalTo(self.contentView);
     }];
     
     UILabel *memberName = [[UILabel alloc]init];
@@ -42,7 +41,7 @@
     [self.contentView addSubview:_memberName];
     [_memberName mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(_memberAvatar.mas_bottom).offset(8);
-        make.centerX.equalTo(weakself.contentView);
+        make.centerX.equalTo(self.contentView);
     }];
     
     UIButton *deleteSelect = [[UIButton alloc]init];
