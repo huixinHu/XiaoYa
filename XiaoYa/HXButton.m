@@ -56,14 +56,14 @@
             resetCount --;
             if (resetCount == 0) {
                 NSLog(@"timer走完");
-                [strongself.timer invalidate];
-                strongself.enabled = YES;
+                [strongself.timer invalidate];//[strongself.timer invalidate]
+                self.enabled = YES;
                 CFRunLoopStop(CFRunLoopGetCurrent());
             }else{
                 self.enabled = NO;
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    [strongself setTitle:[NSString stringWithFormat:@"%ds后重发",resetCount] forState:UIControlStateDisabled];
-                    [strongself setTitleColor:[Utils colorWithHexString:@"#d9d9d9"] forState:UIControlStateDisabled];
+                    [self setTitle:[NSString stringWithFormat:@"%ds后重发",resetCount] forState:UIControlStateDisabled];
+                    [self setTitleColor:[Utils colorWithHexString:@"#d9d9d9"] forState:UIControlStateDisabled];
                 });
             }
         } repeats:YES];

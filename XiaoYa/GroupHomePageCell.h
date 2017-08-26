@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 @class GroupListModel;
+
 @interface GroupHomePageCell : UITableViewCell
 @property (nonatomic ,strong)GroupListModel *group;
 

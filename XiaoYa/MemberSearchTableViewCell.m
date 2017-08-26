@@ -14,22 +14,28 @@
 @interface MemberSearchTableViewCell ()
 @property (nonatomic ,weak) UIImageView *memberAvatar;
 @property (nonatomic ,weak) UILabel *memberInfo;
+@property (nonatomic ,copy) selectedBlock selectBlock;
+@property (nonatomic ,copy) deselectedBlock deselectBlock;
+@property (nonatomic ,strong) NSMutableArray *addedModels;
 @end
 
 @implementation MemberSearchTableViewCell
 
-+ (instancetype)MemberSearchCellWithTableView:(UITableView *)tableView{
++ (instancetype)MemberSearchCellWithTableView:(UITableView *)tableView selectBlock:(selectedBlock)select deselectBlock:(deselectedBlock)deselect addedMembers:(NSMutableArray *)addedModels{
     static NSString *ID = @"MemberSearchTableViewCell";
     MemberSearchTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:ID];
     if (cell == nil) {
-        cell = [[MemberSearchTableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:ID];
+        cell = [[MemberSearchTableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:ID selectBlock:[select copy] deselectBlock:[deselect copy] addedMembers:addedModels];
     }
     return cell;
 }
 
-- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier{
+- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier selectBlock:(selectedBlock)select deselectBlock:(deselectedBlock)deselect addedMembers:(NSMutableArray *)addedModels{
     self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
     if (self) {
+        self.selectBlock = select;
+        self.deselectBlock = deselect;
+        self.addedModels = [addedModels mutableCopy];
         [self commonInit];
     }
     return self;
@@ -39,6 +45,14 @@
     _member = member;
     self.memberInfo.text = [NSString stringWithFormat:@"%@(%@)",member.memberName,member.memberPhone];
     self.memberAvatar.image = member.memberAvatar;
+    for (GroupMemberModel *addedModel in self.addedModels) {
+        if ([addedModel.memberPhone isEqualToString:member.memberPhone]) {
+            self.selectBtn.enabled = NO;
+            break;
+        }else{
+            self.selectBtn.enabled = YES;
+        }
+    }
 }
 
 - (void)mutipleClicked:(UIButton *)sender{
@@ -48,10 +62,10 @@
     
     if (sender.isSelected) {//已经选中了
         sender.selected = NO;//置为未选中
-        [self.delegate memberSearchCell:self deSelectIndex:indexPath];
+        self.deselectBlock(indexPath);
     }else{
         sender.selected = YES;
-        [self.delegate memberSearchCell:self selectIndex:indexPath];
+        self.selectBlock(indexPath);
     }
 }
 
@@ -62,6 +76,7 @@
     _selectBtn = selectBtn;
     [_selectBtn setImage:[UIImage imageNamed:@"添加新成员未勾选"] forState:UIControlStateNormal];
     [_selectBtn setImage:[UIImage imageNamed:@"添加新成员选中"] forState:UIControlStateSelected];
+    [_selectBtn setImage:[UIImage imageNamed:@"删除不勾选"] forState:UIControlStateDisabled];
     [_selectBtn addTarget:self action:@selector(mutipleClicked:) forControlEvents:UIControlEventTouchUpInside];
     [self.contentView addSubview:_selectBtn];
     [_selectBtn mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -98,5 +113,12 @@
         make.bottom.right.equalTo(self.contentView);
         make.height.mas_equalTo(0.5);
     }];
+}
+
+- (NSMutableArray *)addedModels{
+    if (_addedModels == nil) {
+        _addedModels = [NSMutableArray array];
+    }
+    return _addedModels;
 }
 @end

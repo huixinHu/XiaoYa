@@ -28,7 +28,7 @@
 @property (nonatomic ,weak) UILabel *hint;
 @property (nonatomic ,weak) UICollectionView *collectionView;
 
-@property (nonatomic, strong) NSMutableArray *dataArray;//存储数据
+@property (nonatomic, strong) NSMutableArray *dataArray;//存储数据(模型)
 @property (nonatomic ,strong) NSMutableArray *indexArray;//存储index
 //@property (nonatomic ,strong) GroupMemberModel *groupManagerModel;
 @end
@@ -37,7 +37,7 @@ static NSString *identifier = @"collectionCell";
 @implementation GroupCreateViewController
 {
     BOOL isDeleteBtnClicked;
-    BOOL isGroupAvatarAdd;
+    NSInteger avatarID;//群头像ID
 }
 
 - (void)viewDidLoad {
@@ -46,12 +46,11 @@ static NSString *identifier = @"collectionCell";
     [self viewsSetting];
     self.lastSelectedAvatar = nil;
     isDeleteBtnClicked = NO;
-    isGroupAvatarAdd = NO;
+    avatarID = -1;
 }
 
 - (instancetype)initWithGroupManager:(GroupMemberModel *)model{
     if (self = [super init]) {
-//        self.groupManagerModel = model;
         [self.dataArray addObject:model];
     }
     return self;
@@ -59,7 +58,7 @@ static NSString *identifier = @"collectionCell";
 
 - (void)back{
     __weak typeof(self) weakself = self;
-    if (isGroupAvatarAdd || self.groupName.text.length > 0 || self.dataArray.count > 1) {
+    if (avatarID >= 0 || self.groupName.text.length > 0 || self.dataArray.count > 1) {
         void (^otherBlock)(UIAlertAction *action) = ^(UIAlertAction *action){
             [weakself.navigationController popViewControllerAnimated:YES];
         };
@@ -81,9 +80,9 @@ static NSString *identifier = @"collectionCell";
         member = self.dataArray[i];
         [usersStr appendString:[NSString stringWithFormat:@",%@",member.memberId]];
     }
-    NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"INITGROUP", @"type", self.groupName.text,@"groupName", manager.memberId, @"managerId", [NSNumber numberWithInteger:self.lastSelectedAvatar.tag-101], @"picId", usersStr, @"users",nil];
+    NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"INITGROUP", @"type", self.groupName.text,@"groupName", manager.memberId, @"managerId", [NSNumber numberWithInteger:avatarID-101], @"picId", usersStr, @"users",nil];
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
-        [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict success:^(NSURLSessionDataTask *task, id responseObject) {
+        [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
             NSDictionary *responseDic = (NSDictionary *)responseObject;
             NSLog(@"dataID:%@",[responseDic objectForKey:@"identity"]);
             NSLog(@"dataMessage:%@",[responseDic objectForKey:@"message"]);
@@ -96,7 +95,6 @@ static NSString *identifier = @"collectionCell";
 }
 
 #pragma mark AddGroupMemberViewControllerDelegate
-//逻辑待完善 添加了相同的人
 - (void)AddGroupMemberViewController:(AddGroupMemberViewController*)viewController addMembersFinish:(NSMutableArray *)modelArray{
     [self.dataArray addObjectsFromArray:[modelArray copy]];
     [self.collectionView reloadData];
@@ -126,7 +124,7 @@ static NSString *identifier = @"collectionCell";
                 [self.indexArray removeAllObjects];
             }
             else{//点击的是“+”
-                AddGroupMemberViewController *vc = [[AddGroupMemberViewController alloc]init];
+                AddGroupMemberViewController *vc = [[AddGroupMemberViewController alloc]initWithAddedMembers:self.dataArray];
                 vc.delegate = self;
                 [self.navigationController pushViewController:vc animated:YES];
             }
@@ -300,7 +298,6 @@ static NSString *identifier = @"collectionCell";
     [theWindow addSubview:_coverLayer];
     [self coverViewsSetting];
     
-    isGroupAvatarAdd = YES;
     [self bottomBtnCanBeSelectd];
 }
 
@@ -411,7 +408,6 @@ static NSString *identifier = @"collectionCell";
 //选择群头像时收起蒙层
 -(void)coverFingerTapped:(UITapGestureRecognizer *)gestureRecognizer{
     self.hint.hidden = YES;
-    [_coverLayer removeFromSuperview];
     switch (self.lastSelectedAvatar.tag) {
         case 101:
             [self.avatar setBackgroundImage:[UIImage imageNamed:@"删除勾选"] forState:UIControlStateNormal];
@@ -425,6 +421,8 @@ static NSString *identifier = @"collectionCell";
         default:
             break;
     }
+    avatarID = self.lastSelectedAvatar.tag;
+    [_coverLayer removeFromSuperview];
 }
 
 //收起键盘
@@ -443,7 +441,7 @@ static NSString *identifier = @"collectionCell";
 
 //底部的 创建 按钮是否可以被选
 - (void)bottomBtnCanBeSelectd{
-    if (self.groupName.text.length > 0 && isGroupAvatarAdd) {
+    if (self.groupName.text.length > 0 && avatarID >= 0) {
         self.createGroup.enabled = YES;
         self.createGroup.backgroundColor = [Utils colorWithHexString:@"#00a7fa"];
     }else{

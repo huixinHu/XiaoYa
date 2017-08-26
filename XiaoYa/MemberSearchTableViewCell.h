@@ -8,19 +8,14 @@
 
 #import <UIKit/UIKit.h>
 @class GroupMemberModel;
-@class MemberSearchTableViewCell;
-@protocol MemberSearchCellDelegate <NSObject>
-//传回当前选中的indexpath
-- (void)memberSearchCell:(MemberSearchTableViewCell *)cell selectIndex:(NSIndexPath *)indexPath;
-//传回当前撤销选中的IndexPath
-- (void)memberSearchCell:(MemberSearchTableViewCell *)cell deSelectIndex:(NSIndexPath *)indexPath;
-@end
+
+typedef void(^selectedBlock)(NSIndexPath *indexPath);
+typedef void(^deselectedBlock)(NSIndexPath *indexPath);
 
 @interface MemberSearchTableViewCell : UITableViewCell
 @property (nonatomic ,strong) GroupMemberModel *member;
-@property (nonatomic ,weak) id <MemberSearchCellDelegate> delegate;
 @property (nonatomic ,weak) UIButton *selectBtn;
 
-+ (instancetype)MemberSearchCellWithTableView:(UITableView *)tableView;
++ (instancetype)MemberSearchCellWithTableView:(UITableView *)tableView selectBlock:(selectedBlock)select deselectBlock:(deselectedBlock)deselect addedMembers:(NSMutableArray *)addedModels;
 
 @end

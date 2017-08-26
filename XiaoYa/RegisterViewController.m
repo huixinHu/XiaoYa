@@ -43,26 +43,26 @@
     [self.view endEditing:YES];
     NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"GETSME",@"type",self.phoneNumber.text,@"mobile", nil];
     __weak typeof (self)weakself = self;
-    dispatch_async(dispatch_get_global_queue(0, 0), ^{
-        [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict success:^(NSURLSessionDataTask *task, id responseObject) {
-            NSLog(@"dataMessage:%@",[responseObject objectForKey:@"message"]);
-            dispatch_async(dispatch_get_main_queue(), ^{
-                if ([[responseObject objectForKey:@"state"]boolValue] == 0){
-                    if([[responseObject objectForKey:@"message"] isEqualToString:@"手机号已注册！"]){
-                        weakself.phonePrompt.text = @"该手机号已被注册";
-                    }else if ([[responseObject objectForKey:@"message"] isEqualToString:@"验证码发送失败！"]){
-                        weakself.phonePrompt.text = @"验证码获取失败！";
-                    }
-                }
-                else{
+//    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+//        [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict success:^(NSURLSessionDataTask *task, id responseObject) {
+//            NSLog(@"dataMessage:%@",[responseObject objectForKey:@"message"]);
+//            dispatch_async(dispatch_get_main_queue(), ^{
+//                if ([[responseObject objectForKey:@"state"]boolValue] == 0){
+//                    if([[responseObject objectForKey:@"message"] isEqualToString:@"手机号已注册！"]){
+//                        weakself.phonePrompt.text = @"该手机号已被注册";
+//                    }else if ([[responseObject objectForKey:@"message"] isEqualToString:@"验证码发送失败！"]){
+//                        weakself.phonePrompt.text = @"验证码获取失败！";
+//                    }
+//                }
+//                else{
                     RegiTextCodeViewController *nextVC = [[RegiTextCodeViewController alloc]initWithPhoneNum:weakself.phoneNumber.text];
                     [weakself.navigationController pushViewController:nextVC animated:YES];
-                }
-            });
-        } failure:^(NSURLSessionDataTask *task, NSError *error) {
-            NSLog(@"Error: %@", error);
-        } refresh:NO];
-    });
+//                }
+//            });
+//        } failure:^(NSURLSessionDataTask *task, NSError *error) {
+//            NSLog(@"Error: %@", error);
+//        } refresh:NO];
+//    });
 }
 
 //用户条款

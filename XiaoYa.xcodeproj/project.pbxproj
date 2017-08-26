@@ -26,6 +26,8 @@
 		572EA91E1F301CF50052907C /* ReasonView.m in Sources */ = {isa = PBXBuildFile; fileRef = 572EA91D1F301CF50052907C /* ReasonView.m */; };
 		572EA9211F305CE30052907C /* EventPublishViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 572EA9201F305CE30052907C /* EventPublishViewController.m */; };
 		572EA9241F3077560052907C /* GroupDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 572EA9231F3077560052907C /* GroupDetailViewController.m */; };
+		572EA92D1F31F45F0052907C /* ProtoMessage.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 572EA92C1F31F45F0052907C /* ProtoMessage.pbobjc.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		572EA9301F32C5870052907C /* GCDAsyncSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 572EA92F1F32C5870052907C /* GCDAsyncSocket.m */; };
 		573F110B1EE6DE4200E9F99E /* LoginViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 573F110A1EE6DE4200E9F99E /* LoginViewController.m */; };
 		573F110F1EE7157000E9F99E /* HXTextField.m in Sources */ = {isa = PBXBuildFile; fileRef = 573F110E1EE7157000E9F99E /* HXTextField.m */; };
 		573F11121EE7A6AB00E9F99E /* HXButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 573F11111EE7A6AB00E9F99E /* HXButton.m */; };
@@ -86,10 +88,11 @@
 		57D65F6E1F287ED800D3BE72 /* TxAvatar.m in Sources */ = {isa = PBXBuildFile; fileRef = 57D65F6D1F287ED800D3BE72 /* TxAvatar.m */; };
 		57D65FB51F2E3A5F00D3BE72 /* GroupInfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 57D65FB41F2E3A5F00D3BE72 /* GroupInfoViewController.m */; };
 		57D65FB81F2E3ABB00D3BE72 /* GroupInfoTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 57D65FB71F2E3ABB00D3BE72 /* GroupInfoTableViewCell.m */; };
-		57D69A221DC77040005E73EA /* courses.json in Resources */ = {isa = PBXBuildFile; fileRef = 57D69A211DC77040005E73EA /* courses.json */; };
-		57D69A241DC77278005E73EA /* courses-1.json in Resources */ = {isa = PBXBuildFile; fileRef = 57D69A231DC77278005E73EA /* courses-1.json */; };
 		57D69A2A1DC7832F005E73EA /* CourseModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 57D69A291DC7832F005E73EA /* CourseModel.m */; };
 		57D69A2D1DC83734005E73EA /* CourseButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 57D69A2C1DC83734005E73EA /* CourseButton.m */; };
+		57DC77721F4A957900F5FF94 /* HXSocketManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 57DC77711F4A957900F5FF94 /* HXSocketManager.m */; };
+		57DC77791F4A9B0500F5FF94 /* HXSocketBusinessManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 57DC77781F4A9B0500F5FF94 /* HXSocketBusinessManager.m */; };
+		57DC777D1F4ECB9600F5FF94 /* HXErrorManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 57DC777C1F4ECB9600F5FF94 /* HXErrorManager.m */; };
 		57EA0A1F1F2086F50003BE87 /* NeedLoginViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 57EA0A1E1F2086F50003BE87 /* NeedLoginViewController.m */; };
 		57EA0A221F20E9490003BE87 /* LoginManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 57EA0A211F20E9490003BE87 /* LoginManager.m */; };
 		E2647DF71DD05CAD0034BE4D /* businessviewcell.m in Sources */ = {isa = PBXBuildFile; fileRef = E2647DF61DD05CAD0034BE4D /* businessviewcell.m */; };
@@ -159,6 +162,10 @@
 		572EA9201F305CE30052907C /* EventPublishViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EventPublishViewController.m; sourceTree = "<group>"; };
 		572EA9221F3077560052907C /* GroupDetailViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GroupDetailViewController.h; sourceTree = "<group>"; };
 		572EA9231F3077560052907C /* GroupDetailViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GroupDetailViewController.m; sourceTree = "<group>"; };
+		572EA92B1F31F45F0052907C /* ProtoMessage.pbobjc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProtoMessage.pbobjc.h; sourceTree = "<group>"; };
+		572EA92C1F31F45F0052907C /* ProtoMessage.pbobjc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ProtoMessage.pbobjc.m; sourceTree = "<group>"; };
+		572EA92E1F32C5870052907C /* GCDAsyncSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDAsyncSocket.h; sourceTree = "<group>"; };
+		572EA92F1F32C5870052907C /* GCDAsyncSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDAsyncSocket.m; sourceTree = "<group>"; };
 		573F11091EE6DE4200E9F99E /* LoginViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LoginViewController.h; sourceTree = "<group>"; };
 		573F110A1EE6DE4200E9F99E /* LoginViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LoginViewController.m; sourceTree = "<group>"; };
 		573F110D1EE7157000E9F99E /* HXTextField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HXTextField.h; sourceTree = "<group>"; };
@@ -275,12 +282,17 @@
 		57D65FB41F2E3A5F00D3BE72 /* GroupInfoViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GroupInfoViewController.m; sourceTree = "<group>"; };
 		57D65FB61F2E3ABB00D3BE72 /* GroupInfoTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GroupInfoTableViewCell.h; sourceTree = "<group>"; };
 		57D65FB71F2E3ABB00D3BE72 /* GroupInfoTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GroupInfoTableViewCell.m; sourceTree = "<group>"; };
-		57D69A211DC77040005E73EA /* courses.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = courses.json; sourceTree = "<group>"; };
-		57D69A231DC77278005E73EA /* courses-1.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "courses-1.json"; sourceTree = "<group>"; };
 		57D69A281DC7832F005E73EA /* CourseModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CourseModel.h; sourceTree = "<group>"; };
 		57D69A291DC7832F005E73EA /* CourseModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CourseModel.m; sourceTree = "<group>"; };
 		57D69A2B1DC83734005E73EA /* CourseButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CourseButton.h; sourceTree = "<group>"; };
 		57D69A2C1DC83734005E73EA /* CourseButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CourseButton.m; sourceTree = "<group>"; };
+		57DC77701F4A957900F5FF94 /* HXSocketManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HXSocketManager.h; sourceTree = "<group>"; };
+		57DC77711F4A957900F5FF94 /* HXSocketManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HXSocketManager.m; sourceTree = "<group>"; };
+		57DC77751F4A99B200F5FF94 /* HXSocketConfig.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HXSocketConfig.h; sourceTree = "<group>"; };
+		57DC77771F4A9B0500F5FF94 /* HXSocketBusinessManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HXSocketBusinessManager.h; sourceTree = "<group>"; };
+		57DC77781F4A9B0500F5FF94 /* HXSocketBusinessManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HXSocketBusinessManager.m; sourceTree = "<group>"; };
+		57DC777B1F4ECB9600F5FF94 /* HXErrorManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HXErrorManager.h; sourceTree = "<group>"; };
+		57DC777C1F4ECB9600F5FF94 /* HXErrorManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HXErrorManager.m; sourceTree = "<group>"; };
 		57EA0A1D1F2086F50003BE87 /* NeedLoginViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NeedLoginViewController.h; sourceTree = "<group>"; };
 		57EA0A1E1F2086F50003BE87 /* NeedLoginViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NeedLoginViewController.m; sourceTree = "<group>"; };
 		57EA0A201F20E9480003BE87 /* LoginManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LoginManager.h; sourceTree = "<group>"; };
@@ -350,11 +362,7 @@
 		571A3B271DE0D030009042BC /* Util */ = {
 			isa = PBXGroup;
 			children = (
-				577C67011EE862ED0006E783 /* UI */,
-				577C67051EE870F10006E783 /* NSTimer+Addition.h */,
-				577C67061EE870F10006E783 /* NSTimer+Addition.m */,
-				571A3B341DE0D08A009042BC /* NSDate+Calendar.h */,
-				571A3B351DE0D08A009042BC /* NSDate+Calendar.m */,
+				57DC77731F4A958E00F5FF94 /* Category */,
 				571A3B281DE0D05A009042BC /* DateUtils.h */,
 				571A3B291DE0D05A009042BC /* DateUtils.m */,
 				571B82011DB38BCE001171EE /* Utils.h */,
@@ -412,6 +420,16 @@
 				57D65F6A1F2764C500D3BE72 /* GroupSearchModel.m */,
 			);
 			name = models;
+			sourceTree = "<group>";
+		};
+		572EA9311F32C5920052907C /* GCDAsyncSocket */ = {
+			isa = PBXGroup;
+			children = (
+				57DC77751F4A99B200F5FF94 /* HXSocketConfig.h */,
+				57DC77741F4A994F00F5FF94 /* Manager */,
+				57DC77761F4A99C000F5FF94 /* lib */,
+			);
+			name = GCDAsyncSocket;
 			sourceTree = "<group>";
 		};
 		573F110C1EE6E2DE00E9F99E /* 日程-一期 */ = {
@@ -540,8 +558,8 @@
 				571B82051DB4658F001171EE /* controllers */,
 				571B82041DB4657A001171EE /* views */,
 				571A3B271DE0D030009042BC /* Util */,
-				574C2C081E9F9C5000960399 /* html */,
-				5711C8741EAB08AA00D19AE2 /* MBProgressHUD */,
+				572EA9311F32C5920052907C /* GCDAsyncSocket */,
+				57DC777A1F4D24C700F5FF94 /* vendor */,
 				579C2FBF1DAD000E00E4EE54 /* AppDelegate.h */,
 				579C2FC01DAD000E00E4EE54 /* AppDelegate.m */,
 				579C2FCA1DAD000E00E4EE54 /* LaunchScreen.storyboard */,
@@ -555,8 +573,8 @@
 		579C2FBC1DAD000E00E4EE54 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				57D69A211DC77040005E73EA /* courses.json */,
-				57D69A231DC77278005E73EA /* courses-1.json */,
+				572EA92B1F31F45F0052907C /* ProtoMessage.pbobjc.h */,
+				572EA92C1F31F45F0052907C /* ProtoMessage.pbobjc.m */,
 				579C2FBD1DAD000E00E4EE54 /* main.m */,
 			);
 			name = "Supporting Files";
@@ -649,6 +667,49 @@
 				572EA9231F3077560052907C /* GroupDetailViewController.m */,
 			);
 			name = "聊天";
+			sourceTree = "<group>";
+		};
+		57DC77731F4A958E00F5FF94 /* Category */ = {
+			isa = PBXGroup;
+			children = (
+				577C67051EE870F10006E783 /* NSTimer+Addition.h */,
+				577C67061EE870F10006E783 /* NSTimer+Addition.m */,
+				571A3B341DE0D08A009042BC /* NSDate+Calendar.h */,
+				571A3B351DE0D08A009042BC /* NSDate+Calendar.m */,
+				577C67011EE862ED0006E783 /* UI */,
+			);
+			name = Category;
+			sourceTree = "<group>";
+		};
+		57DC77741F4A994F00F5FF94 /* Manager */ = {
+			isa = PBXGroup;
+			children = (
+				57DC77701F4A957900F5FF94 /* HXSocketManager.h */,
+				57DC77711F4A957900F5FF94 /* HXSocketManager.m */,
+				57DC77771F4A9B0500F5FF94 /* HXSocketBusinessManager.h */,
+				57DC77781F4A9B0500F5FF94 /* HXSocketBusinessManager.m */,
+				57DC777B1F4ECB9600F5FF94 /* HXErrorManager.h */,
+				57DC777C1F4ECB9600F5FF94 /* HXErrorManager.m */,
+			);
+			name = Manager;
+			sourceTree = "<group>";
+		};
+		57DC77761F4A99C000F5FF94 /* lib */ = {
+			isa = PBXGroup;
+			children = (
+				572EA92E1F32C5870052907C /* GCDAsyncSocket.h */,
+				572EA92F1F32C5870052907C /* GCDAsyncSocket.m */,
+			);
+			name = lib;
+			sourceTree = "<group>";
+		};
+		57DC777A1F4D24C700F5FF94 /* vendor */ = {
+			isa = PBXGroup;
+			children = (
+				574C2C081E9F9C5000960399 /* html */,
+				5711C8741EAB08AA00D19AE2 /* MBProgressHUD */,
+			);
+			name = vendor;
 			sourceTree = "<group>";
 		};
 		A5DCDCC5CF0F276D5924EB34 /* Pods */ = {
@@ -833,12 +894,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				57D69A221DC77040005E73EA /* courses.json in Resources */,
 				579C2FCC1DAD000E00E4EE54 /* LaunchScreen.storyboard in Resources */,
 				579C2FC91DAD000E00E4EE54 /* Assets.xcassets in Resources */,
 				57D49D251F13DA740063C861 /* test.plist in Resources */,
 				57D49D731F1611410063C861 /* member.plist in Resources */,
-				57D69A241DC77278005E73EA /* courses-1.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -927,6 +986,7 @@
 				57D49D281F13DC890063C861 /* GroupListModel.m in Sources */,
 				579C2FF41DAD02EF00E4EE54 /* CourseTableViewController.m in Sources */,
 				571A3B331DE0D07C009042BC /* MonthPicker.m in Sources */,
+				572EA9301F32C5870052907C /* GCDAsyncSocket.m in Sources */,
 				57BDFA1E1E4CCB5E00C0E254 /* UIView+Extend.m in Sources */,
 				5711C8781EAB08D700D19AE2 /* MBProgressHUD.m in Sources */,
 				57EA0A1F1F2086F50003BE87 /* NeedLoginViewController.m in Sources */,
@@ -961,6 +1021,7 @@
 				57BDFA1B1E4CB98100C0E254 /* BusinessModel.m in Sources */,
 				577C670A1EE96C360006E783 /* RegiPwdViewController.m in Sources */,
 				E26B70131E6AFF75000A08CB /* DaySelectCell.m in Sources */,
+				57DC77721F4A957900F5FF94 /* HXSocketManager.m in Sources */,
 				577FA5CE1DEC45C400A0AEF7 /* SectionSelect.m in Sources */,
 				57D65F6E1F287ED800D3BE72 /* TxAvatar.m in Sources */,
 				577FA5C51DEBDE0400A0AEF7 /* BusinessCourseManage.m in Sources */,
@@ -970,8 +1031,11 @@
 				57BDFA181E326E0500C0E254 /* UILabel+AlertActionFont.m in Sources */,
 				577C67101EE974060006E783 /* ResetPhoneViewController.m in Sources */,
 				574C2C051E9F9C4800960399 /* TFHpple.m in Sources */,
+				572EA92D1F31F45F0052907C /* ProtoMessage.pbobjc.m in Sources */,
 				577C67161EE976A10006E783 /* ResetPwdViewController.m in Sources */,
 				574C2BFE1E9F71ED00960399 /* ImpoerCourseViewController.m in Sources */,
+				57DC777D1F4ECB9600F5FF94 /* HXErrorManager.m in Sources */,
+				57DC77791F4A9B0500F5FF94 /* HXSocketBusinessManager.m in Sources */,
 				57BDFA211E52EF1300C0E254 /* CommentViewController.m in Sources */,
 				571A3D0A1DE82F0C009042BC /* BusinessViewController.m in Sources */,
 				572B6D151F1748590069D1D2 /* JoinGroupViewController.m in Sources */,

@@ -21,7 +21,7 @@
 @property (nonatomic ,weak)UIImageView *menu;
 @property (nonatomic ,weak)UITableView *groupTable;
 @property (nonatomic ,weak)UIButton *menuBtn;
-@property (nonatomic ,strong)NSMutableArray *groupModels;
+@property (nonatomic ,strong)NSMutableArray *groupModels;//群组模型数组
 
 @end
 

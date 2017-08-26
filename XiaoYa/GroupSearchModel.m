@@ -18,6 +18,7 @@
         self.groupId = tempDict[@"id"];
         self.groupName = tempDict[@"groupName"];
         self.managerId = tempDict[@"managerId"];
+        self.avatarId = tempDict[@"picId"];
     }
     return self;
 }

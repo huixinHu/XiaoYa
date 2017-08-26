@@ -7,15 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
-@class ReasonView;
-@protocol ReasonViewDelegate<NSObject>
-//确认操作。
-- (void)reasonViewConfirmAction:(ReasonView *)reasonView notParticipateReason:(NSString *)reason;
-//取消
-- (void)reasonViewCancelAction:(ReasonView *)reasonView;
-@end
-
 @interface ReasonView : UIView
-@property (nonatomic ,weak) id<ReasonViewDelegate> delegate;
+- (instancetype)initWithCancelBlock:(void (^)())cancelBlock confirmBlock:(void (^)(NSString *reason))confirmBlock;
 
 @end

@@ -10,6 +10,7 @@
 #import "CourseTableViewController.h"
 #import "LoginViewController.h"
 #import "GroupHomePageViewController.h"
+#import "GroupDetailViewController.h"
 #import "Utils.h"
 #import "LoginManager.h"
 @interface AppDelegate ()<UITabBarControllerDelegate>
@@ -38,7 +39,7 @@
     GroupHomePageViewController *group = [[GroupHomePageViewController alloc]init];
     UINavigationController *groupNavVC = [[UINavigationController alloc]initWithRootViewController:group];
     [self setTabBarItem:group.tabBarItem image:@"群组未选中" selectedImage:@"群组" title:@"群组" tag:1];
-    LoginViewController *user = [[LoginViewController alloc]init];
+    GroupDetailViewController *user = [[GroupDetailViewController alloc]init];
     UINavigationController *userNavVC = [[UINavigationController alloc]initWithRootViewController:user];
     [self setTabBarItem:user.tabBarItem image:@"我的未选中" selectedImage:@"我的" title:@"我的" tag:2];
     //总体字体样式设置
@@ -48,7 +49,7 @@
     tabbar.viewControllers = @[courseNavVC,groupNavVC,userNavVC];
     
     [self.window makeKeyAndVisible];
-    self.isLogin = YES;//赋初值，未登录
+    self.isLogin = NO;//赋初值，未登录
     return YES;
 }
 
@@ -61,7 +62,7 @@
 
 - (BOOL)tabBarController:(UITabBarController *)tabBarController shouldSelectViewController:(UIViewController *)viewController{
     if (viewController.tabBarItem.tag == 1 ) {
-        return [LoginManager checkLoginWithTopPresentingViewControllre:viewController isCheckLogin:YES loginedBlock:^{
+        return [LoginManager checkLoginWithTopPresentingViewControllre:tabBarController isCheckLogin:YES loginedBlock:^{
             tabBarController.selectedIndex = 1;
         }];
     }else{

@@ -14,7 +14,7 @@
 #import "HXNetworking.h"
 #import "GroupMemberModel.h"
 
-@interface AddGroupMemberViewController ()<UITextFieldDelegate ,UITableViewDelegate ,UITableViewDataSource ,MemberSearchCellDelegate>
+@interface AddGroupMemberViewController ()<UITextFieldDelegate ,UITableViewDelegate ,UITableViewDataSource>
 @property (nonatomic ,weak) HXTextField *searchTxf;
 @property (nonatomic ,weak) UITableView *memberList;
 @property (nonatomic ,weak) UILabel *prompt;
@@ -23,6 +23,7 @@
 
 @property (nonatomic ,strong) NSMutableArray *memberModels;
 @property (nonatomic ,strong) NSMutableArray *selectIndexs;
+@property (nonatomic ,strong) NSMutableArray *addedMembers;
 @end
 
 @implementation AddGroupMemberViewController
@@ -31,6 +32,14 @@
     [super viewDidLoad];
 
     [self viewsSetting];
+}
+
+//传入已经添加过的成员模型数组
+- (instancetype)initWithAddedMembers:(NSMutableArray *)addedMembers{
+    if (self = [super init]) {
+        self.addedMembers = [addedMembers mutableCopy];
+    }
+    return self;
 }
 
 - (void)cancel{
@@ -50,9 +59,10 @@
     __weak typeof(self) weakself = self;
     NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"GETUSER",@"type",self.searchTxf.text,@"mobile", nil];
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
-        [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict success:^(NSURLSessionDataTask *task, id responseObject) {
+        [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
             NSLog(@"dataID:%@",[responseObject objectForKey:@"identity"]);
             [weakself.memberModels removeAllObjects];
+            [weakself.selectIndexs removeAllObjects];
             dispatch_async(dispatch_get_main_queue(), ^{
                 if ([[responseObject objectForKey:@"state"]boolValue] == 0){
                     weakself.noResult.hidden = NO;
@@ -81,9 +91,16 @@
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
-    MemberSearchTableViewCell *cell = [MemberSearchTableViewCell MemberSearchCellWithTableView:tableView];
+    MemberSearchTableViewCell *cell = [MemberSearchTableViewCell MemberSearchCellWithTableView:tableView selectBlock:^(NSIndexPath *indexPath) {
+        [self.selectIndexs addObject:[NSNumber numberWithInteger:indexPath.row]];
+        self.navigationItem.rightBarButtonItem.enabled = YES;
+    } deselectBlock:^(NSIndexPath *indexPath) {
+        [self.selectIndexs removeObject:[NSNumber numberWithInteger:indexPath.row]];
+        if (self.selectIndexs.count == 0) {
+            self.navigationItem.rightBarButtonItem.enabled = NO;
+        }
+    } addedMembers:self.addedMembers];
     cell.member = self.memberModels[indexPath.row];;
-    cell.delegate = self;
     if ([self.selectIndexs containsObject:[NSNumber numberWithInteger:indexPath.row]]) {
         [cell.selectBtn setSelected:YES];
     }else{
@@ -92,20 +109,20 @@
     return cell;
 }
 
-#pragma mark MemberSearchCellDelegate
-//传回当前选中的indexpath
-- (void)memberSearchCell:(MemberSearchTableViewCell*)cell selectIndex:(NSIndexPath *)indexPath{
-    [self.selectIndexs addObject:[NSNumber numberWithInteger:indexPath.row]];
-    self.navigationItem.rightBarButtonItem.enabled = YES;
-}
-
-//传回当前撤销选中的IndexPath
-- (void)memberSearchCell:(MemberSearchTableViewCell*)cell deSelectIndex:(NSIndexPath *)indexPath{
-    [self.selectIndexs removeObject:[NSNumber numberWithInteger:indexPath.row]];
-    if (self.selectIndexs.count == 0) {
-        self.navigationItem.rightBarButtonItem.enabled = NO;
-    }
-}
+//#pragma mark MemberSearchCellDelegate
+////传回当前选中的indexpath
+//- (void)memberSearchCell:(MemberSearchTableViewCell*)cell selectIndex:(NSIndexPath *)indexPath{
+//    [self.selectIndexs addObject:[NSNumber numberWithInteger:indexPath.row]];
+//    self.navigationItem.rightBarButtonItem.enabled = YES;
+//}
+//
+////传回当前撤销选中的IndexPath
+//- (void)memberSearchCell:(MemberSearchTableViewCell*)cell deSelectIndex:(NSIndexPath *)indexPath{
+//    [self.selectIndexs removeObject:[NSNumber numberWithInteger:indexPath.row]];
+//    if (self.selectIndexs.count == 0) {
+//        self.navigationItem.rightBarButtonItem.enabled = NO;
+//    }
+//}
 
 #pragma mark viewsSetting
 - (void)viewsSetting{
@@ -165,7 +182,6 @@
         make.centerY.height.equalTo(bg);
         make.left.equalTo(searchImg.mas_right).offset(15);
         make.right.equalTo(bg).offset(-60);
-//        make.height.equalTo(bg);
     }];
     _searchTxf.delegate = self;
     
@@ -191,7 +207,7 @@
     _prompt.font = [UIFont systemFontOfSize:12];
     [self.view addSubview:_prompt];
     [_prompt mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.left.equalTo(_searchTxf);
+        make.left.equalTo(searchImg);
         make.top.equalTo(_searchTxf.mas_bottom).offset(7.8);
     }];
     _prompt.hidden = YES;

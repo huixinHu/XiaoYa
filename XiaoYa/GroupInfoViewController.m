@@ -13,7 +13,7 @@
 #import "Utils.h"
 #import "Masonry.h"
 
-@interface GroupInfoViewController ()<UITableViewDelegate ,UITableViewDataSource ,GroupInfoCellDelegate>
+@interface GroupInfoViewController ()<UITableViewDelegate ,UITableViewDataSource >
 @property (nonatomic ,weak) UITableView *infoList;
 @property (nonatomic ,weak) UIButton *publish;
 
@@ -42,11 +42,11 @@
     [self.navigationController popViewControllerAnimated:YES];
 }
 
-#pragma mark GroupInfoCellDelegate
-- (void)GroupInfoCell:(GroupInfoTableViewCell *)cell selectIndex:(NSIndexPath *)indexPath{
-    EventDetailViewController *VC = [[EventDetailViewController alloc]init];
-    [self.navigationController pushViewController:VC animated:YES];
-}
+//#pragma mark GroupInfoCellDelegate
+//- (void)GroupInfoCell:(GroupInfoTableViewCell *)cell selectIndex:(NSIndexPath *)indexPath{
+//    EventDetailViewController *VC = [[EventDetailViewController alloc]init];
+//    [self.navigationController pushViewController:VC animated:YES];
+//}
 
 #pragma mark tableview datasource &delegate
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
@@ -58,9 +58,12 @@
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
-    GroupInfoTableViewCell *cell = [GroupInfoTableViewCell GroupInfoCellWithTableView:tableView];
+    GroupInfoTableViewCell *cell = [GroupInfoTableViewCell GroupInfoCellWithTableView:tableView eventDetailBlock:^{
+        EventDetailViewController *VC = [[EventDetailViewController alloc]init];
+        [self.navigationController pushViewController:VC animated:YES];
+    }];
 //    cell.member = self.memberModels[indexPath.row];;
-    cell.delegate = self;
+//    cell.delegate = self;
     return cell;
 }
 

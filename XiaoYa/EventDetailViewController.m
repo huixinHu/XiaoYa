@@ -14,7 +14,7 @@
 
 #define kScreenWidth [UIApplication sharedApplication].keyWindow.bounds.size.width
 #define kScreenHeight [UIApplication sharedApplication].keyWindow.bounds.size.height
-@interface EventDetailViewController () <ReasonViewDelegate>
+@interface EventDetailViewController ()
 @property (nonatomic ,weak) UILabel *publishTime;
 @property (nonatomic ,weak) UILabel *publisher;
 @property (nonatomic ,weak) UILabel *event;
@@ -42,15 +42,6 @@
 
 - (void)back{
     [self.navigationController popViewControllerAnimated:YES];
-}
-#pragma mark ReasonViewDelegate
-- (void)reasonViewCancelAction:(ReasonView *)reasonView{
-    [self.coverLayer removeFromSuperview];
-}
-
--(void)reasonViewConfirmAction:(ReasonView *)reasonView notParticipateReason:(NSString *)reason{
-    [self.coverLayer removeFromSuperview];
-    self.notPartiReason = reason;
 }
 
 #pragma mark viewsSetting
@@ -224,8 +215,13 @@
     AppDelegate *app = (AppDelegate *)[[UIApplication  sharedApplication] delegate];
     [app.window addSubview:_coverLayer];
     
-    ReasonView *reasonView = [[ReasonView alloc]init];
-    reasonView.delegate = self;
+    ReasonView *reasonView = [[ReasonView alloc]initWithCancelBlock:^{
+        [self.coverLayer removeFromSuperview];
+    } confirmBlock:^(NSString *reason) {
+        [self.coverLayer removeFromSuperview];
+        self.notPartiReason = [reason copy];
+        NSLog(@"%@",self.notPartiReason);
+    }];
     CGPoint center =  reasonView.center;
     center.x = self.view.frame.size.width/2;
     center.y = self.view.frame.size.height/2;

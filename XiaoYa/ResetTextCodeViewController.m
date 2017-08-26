@@ -55,7 +55,7 @@
     NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"MATCH",@"type",self.textCode.text,@"textCode", nil];
     __weak typeof (self)weakself = self;
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
-        [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict success:^(NSURLSessionDataTask *task, id responseObject) {
+        [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
             NSDictionary *responseDict = (NSDictionary *)responseObject;
             NSLog(@"dataID:%@",[responseDict objectForKey:@"identity"]);
             NSLog(@"dataMessage:%@",[responseDict objectForKey:@"message"]);
@@ -108,7 +108,7 @@
     HXButton *timerBtn = [[HXButton alloc]initWithFrame:CGRectMake(0, 0, 80, 30) timerCount:60 timerInerval:1.0 networkRequest:^{
         NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"RESETSME",@"type",weakself.phoneNum,@"mobile", nil];
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
-            [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict success:^(NSURLSessionDataTask *task, id responseObject) {
+            [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
                 NSLog(@"dataMessage:%@",[responseObject objectForKey:@"message"]);
                 dispatch_async(dispatch_get_main_queue(), ^{
                     if ([[responseObject objectForKey:@"state"]boolValue] == 0){

@@ -33,5 +33,10 @@ typedef NS_ENUM(NSInteger ,HXResponseType) {
 
 
 @interface HXNetworking : NSObject
-+ (HXURLSessionTask *)postWithUrl:(NSString *)url params:(NSDictionary *)params success:(HXSuccessBlock)success failure:(HXFailureBlock)failure refresh:(BOOL)refresh;
++ (HXURLSessionTask *)postWithUrl:(NSString *)url
+                           params:(NSDictionary *)params
+                            cache:(BOOL)isCache
+                          success:(HXSuccessBlock)success
+                          failure:(HXFailureBlock)failure
+                          refresh:(BOOL)refresh;
 @end

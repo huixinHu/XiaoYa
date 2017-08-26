@@ -14,7 +14,7 @@
 @end
 
 @interface GroupInfoTableViewCell : UITableViewCell
-+ (instancetype)GroupInfoCellWithTableView:(UITableView *)tableView;
++ (instancetype)GroupInfoCellWithTableView:(UITableView *)tableView eventDetailBlock:(void(^)())block;
 
 @property (nonatomic ,weak) id <GroupInfoCellDelegate> delegate;
 @end

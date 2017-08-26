@@ -18,4 +18,6 @@
 @interface AddGroupMemberViewController : UIViewController
 @property (nonatomic , weak) id <AddGroupMemberViewControllerDelegate> delegate;
 
+//传入已经添加过的成员模型数组
+- (instancetype)initWithAddedMembers:(NSMutableArray *)addedMembers;
 @end

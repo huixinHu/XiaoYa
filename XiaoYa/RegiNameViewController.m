@@ -60,40 +60,43 @@
         return;
     }
     
-    NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"REGISTER",@"type",self.name.text,@"name", self.pwd,@"password",nil];
-    __weak typeof (self)weakself = self;
-    dispatch_group_t group = dispatch_group_create();
-    dispatch_group_enter(group);
-    [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict success:^(NSURLSessionDataTask *task, id responseObject) {
-        NSDictionary *responseDict = (NSDictionary *)responseObject;
-        NSLog(@"dataMessage:%@",[responseDict objectForKey:@"message"]);
-        if ([[responseDict objectForKey:@"state"]boolValue] == 0){
-            weakself.prompt.text = @"注册失败";
-            return;
-        }
-        dispatch_group_leave(group);
-    } failure:^(NSURLSessionDataTask *task, NSError *error) {
-        NSLog(@"Error: %@", error);
-        return;
-    } refresh:NO];
-    dispatch_group_notify(group, dispatch_get_global_queue(0, 0), ^{
+//    NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"REGISTER",@"type",self.name.text,@"name", self.pwd,@"password",nil];
+//    __weak typeof (self)weakself = self;
+//    dispatch_group_t group = dispatch_group_create();
+//    dispatch_group_enter(group);
+//    [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict success:^(NSURLSessionDataTask *task, id responseObject) {
+//        NSDictionary *responseDict = (NSDictionary *)responseObject;
+//        NSLog(@"dataMessage:%@",[responseDict objectForKey:@"message"]);
+//        if ([[responseDict objectForKey:@"state"]boolValue] == 0){
+//            weakself.prompt.text = @"注册失败";
+//            return;
+//        }
+//        dispatch_group_leave(group);
+//    } failure:^(NSURLSessionDataTask *task, NSError *error) {
+//        NSLog(@"Error: %@", error);
+//        return;
+//    } refresh:NO];
+//    dispatch_group_notify(group, dispatch_get_global_queue(0, 0), ^{
         [self login];
-    });
+//    });
 
 }
 
 //注册成功自动登录
 - (void)login{
     NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"LOGIN",@"type",self.phoneNum,@"mobile",self.pwd,@"password", nil];
-    [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict success:^(NSURLSessionDataTask *task, id responseObject) {
+    [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
         NSLog(@"登录dataID:%@",[responseObject objectForKey:@"identity"]);
         dispatch_async(dispatch_get_main_queue(), ^{
             if ([[responseObject objectForKey:@"state"]boolValue] == 0) {
                 _prompt.text = @"登录失败";
             }else {
-                [self dismissViewControllerAnimated:YES completion:^{
+                UIViewController *temp = self.presentingViewController;//先取得presentingViewController。不先保存的话，popvc之后可能就为空了
+                [self.navigationController popToRootViewControllerAnimated:YES];
+                [temp dismissViewControllerAnimated:YES completion:^{
                     [[NSNotificationCenter defaultCenter] postNotificationName:HXPushViewControllerNotification object:nil];
                 }];
+//                [self.navigationController popToRootViewControllerAnimated:YES];
             }
         });
     } failure:^(NSURLSessionDataTask *task, NSError *error) {

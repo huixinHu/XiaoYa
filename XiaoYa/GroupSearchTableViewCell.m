@@ -41,6 +41,20 @@
     _model = model;
     self.groupName.text = model.groupName;
     self.groupManager.text = [NSString stringWithFormat:@"群主：%@",model.managerName];
+    switch ([model.avatarId intValue]) {
+        case 0:
+            self.avatar.image = [UIImage imageNamed:@"删除勾选"];
+           break;
+        case 1:
+            self.avatar.image = [UIImage imageNamed:@"删除圆"];
+            break;
+        case 2:
+            self.avatar.image = [UIImage imageNamed:@"删除不勾选"];
+            break;
+
+        default:
+            break;
+    }
 }
 
 - (void)join:(UIButton *)sender{
@@ -55,7 +69,6 @@
     
     UIImageView *avatar = [[UIImageView alloc]init];
     _avatar = avatar;
-    _avatar.backgroundColor = [UIColor yellowColor];
     [self.contentView addSubview:_avatar];
     [_avatar mas_makeConstraints:^(MASConstraintMaker *make) {
         make.size.mas_equalTo(CGSizeMake(50, 50));

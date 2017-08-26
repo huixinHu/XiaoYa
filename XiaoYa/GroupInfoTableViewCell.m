@@ -18,27 +18,24 @@
 @property (nonatomic ,weak) UILabel *replyTag;
 @property (nonatomic ,weak) UILabel *remainTime;
 @property (nonatomic ,weak) UIButton *replyDetail;
+
+@property (nonatomic ,copy) void(^detailBlock)();
 @end
 
 @implementation GroupInfoTableViewCell
-
-- (void)awakeFromNib {
-    [super awakeFromNib];
-    // Initialization code
-}
-
-+ (instancetype)GroupInfoCellWithTableView:(UITableView *)tableView{
++ (instancetype)GroupInfoCellWithTableView:(UITableView *)tableView eventDetailBlock:(void(^)())block{
     static NSString *ID = @"GroupInfoTableViewCell";
     GroupInfoTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:ID];
     if (cell == nil) {
-        cell = [[GroupInfoTableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:ID];
+        cell = [[GroupInfoTableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:ID eventDetailBlock:[block copy]];
     }
     return cell;
 }
 
-- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier{
+- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier eventDetailBlock:(void(^)())block{
     self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
     if (self) {
+        self.detailBlock = block;
         [self commonInit];
     }
     return self;
@@ -49,7 +46,8 @@
     UIView *view2 = [view1 superview];
     NSIndexPath *indexPath = [(UITableView *)[[view2 superview] superview] indexPathForCell:(UITableViewCell*)view2];
     
-    [self.delegate GroupInfoCell:self selectIndex:indexPath];
+//    [self.delegate GroupInfoCell:self selectIndex:indexPath];
+    self.detailBlock();
 }
 
 #pragma mark viewsSetting
