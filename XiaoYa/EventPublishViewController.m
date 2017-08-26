@@ -51,6 +51,10 @@
     [self viewsSetting];
 }
 
+- (void)cancel{
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
 #pragma mark textfield
 //点击空白处收回键盘
 -(void)fingerTapped:(UITapGestureRecognizer *)gestureRecognizer{
