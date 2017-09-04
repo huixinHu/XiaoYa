@@ -74,7 +74,6 @@
             make.centerX.equalTo(self.mas_centerX);
         }];
         
-        
         UIButton *button2 = [[UIButton alloc] init];
         _button2 = button2;
          //title是随便设的，coursetimecell拷贝过来的代码
@@ -88,24 +87,6 @@
             make.height.mas_equalTo(40);
             make.bottom.equalTo(self.mas_top).offset(80);
             make.centerX.equalTo(self.mas_centerX);
-        }];
-        
-        //顶部底部两条灰线
-        UIView *line1 = [[UIView alloc]init];
-        line1.backgroundColor = [Utils colorWithHexString:@"d9d9d9"];
-        [self addSubview:line1];
-        [line1 mas_makeConstraints:^(MASConstraintMaker *make) {
-            make.width.left.equalTo(self);
-            make.height.mas_equalTo(0.5);
-            make.top.equalTo(self.mas_top);
-        }];
-        UIView *line2 = [[UIView alloc]init];
-        line2.backgroundColor = [Utils colorWithHexString:@"d9d9d9"];
-        [self addSubview:line2];
-        [line2 mas_makeConstraints:^(MASConstraintMaker *make) {
-            make.width.left.equalTo(self);
-            make.height.mas_equalTo(0.5);
-            make.bottom.equalTo(self.mas_bottom);
         }];
     }
     return self;

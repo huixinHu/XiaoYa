@@ -7,14 +7,14 @@
 //
 
 #import <UIKit/UIKit.h>
-@class GroupInfoTableViewCell;
-@protocol GroupInfoCellDelegate <NSObject>
-//传回当前选中的indexpath
-- (void)GroupInfoCell:(GroupInfoTableViewCell *)cell selectIndex:(NSIndexPath *)indexPath;
-@end
+//@class GroupInfoTableViewCell;
+//@protocol GroupInfoCellDelegate <NSObject>
+////传回当前选中的indexpath
+//- (void)GroupInfoCell:(GroupInfoTableViewCell *)cell selectIndex:(NSIndexPath *)indexPath;
+//@end
 
 @interface GroupInfoTableViewCell : UITableViewCell
 + (instancetype)GroupInfoCellWithTableView:(UITableView *)tableView eventDetailBlock:(void(^)())block;
 
-@property (nonatomic ,weak) id <GroupInfoCellDelegate> delegate;
+//@property (nonatomic ,weak) id <GroupInfoCellDelegate> delegate;
 @end

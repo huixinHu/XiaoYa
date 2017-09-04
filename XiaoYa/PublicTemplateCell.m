@@ -4,14 +4,13 @@
 //
 //  Created by commet on 16/11/29.
 //  Copyright © 2016年 commet. All rights reserved.
-//公用的模板单元格
+//单选、多选列表弹窗公用的模板单元格
 
 #import "PublicTemplateCell.h"
 #import "Masonry.h"
 #import "Utils.h"
 @interface PublicTemplateCell()
 @property (nonatomic , weak)UILabel *item;
-//@property (nonatomic , weak)UIButton *choiceBtn;
 @end
 
 @implementation PublicTemplateCell
@@ -19,16 +18,6 @@
 - (void)setModel:(NSString *)model{
     self.item.text = model;
 }
-
-
-//+(instancetype)PublicTemplateCellWithTableView:(UITableView *)tableview{
-//    static NSString *ID = @"PublicTemplateCell";
-//    PublicTemplateCell *cell = [tableview dequeueReusableCellWithIdentifier:ID];
-//    if (cell == nil) {
-//        cell = [[PublicTemplateCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:ID];
-//    }
-//    return cell;
-//}
 
 - (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
     self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
@@ -39,7 +28,7 @@
 }
 
 - (void)initSubView{
-//    //底部分割线
+    //底部分割线
     UIView *bottomSeparate = [[UIView alloc]init];
     bottomSeparate.backgroundColor = [UIColor colorWithRed:0.78 green:0.78 blue:0.8 alpha:1.0];//系统分割线颜色
     [self.contentView addSubview:bottomSeparate];

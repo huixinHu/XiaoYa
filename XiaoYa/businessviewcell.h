@@ -7,8 +7,9 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "BgView.h"
 
-@interface businessviewcell : UIView
+@interface businessviewcell : BgView
 
 @property (nonatomic,weak) UIButton *button1;
 @property (nonatomic,weak) UIButton *button2;

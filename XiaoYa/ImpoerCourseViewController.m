@@ -12,6 +12,7 @@
 #import "UIAlertController+Appearance.h"
 #import "DbManager.h"
 #import "TFHpple.h"
+#import "BgView.h"
 
 #define kScreenWidth [UIApplication sharedApplication].keyWindow.bounds.size.width
 #define scaletowidth [UIApplication sharedApplication].keyWindow.bounds.size.width/750.0
@@ -409,7 +410,7 @@ willPerformHTTPRedirection:(NSHTTPURLResponse *)response
 
 #pragma mark viewsSetting
 - (void)xuehaoViewSetting{
-    UIView *xuehaoView = [[UIView alloc] init];
+    BgView *xuehaoView = [[BgView alloc] init];
     _xuehaoView = xuehaoView;
     xuehaoView.backgroundColor = [UIColor whiteColor];
     [self.view addSubview:xuehaoView];
@@ -455,27 +456,10 @@ willPerformHTTPRedirection:(NSHTTPURLResponse *)response
         make.centerY.equalTo(_xuehaoTxf.mas_centerY);
         make.right.equalTo(_xuehaoTxf.mas_left).offset(-20*scaletowidth);
     }];
-    
-    UIView *line1 = [[UIView alloc]init];
-    line1.backgroundColor = [Utils colorWithHexString:@"d9d9d9"];
-    [xuehaoView addSubview:line1];
-    [line1 mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.width.left.equalTo(weakself.view);
-        make.height.mas_equalTo(0.5);
-        make.top.equalTo(xuehaoView.mas_top);
-    }];
-    UIView *line2 = [[UIView alloc]init];
-    line2.backgroundColor = [Utils colorWithHexString:@"d9d9d9"];
-    [xuehaoView addSubview:line2];
-    [line2 mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.width.left.equalTo(weakself.view);
-        make.height.mas_equalTo(0.5);
-        make.bottom.equalTo(xuehaoView.mas_bottom);
-    }];
 }
 
 - (void)mimaSetting{
-    UIView *mimaView = [[UIView alloc] init];
+    BgView *mimaView = [[BgView alloc] init];
     _mimaView = mimaView;
     mimaView.backgroundColor = [UIColor whiteColor];
     [self.view addSubview:mimaView];
@@ -521,27 +505,10 @@ willPerformHTTPRedirection:(NSHTTPURLResponse *)response
         make.centerY.equalTo(_mimaTxf.mas_centerY);
         make.right.equalTo(_mimaTxf.mas_left).offset(-20*scaletowidth);
     }];
-    
-    UIView *line1 = [[UIView alloc]init];
-    line1.backgroundColor = [Utils colorWithHexString:@"d9d9d9"];
-    [_mimaView addSubview:line1];
-    [line1 mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.width.left.equalTo(weakself.view);
-        make.height.mas_equalTo(0.5);
-        make.top.equalTo(_mimaView.mas_top);
-    }];
-    UIView *line2 = [[UIView alloc]init];
-    line2.backgroundColor = [Utils colorWithHexString:@"d9d9d9"];
-    [_mimaView addSubview:line2];
-    [line2 mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.width.left.equalTo(weakself.view);
-        make.height.mas_equalTo(0.5);
-        make.bottom.equalTo(_mimaView.mas_bottom);
-    }];
 }
 
 - (void)yanzhengmaSetting{
-    UIView *yanzhengmaView = [[UIView alloc] init];
+    BgView *yanzhengmaView = [[BgView alloc] init];
     _yanzhengmaView = yanzhengmaView;
     _yanzhengmaView.backgroundColor = [UIColor whiteColor];
     [self.view addSubview:_yanzhengmaView];
@@ -602,23 +569,6 @@ willPerformHTTPRedirection:(NSHTTPURLResponse *)response
         make.size.mas_equalTo(CGSizeMake(50, 40));
         make.centerY.equalTo(_yanzhengmaView.mas_centerY);
         make.left.equalTo(_checkCodeImg.mas_right).offset(5);
-    }];
-    
-    UIView *line1 = [[UIView alloc]init];
-    line1.backgroundColor = [Utils colorWithHexString:@"d9d9d9"];
-    [_yanzhengmaView addSubview:line1];
-    [line1 mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.width.left.equalTo(weakself.view);
-        make.height.mas_equalTo(0.5);
-        make.top.equalTo(_yanzhengmaView.mas_top);
-    }];
-    UIView *line2 = [[UIView alloc]init];
-    line2.backgroundColor = [Utils colorWithHexString:@"d9d9d9"];
-    [_yanzhengmaView addSubview:line2];
-    [line2 mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.width.left.equalTo(weakself.view);
-        make.height.mas_equalTo(0.5);
-        make.bottom.equalTo(_yanzhengmaView.mas_bottom);
     }];
 }
 

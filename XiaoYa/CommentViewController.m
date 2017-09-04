@@ -13,16 +13,18 @@
 #import "Utils.h"
 
 @interface CommentViewController ()
-@property (nonatomic , weak)UITextView *commentTv;
-@property (nonatomic , copy)NSString *commentInfo;
+@property (nonatomic , weak) UITextView *commentTv;
+@property (nonatomic , copy) NSString *commentInfo;
+@property (nonatomic , copy) completeBlock cmpBlock;
 @end
 
 @implementation CommentViewController
 
-- (instancetype)initWithTextStr:(NSString *)str {
+- (instancetype)initWithTextStr:(NSString *)str successBlock:(completeBlock)block{
     self = [super init];
     if (self) {
         self.commentInfo = str;
+        self.cmpBlock = [block copy];
     }
     return self;
 }
@@ -48,7 +50,7 @@
 - (void)confirm{
     [self.navigationController popViewControllerAnimated:YES];
     [_commentTv resignFirstResponder];
-    [self.delegate commentVC:self infomation:_commentTv.text];
+    self.cmpBlock(self.commentInfo);
 }
 
 - (void)cancel{

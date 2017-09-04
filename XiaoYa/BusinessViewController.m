@@ -16,8 +16,9 @@
 #import "NSDate+Calendar.h"
 #import "AppDelegate.h"
 #import "SectionSelect.h"
-#import "RemindSelect.h"
 #import "RepeatSetting.h"
+#import "MutipleChoiceView.h"
+#import "BgView.h"
 #import "UIView+Extend.h"
 #import <objc/runtime.h>
 #import "CommentViewController.h"
@@ -29,12 +30,12 @@
 #define kScreenWidth [UIApplication sharedApplication].keyWindow.bounds.size.width
 #define kScreenHeight [UIApplication sharedApplication].keyWindow.bounds.size.height
 #define scaleToWidth [UIApplication sharedApplication].keyWindow.bounds.size.width/750.0
-@interface BusinessViewController ()<DatePickerDelegate,MonthPickerDelegate,SectionSelectDelegate,RemindSelectDelegate,RepeatSettingDelegate,CommentVCDelegate,UITextFieldDelegate>
+@interface BusinessViewController ()<DatePickerDelegate,MonthPickerDelegate,SectionSelectDelegate,RepeatSettingDelegate,UITextFieldDelegate>
 
 //事务的子view
-@property (nonatomic,weak) UIView *businessField_view;//第一行的描述父view
+@property (nonatomic,weak) BgView *businessField_view;//第一行的描述父view
 //@property (nonatomic,weak) UITextField *busDescription;//事件描述textfield，描述+时间均有内容才允许保存事件
-@property (nonatomic,weak) UIView *commentsField_view;//最后一行备注
+@property (nonatomic,weak) BgView *commentsField_view;//最后一行备注
 @property (nonatomic,weak) HXTextField *commentfield;//备注栏
 @property (nonatomic,weak) businessviewcell *businessTime_view;//时间选择板块
 @property (nonatomic,weak) businessviewcell *clock_view;//提醒重复设置板块
@@ -43,7 +44,7 @@
 @property (nonatomic,weak) UIView *coverLayer;//日历弹出时背后的半透明遮罩
 @property (nonatomic , weak) DatePicker *datePicker;//自定义的日期选择器
 @property (nonatomic , weak) SectionSelect *selectSection;//自定义时间段（节）选择器
-@property (nonatomic , weak) RemindSelect *settingRemind;//提醒
+@property (nonatomic , weak) MutipleChoiceView *settingRemind;//提醒
 @property (nonatomic , weak) RepeatSetting *settingRepeat;//重复
 
 @property (nonatomic , strong) NSDate *currentDate;//当前日期
@@ -271,7 +272,7 @@
 
 //描述
 - (void)addBusinessField_view{
-    UIView *businessfield_view = [[UIView alloc] init];
+    BgView *businessfield_view = [[BgView alloc] init];
     _businessField_view = businessfield_view;
     _businessField_view.backgroundColor = [Utils colorWithHexString:@"#FFFFFF"];
     [self.view addSubview:_businessField_view];
@@ -302,8 +303,6 @@
     }];
     _busDescription.tag = 100;
     _busDescription.delegate = self;
-    //监听
-//    [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(descChange:) name:UITextFieldTextDidChangeNotification object:_busDescription];
     [_busDescription addTarget:self action:@selector(textFiledDidChange:) forControlEvents:UIControlEventEditingChanged];
     
     UIImageView *pen = [[UIImageView alloc] init];
@@ -312,23 +311,6 @@
     [pen mas_makeConstraints:^(MASConstraintMaker *make) {
         make.centerY.equalTo(_busDescription.mas_centerY);
         make.right.equalTo(_busDescription.mas_left).offset(-24 * scaleToWidth);
-    }];
-    //顶部底部两条灰线
-    UIView *line1 = [[UIView alloc]init];
-    line1.backgroundColor = [Utils colorWithHexString:@"d9d9d9"];
-    [_businessField_view addSubview:line1];
-    [line1 mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.width.left.equalTo(weakself.view);
-        make.height.mas_equalTo(0.5);
-        make.top.equalTo(_businessField_view.mas_top);
-    }];
-    UIView *line2 = [[UIView alloc]init];
-    line2.backgroundColor = [Utils colorWithHexString:@"d9d9d9"];
-    [_businessField_view addSubview:line2];
-    [line2 mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.width.left.equalTo(weakself.view);
-        make.height.mas_equalTo(0.5);
-        make.bottom.equalTo(_businessField_view.mas_bottom);
     }];
 }
 
@@ -350,25 +332,9 @@
 
 - (void)textFiledDidChange:(UITextField *)textField{
     [self rightBarBtnCanBeSelect];
-    if ([self indexOfCharacter:textField.text] != -1) {
-        textField.text = [textField.text substringToIndex:[self indexOfCharacter:textField.text]];//输入字数超过了就截断
+    if ([Utils indexOfCharacter:textField.text] != -1) {
+        textField.text = [textField.text substringToIndex:[Utils indexOfCharacter:textField.text]];//输入字数超过了就截断
     }
-}
-
-- (int)indexOfCharacter:(NSString *)strtemp{//限制文本框输入最长20个字符
-    int strlength = 0;
-    for (int i=0; i< [strtemp length]; i++) {
-        int a = [strtemp characterAtIndex:i];
-        if( a > 0x4e00 && a < 0x9fa5) { //判断是否为中文
-            strlength += 2;
-        }else{
-            strlength += 1;
-        }
-        if (strlength > 20) {
-            return i;
-        }
-    }
-    return -1;
 }
 
 //时间选择板块
@@ -378,18 +344,17 @@
     _businessTime_view = businesstime_view;
     [self.view addSubview:businesstime_view];
     
-    __weak typeof(self) weakself = self;
     [businesstime_view mas_makeConstraints:^(MASConstraintMaker *make) {
         make.width.mas_equalTo(kScreenWidth);
         make.height.mas_equalTo(rowHeight * 3);
         make.top.equalTo(_businessField_view.mas_bottom).offset(separateHeight);
-        make.centerX.equalTo(weakself.view.mas_centerX);
+        make.centerX.equalTo(self.view.mas_centerX);
     }];
     [_businessTime_view.button1 addTarget:self action:@selector(dateSelected) forControlEvents:UIControlEventTouchUpInside];
     [businesstime_view.button2 addTarget:self action:@selector(sectionSelected) forControlEvents:UIControlEventTouchUpInside];
     [self bsTVBtnSetting:self.currentDate];
     if (self.sectionArray.count > 0) {
-        NSString *subTimeStr = [self appendSectionStringWithArray:self.sectionArray];
+        NSString *subTimeStr = [Utils appendSectionStringWithArray:self.sectionArray];
         [self.businessTime_view.button2 setTitle:[NSString stringWithFormat:@"第%@节",subTimeStr] forState:UIControlStateNormal];
         [self.businessTime_view.button2 setTitleColor:[Utils colorWithHexString:@"#333333"] forState:UIControlStateNormal];
     }else{
@@ -463,12 +428,11 @@
     [_remind_btn setImage:[UIImage imageNamed:@"pulldown"] forState:UIControlStateNormal];
     [_remind_btn addTarget:self action:@selector(remind_btn_click) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:_remind_btn];
-    __weak typeof(self) weakself = self;
     [_remind_btn mas_makeConstraints:^(MASConstraintMaker *make) {
         make.width.mas_equalTo(kScreenWidth);
         make.height.mas_equalTo(rowHeight);
         make.top.equalTo(_businessTime_view.mas_bottom).offset(separateHeight);
-        make.centerX.equalTo(weakself.view.mas_centerX);
+        make.centerX.equalTo(self.view);
     }];
     
     //设置文字和图片的位置
@@ -483,17 +447,15 @@
     line1.backgroundColor = [Utils colorWithHexString:@"d9d9d9"];
     [_remind_btn addSubview:line1];
     [line1 mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.width.left.equalTo(weakself.view);
+        make.right.left.top.equalTo(_remind_btn);
         make.height.mas_equalTo(0.5);
-        make.top.equalTo(_remind_btn.mas_top);
     }];
     UIView *line2 = [[UIView alloc]init];
     line2.backgroundColor = [Utils colorWithHexString:@"d9d9d9"];
     [_remind_btn addSubview:line2];
     [line2 mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.width.left.equalTo(weakself.view);
+        make.right.left.bottom.equalTo(_remind_btn);
         make.height.mas_equalTo(0.5);
-        make.bottom.equalTo(_remind_btn.mas_bottom);
     }];
 }
 
@@ -533,16 +495,46 @@
     AppDelegate *app = (AppDelegate *)[[UIApplication  sharedApplication] delegate];
     [app.window addSubview:_coverLayer];
     
-    CGFloat width = 265;
-    CGFloat height = 318;
-    RemindSelect *settingRemind = [[RemindSelect alloc]initWithFrame:CGRectMake(0, 0, width, height) selectedIndex:self.remindArray];
-    CGPoint center =  settingRemind.center;
+    __weak typeof(self) ws = self;
+    MutipleChoiceView *settingRemind =
+    [[MutipleChoiceView alloc]initWithItems:self.remindItem
+                              selectedIndex:self.remindArray
+                                  viewWidth:265
+                                 cellHeight:40
+                     confirmCancelBtnHeight:40
+                               confirmBlock:^(NSMutableArray * _Nullable selectIndexs) {
+                                   if (selectIndexs.count == 0) {
+                                       [selectIndexs addObject:@"6"];//默认是“不提醒”
+                                   }
+                                   [Utils sortArrayFromMinToMax:selectIndexs];
+                                   //拼接字符串
+                                   NSString *str = [Utils appendRemindStringWithArray:selectIndexs itemsArray:ws.remindItem];
+                                   [ws.clock_view.button1 setTitle:str forState:UIControlStateNormal];
+                                   ws.remindArray = [selectIndexs mutableCopy];
+                                   [ws.coverLayer removeFromSuperview];
+                               }
+                                cancelBlock:^{
+                                    [ws.coverLayer removeFromSuperview];
+                                }
+                            selectCellBlock:^(UITableView * _Nonnull tableView ,NSMutableArray * _Nullable selectIndexs, NSIndexPath * _Nullable indexPath) {
+                                if(indexPath.row == 6){
+                                    [selectIndexs removeAllObjects];
+                                    [selectIndexs addObject:@"6"];
+                                    [tableView reloadData];
+                                }else{
+                                    [selectIndexs addObject:[NSString stringWithFormat:@"%@",[NSNumber numberWithInteger:indexPath.row]]];
+                                    if ([selectIndexs containsObject:@"6"]) {
+                                        [selectIndexs removeObject:@"6"];
+                                        [tableView reloadData];
+                                    }
+                                }
+                            }];
+    _settingRemind = settingRemind;
+    CGPoint center =  _settingRemind.center;
     center.x = self.view.frame.size.width/2;
     center.y = self.view.frame.size.height/2;
-    settingRemind.center = center;
-    _settingRemind = settingRemind;
+    _settingRemind.center = center;
     [_coverLayer addSubview:_settingRemind];
-    settingRemind.delegate = self;
 }
 
 - (void)repeatSetting{
@@ -569,7 +561,7 @@
 
 - (void)settingCommentView{
     //备注栏
-    UIView *commentsfield_view = [[UIView alloc] init];
+    BgView *commentsfield_view = [[BgView alloc] init];
     _commentsField_view = commentsfield_view;
     _commentsField_view.backgroundColor = [Utils colorWithHexString:@"#FFFFFF"];
     [self.view  addSubview:_commentsField_view];
@@ -606,24 +598,6 @@
         make.centerY.equalTo(_commentfield.mas_centerY);
         make.right.equalTo(_commentfield.mas_left).offset(-24 * scaleToWidth);
     }];
-    __weak typeof(self) weakself = self;
-    //备注顶部底部两条灰线
-    UIView *line1 = [[UIView alloc]init];
-    line1.backgroundColor = [Utils colorWithHexString:@"d9d9d9"];
-    [_commentsField_view addSubview:line1];
-    [line1 mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.width.left.equalTo(weakself.view);
-        make.height.mas_equalTo(0.5);
-        make.top.equalTo(_commentsField_view.mas_top);
-    }];
-    UIView *line2 = [[UIView alloc]init];
-    line2.backgroundColor = [Utils colorWithHexString:@"d9d9d9"];
-    [_commentsField_view addSubview:line2];
-    [line2 mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.width.left.equalTo(weakself.view);
-        make.height.mas_equalTo(0.5);
-        make.bottom.equalTo(_commentsField_view.mas_bottom);
-    }];
 }
 
 - (void)settingDeleteBtn{
@@ -635,7 +609,6 @@
     _delete_btn.backgroundColor = [UIColor whiteColor];
     [_delete_btn addTarget:self action:@selector(deleteAction) forControlEvents:UIControlEventTouchUpInside];
     
-    __weak typeof(self) weakself = self;
     [self.view addSubview:_delete_btn];
     [_delete_btn mas_makeConstraints:^(MASConstraintMaker *make) {
         make.width.mas_equalTo(kScreenWidth);
@@ -648,17 +621,15 @@
     line1.backgroundColor = [Utils colorWithHexString:@"d9d9d9"];
     [_delete_btn addSubview:line1];
     [line1 mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.width.left.equalTo(weakself.view);
+        make.right.left.top.equalTo(_delete_btn);
         make.height.mas_equalTo(0.5);
-        make.top.equalTo(_delete_btn.mas_top);
     }];
     UIView *line2 = [[UIView alloc]init];
     line2.backgroundColor = [Utils colorWithHexString:@"d9d9d9"];
     [_delete_btn addSubview:line2];
     [line2 mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.width.left.equalTo(weakself.view);
+        make.right.left.bottom.equalTo(_delete_btn);
         make.height.mas_equalTo(0.5);
-        make.bottom.equalTo(_delete_btn.mas_bottom);
     }];
 }
 
@@ -703,9 +674,18 @@
 #pragma mark UITextFieldDelegate
 - (BOOL)textFieldShouldBeginEditing:(UITextField *)textField{
     if (textField.tag == 101) {
-        CommentViewController *commentVC = [[CommentViewController alloc]initWithTextStr:self.commentInfo];
-        commentVC.delegate = self;
-        [self.navigationController pushViewController:commentVC animated:YES];
+        __weak typeof(self) ws = self;
+        CommentViewController *commentVC = [[CommentViewController alloc]initWithTextStr:self.commentInfo successBlock:^(NSString * _Nonnull text) {
+            ws.commentInfo = text;
+            NSString *tempStr;
+            if (text.length > 20) {
+                tempStr = [[text substringToIndex:20] stringByAppendingString:@"..."];
+            }else{
+                tempStr = text;
+            }
+            ws.commentfield.text = tempStr;
+        }];
+        [ws.navigationController pushViewController:commentVC animated:YES];
         return NO;
     }else{
         return YES;
@@ -802,16 +782,9 @@
     [_coverLayer removeFromSuperview];
     NSInteger count = sectionArray.count;
     if (count != 0) {
-        [sectionArray sortUsingComparator:^NSComparisonResult(id _Nonnull obj1, id _Nonnull obj2){
-            //此处的规则含义为：若前一元素比后一元素小，则返回降序（即后一元素在前，为从大到小排列）
-            if ([obj1 integerValue] < [obj2 integerValue]){
-                return NSOrderedAscending;//将第一个元素放在第二个元素之前
-            }else{
-                return NSOrderedDescending;//将第一个元素放在第二个元素之后
-            }
-        }];
+        [Utils sortArrayFromMinToMax:sectionArray];
         //拼接字符串
-        NSString *str = [self appendSectionStringWithArray:sectionArray];
+        NSString *str = [Utils appendSectionStringWithArray:sectionArray];
         [self.businessTime_view.button2 setTitle:[NSString stringWithFormat:@"第%@节",str] forState:UIControlStateNormal];
         [self.businessTime_view.button2 setTitleColor:[Utils colorWithHexString:@"#333333"] forState:UIControlStateNormal];
         self.sectionArray = [sectionArray mutableCopy];
@@ -825,53 +798,6 @@
         [self.businessTime_view.button2 setTitleColor:[Utils colorWithHexString:@"#d9d9d9"] forState:UIControlStateNormal];
     }
     [self rightBarBtnCanBeSelect];
-}
-
-//拼接节数字符串
-- (NSString* )appendSectionStringWithArray:(NSMutableArray<NSString*>*)sectionArray{
-    NSMutableArray *tempArray = [sectionArray mutableCopy];
-    for (int i = 0; i < tempArray.count ; i ++) {
-        if ([tempArray[i] intValue] == 0) {
-            tempArray[i] = @"早间";
-        }else if ([tempArray[i] intValue] == 5){
-            tempArray[i] = @"午间";
-        }else if([tempArray[i] intValue] > 5 && [tempArray[i] intValue] < 14){
-            tempArray[i] = [NSString stringWithFormat:@"%d",[tempArray[i] intValue] - 1];
-        }
-        else if ([tempArray[i] intValue] == 14){
-            tempArray[i] = @"晚间";
-        }
-    }
-    NSMutableString *str = [NSMutableString stringWithFormat:@"%@",tempArray[0]];
-    if (sectionArray.count != 1) {
-        for (int i = 1; i < sectionArray.count; i++) {
-            [str appendFormat:@"、%@",tempArray[i]];
-        }
-    }
-    return str;
-}
-
-#pragma mark RemindSelectDelegate
-- (void)RemindSelectComfirmAction:(RemindSelect *)sectionSelector indexArr:(NSMutableArray *)indexArray{
-    [_coverLayer removeFromSuperview];
-    if (indexArray.count == 0) {
-        [indexArray addObject:@"6"];
-    }
-    [indexArray sortUsingComparator:^NSComparisonResult(id _Nonnull obj1, id _Nonnull obj2){
-        if ([obj1 integerValue] < [obj2 integerValue]){
-            return NSOrderedAscending;
-        }else{
-            return NSOrderedDescending;
-        }
-    }];
-    //拼接字符串
-    NSString *str = [self appendRemindStringWithArray:indexArray];
-    [_clock_view.button1 setTitle:str forState:UIControlStateNormal];
-    self.remindArray = [indexArray mutableCopy];
-}
-
-- (void)RemindSelectCancelAction:(RemindSelect *)sectionSelector{
-    [_coverLayer removeFromSuperview];//移除遮罩
 }
 
 - (NSString *)appendRemindStringWithArray:(NSArray *)selectArray{
@@ -896,25 +822,9 @@
     [_coverLayer removeFromSuperview];
 }
 
-#pragma maek CommentVCDelegate
-- (void)commentVC:(CommentViewController *)vc infomation:(NSString *)info{
-    self.commentInfo = info;
-    NSString *tempStr;
-    if (info.length > 20) {
-        tempStr = [[info substringToIndex:20] stringByAppendingString:@"..."];
-    }else{
-        tempStr = info;
-    }
-    _commentfield.text = tempStr;
-}
-
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
-}
-
-- (void)dealloc{
-//    [[NSNotificationCenter defaultCenter] removeObserver:self name:UITextFieldTextDidChangeNotification object:_busDescription];
 }
 
 - (EventKitManager *)eventManager {

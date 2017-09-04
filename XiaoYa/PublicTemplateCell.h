@@ -11,7 +11,4 @@
 @interface PublicTemplateCell : UITableViewCell
 @property (nonatomic , weak)UIButton *choiceBtn;
 @property (nonatomic , strong)NSArray *model;//模型
-
-//初始化
-//+(instancetype)PublicTemplateCellWithTableView:(UITableView *)tableview;
 @end

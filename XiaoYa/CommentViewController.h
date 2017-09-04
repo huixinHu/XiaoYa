@@ -7,15 +7,10 @@
 //
 
 #import <UIKit/UIKit.h>
-@class CommentViewController;
-@protocol CommentVCDelegate<NSObject>
-//确认操作。
-- (void)commentVC:(CommentViewController *)vc infomation:(NSString *)info;
 
-@end
+typedef void(^completeBlock)( NSString * _Nonnull text);
 
 @interface CommentViewController : UIViewController
-@property (nonatomic ,weak) id <CommentVCDelegate> delegate;
 
-- (instancetype)initWithTextStr:(NSString *)str;
+- (instancetype _Nonnull )initWithTextStr:(NSString * _Nullable)str successBlock:(nonnull completeBlock)block;
 @end

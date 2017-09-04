@@ -12,6 +12,7 @@
 #import "Utils.h"
 #import "Masonry.h"
 #import "HXTextField.h"
+#import "BgView.h"
 #import "HXNetworking.h"
 #import "LoginManager.h"
 #define kScreenWidth [UIApplication sharedApplication].keyWindow.bounds.size.width
@@ -153,7 +154,7 @@
 }
 
 - (void)settingAccountAndPwdViews{
-    UIView *background = [[UIView alloc]init];
+    BgView *background = [[BgView alloc]init];
     background.backgroundColor = [UIColor whiteColor];
     [self.view addSubview:background];
     [background mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -161,22 +162,7 @@
         make.top.equalTo(self.view.mas_top).offset(10);
         make.centerX.equalTo(self.view.mas_centerX);
     }];
-    
-    UIView *line1 = [[UIView alloc]init];
-    line1.backgroundColor = [Utils colorWithHexString:@"#d9d9d9"];
-    [background addSubview:line1];
-    [line1 mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.size.mas_equalTo(CGSizeMake(kScreenWidth, 0.5));
-        make.top.centerX.equalTo(background);
-    }];
-    UIView *line2 = [[UIView alloc]init];
-    line2.backgroundColor = [Utils colorWithHexString:@"#d9d9d9"];
-    [background addSubview:line2];
-    [line2 mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.size.mas_equalTo(CGSizeMake(kScreenWidth, 0.5));
-        make.bottom.centerX.equalTo(background);
-    }];
-    UIView *line3 = [[UIView alloc]init];
+    UIView *line3 = [[UIView alloc]init];//分割线
     line3.backgroundColor = [Utils colorWithHexString:@"#d9d9d9"];
     [background addSubview:line3];
     [line3 mas_makeConstraints:^(MASConstraintMaker *make) {

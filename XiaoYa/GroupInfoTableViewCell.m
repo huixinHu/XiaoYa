@@ -35,18 +35,13 @@
 - (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier eventDetailBlock:(void(^)())block{
     self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
     if (self) {
-        self.detailBlock = block;
+        self.detailBlock = [block copy];
         [self commonInit];
     }
     return self;
 }
 
 - (void)eventDetail:(UIButton *)sender{
-    UIView *view1 = [sender superview];
-    UIView *view2 = [view1 superview];
-    NSIndexPath *indexPath = [(UITableView *)[[view2 superview] superview] indexPathForCell:(UITableViewCell*)view2];
-    
-//    [self.delegate GroupInfoCell:self selectIndex:indexPath];
     self.detailBlock();
 }
 

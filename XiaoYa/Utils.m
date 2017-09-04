@@ -224,4 +224,69 @@
     NSPredicate *numberPre = [NSPredicate predicateWithFormat:@"SELF MATCHES %@",number];
     return [numberPre evaluateWithObject:textString];
 }
+
+//字符串的字符长度
++ (int)indexOfCharacter:(NSString *)strtemp{//限制文本框输入最长20个字符
+    int strlength = 0;
+    for (int i=0; i< [strtemp length]; i++) {
+        int a = [strtemp characterAtIndex:i];
+        if( a > 0x4e00 && a < 0x9fa5) { //判断是否为中文
+            strlength += 2;
+        }else{
+            strlength += 1;
+        }
+        if (strlength > 20) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+//把数组中每一个选项依次拼接成一个字符串，用“、”分割
++ (NSString *)appendRemindStringWithArray:(NSArray *)selectArray itemsArray:(NSArray *)items{
+    if (selectArray.count == 0) {
+        return nil;
+    }
+    NSMutableString *str = [NSMutableString stringWithFormat:@"%@",items[[selectArray[0] intValue]]];
+    for (int i = 1; i < selectArray.count; i++) {
+        [str appendFormat:@"、%@",items[[selectArray[i] intValue]]];
+    }
+    return str;
+}
+
+//拼接节数字符串，参数是代表节数的数组，先将早午晚的特殊节数做转换，再把数组中每一个选项依次拼接成一个字符串，用“、”分割
++ (NSString *)appendSectionStringWithArray:(NSMutableArray<NSString*>*)sectionArray{
+    NSMutableArray *tempArray = [sectionArray mutableCopy];
+    for (int i = 0; i < tempArray.count ; i ++) {
+        if ([tempArray[i] intValue] == 0) {
+            tempArray[i] = @"早间";
+        }else if ([tempArray[i] intValue] == 5){
+            tempArray[i] = @"午间";
+        }else if([tempArray[i] intValue] > 5 && [tempArray[i] intValue] < 14){
+            tempArray[i] = [NSString stringWithFormat:@"%d",[tempArray[i] intValue] - 1];
+        }
+        else if ([tempArray[i] intValue] == 14){
+            tempArray[i] = @"晚间";
+        }
+    }
+    NSMutableString *str = [NSMutableString stringWithFormat:@"%@",tempArray[0]];
+    if (sectionArray.count != 1) {
+        for (int i = 1; i < sectionArray.count; i++) {
+            [str appendFormat:@"、%@",tempArray[i]];
+        }
+    }
+    return str;
+}
+
+//对数组中的每一元素从小到大排序，数组元素为数字字符串。直接对原数组的元素排序，而不是对数组的备份进行操作
++ (void)sortArrayFromMinToMax:(NSMutableArray *)arr{
+    [arr sortUsingComparator:^NSComparisonResult(id _Nonnull obj1, id _Nonnull obj2){
+        //此处的规则含义为：若前一元素比后一元素小，则返回降序（即后一元素在前，为从大到小排列）
+        if ([obj1 integerValue] < [obj2 integerValue]){
+            return NSOrderedAscending;//将第一个元素放在第二个元素之前
+        }else{
+            return NSOrderedDescending;//将第一个元素放在第二个元素之后
+        }
+    }];
+}
 @end

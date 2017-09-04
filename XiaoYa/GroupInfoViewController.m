@@ -8,6 +8,7 @@
 
 #import "GroupInfoViewController.h"
 #import "GroupInfoTableViewCell.h"
+#import "GroupDetailViewController.h"
 #import "EventDetailViewController.h"
 #import "EventPublishViewController.h"
 #import "Utils.h"
@@ -47,6 +48,11 @@
 //    EventDetailViewController *VC = [[EventDetailViewController alloc]init];
 //    [self.navigationController pushViewController:VC animated:YES];
 //}
+
+- (void)groupDetailData{
+    GroupDetailViewController *groupDetailVC = [[GroupDetailViewController alloc] init];
+    [self.navigationController pushViewController:groupDetailVC animated:YES];
+}
 
 #pragma mark tableview datasource &delegate
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{

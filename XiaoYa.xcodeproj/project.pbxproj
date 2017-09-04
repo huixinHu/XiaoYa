@@ -20,6 +20,9 @@
 		571B82031DB38BCE001171EE /* Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = 571B82021DB38BCE001171EE /* Utils.m */; };
 		571B82091DB465D4001171EE /* WeekCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 571B82081DB465D4001171EE /* WeekCell.m */; };
 		571B825A1DB8AD6C001171EE /* TimeViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 571B82591DB8AD6C001171EE /* TimeViewCell.m */; };
+		571DB1A21F5CFF4B00D319EF /* MutipleChoiceCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 571DB1A11F5CFF4B00D319EF /* MutipleChoiceCell.m */; };
+		571DB1A51F5D000400D319EF /* MutipleChoiceView.m in Sources */ = {isa = PBXBuildFile; fileRef = 571DB1A41F5D000400D319EF /* MutipleChoiceView.m */; };
+		571DB1A81F5D8E1A00D319EF /* BgView.m in Sources */ = {isa = PBXBuildFile; fileRef = 571DB1A71F5D8E1A00D319EF /* BgView.m */; };
 		572B6D121F166A520069D1D2 /* AddGroupMemberViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 572B6D111F166A520069D1D2 /* AddGroupMemberViewController.m */; };
 		572B6D151F1748590069D1D2 /* JoinGroupViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 572B6D141F1748590069D1D2 /* JoinGroupViewController.m */; };
 		572EA9181F2F2E760052907C /* EventDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 572EA9171F2F2E760052907C /* EventDetailViewController.m */; };
@@ -52,8 +55,6 @@
 		577FA5CB1DEC2AF800A0AEF7 /* SectionSelectTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 577FA5CA1DEC2AF800A0AEF7 /* SectionSelectTableViewCell.m */; };
 		577FA5CE1DEC45C400A0AEF7 /* SectionSelect.m in Sources */ = {isa = PBXBuildFile; fileRef = 577FA5CD1DEC45C400A0AEF7 /* SectionSelect.m */; };
 		577FA5D11DEDD5EB00A0AEF7 /* PublicTemplateCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 577FA5D01DEDD5EB00A0AEF7 /* PublicTemplateCell.m */; };
-		577FA5D41DEDDF9300A0AEF7 /* RemindSelect.m in Sources */ = {isa = PBXBuildFile; fileRef = 577FA5D31DEDDF9300A0AEF7 /* RemindSelect.m */; };
-		577FA5D71DEE7C1400A0AEF7 /* RemindCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 577FA5D61DEE7C1400A0AEF7 /* RemindCell.m */; };
 		577FA5DA1DEEA6B900A0AEF7 /* RepeatCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 577FA5D91DEEA6B900A0AEF7 /* RepeatCell.m */; };
 		577FA5DD1DEEA9F000A0AEF7 /* RepeatSetting.m in Sources */ = {isa = PBXBuildFile; fileRef = 577FA5DC1DEEA9F000A0AEF7 /* RepeatSetting.m */; };
 		5782CE781E7288C100DA4947 /* TimeSelectedTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 5782CE771E7288C100DA4947 /* TimeSelectedTableViewCell.m */; };
@@ -150,6 +151,12 @@
 		571B82081DB465D4001171EE /* WeekCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WeekCell.m; sourceTree = "<group>"; };
 		571B82581DB8AD6C001171EE /* TimeViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TimeViewCell.h; sourceTree = "<group>"; };
 		571B82591DB8AD6C001171EE /* TimeViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TimeViewCell.m; sourceTree = "<group>"; };
+		571DB1A01F5CFF4B00D319EF /* MutipleChoiceCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MutipleChoiceCell.h; sourceTree = "<group>"; };
+		571DB1A11F5CFF4B00D319EF /* MutipleChoiceCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MutipleChoiceCell.m; sourceTree = "<group>"; };
+		571DB1A31F5D000400D319EF /* MutipleChoiceView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MutipleChoiceView.h; sourceTree = "<group>"; };
+		571DB1A41F5D000400D319EF /* MutipleChoiceView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MutipleChoiceView.m; sourceTree = "<group>"; };
+		571DB1A61F5D8E1A00D319EF /* BgView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BgView.h; sourceTree = "<group>"; };
+		571DB1A71F5D8E1A00D319EF /* BgView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BgView.m; sourceTree = "<group>"; };
 		572B6D101F166A520069D1D2 /* AddGroupMemberViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AddGroupMemberViewController.h; sourceTree = "<group>"; };
 		572B6D111F166A520069D1D2 /* AddGroupMemberViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AddGroupMemberViewController.m; sourceTree = "<group>"; };
 		572B6D131F1748590069D1D2 /* JoinGroupViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JoinGroupViewController.h; sourceTree = "<group>"; };
@@ -212,10 +219,6 @@
 		577FA5CD1DEC45C400A0AEF7 /* SectionSelect.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SectionSelect.m; sourceTree = "<group>"; };
 		577FA5CF1DEDD5EB00A0AEF7 /* PublicTemplateCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PublicTemplateCell.h; sourceTree = "<group>"; };
 		577FA5D01DEDD5EB00A0AEF7 /* PublicTemplateCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PublicTemplateCell.m; sourceTree = "<group>"; };
-		577FA5D21DEDDF9300A0AEF7 /* RemindSelect.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RemindSelect.h; sourceTree = "<group>"; };
-		577FA5D31DEDDF9300A0AEF7 /* RemindSelect.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RemindSelect.m; sourceTree = "<group>"; };
-		577FA5D51DEE7C1400A0AEF7 /* RemindCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RemindCell.h; sourceTree = "<group>"; };
-		577FA5D61DEE7C1400A0AEF7 /* RemindCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RemindCell.m; sourceTree = "<group>"; };
 		577FA5D81DEEA6B900A0AEF7 /* RepeatCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RepeatCell.h; sourceTree = "<group>"; };
 		577FA5D91DEEA6B900A0AEF7 /* RepeatCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RepeatCell.m; sourceTree = "<group>"; };
 		577FA5DB1DEEA9F000A0AEF7 /* RepeatSetting.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RepeatSetting.h; sourceTree = "<group>"; };
@@ -517,10 +520,6 @@
 				577FA5CA1DEC2AF800A0AEF7 /* SectionSelectTableViewCell.m */,
 				577FA5CC1DEC45C400A0AEF7 /* SectionSelect.h */,
 				577FA5CD1DEC45C400A0AEF7 /* SectionSelect.m */,
-				577FA5D51DEE7C1400A0AEF7 /* RemindCell.h */,
-				577FA5D61DEE7C1400A0AEF7 /* RemindCell.m */,
-				577FA5D21DEDDF9300A0AEF7 /* RemindSelect.h */,
-				577FA5D31DEDDF9300A0AEF7 /* RemindSelect.m */,
 				577FA5D81DEEA6B900A0AEF7 /* RepeatCell.h */,
 				577FA5D91DEEA6B900A0AEF7 /* RepeatCell.m */,
 				577FA5DB1DEEA9F000A0AEF7 /* RepeatSetting.h */,
@@ -635,10 +634,16 @@
 			children = (
 				577FA5CF1DEDD5EB00A0AEF7 /* PublicTemplateCell.h */,
 				577FA5D01DEDD5EB00A0AEF7 /* PublicTemplateCell.m */,
+				571DB1A01F5CFF4B00D319EF /* MutipleChoiceCell.h */,
+				571DB1A11F5CFF4B00D319EF /* MutipleChoiceCell.m */,
+				571DB1A31F5D000400D319EF /* MutipleChoiceView.h */,
+				571DB1A41F5D000400D319EF /* MutipleChoiceView.m */,
 				573F110D1EE7157000E9F99E /* HXTextField.h */,
 				573F110E1EE7157000E9F99E /* HXTextField.m */,
 				573F11101EE7A6AB00E9F99E /* HXButton.h */,
 				573F11111EE7A6AB00E9F99E /* HXButton.m */,
+				571DB1A61F5D8E1A00D319EF /* BgView.h */,
+				571DB1A71F5D8E1A00D319EF /* BgView.m */,
 			);
 			name = "其他";
 			sourceTree = "<group>";
@@ -991,6 +996,8 @@
 				5711C8781EAB08D700D19AE2 /* MBProgressHUD.m in Sources */,
 				57EA0A1F1F2086F50003BE87 /* NeedLoginViewController.m in Sources */,
 				573F110B1EE6DE4200E9F99E /* LoginViewController.m in Sources */,
+				571DB1A51F5D000400D319EF /* MutipleChoiceView.m in Sources */,
+				571DB1A21F5CFF4B00D319EF /* MutipleChoiceCell.m in Sources */,
 				57D49D231F121AD90063C861 /* GroupHomePageCell.m in Sources */,
 				57C761271E7E57320002FA77 /* CollectionViewCell.m in Sources */,
 				573F11121EE7A6AB00E9F99E /* HXButton.m in Sources */,
@@ -1003,7 +1010,7 @@
 				E26B70151E6AFF75000A08CB /* timeselecteview.m in Sources */,
 				577C671A1EED676B0006E783 /* HXNetworking.m in Sources */,
 				E26B70141E6AFF75000A08CB /* weekselectview.m in Sources */,
-				577FA5D41DEDDF9300A0AEF7 /* RemindSelect.m in Sources */,
+				571DB1A81F5D8E1A00D319EF /* BgView.m in Sources */,
 				577C67131EE9752A0006E783 /* ResetTextCodeViewController.m in Sources */,
 				57D65F6B1F2764C500D3BE72 /* GroupSearchModel.m in Sources */,
 				E26B70121E6AFF75000A08CB /* dayselectview.m in Sources */,
@@ -1042,7 +1049,6 @@
 				E2647DF71DD05CAD0034BE4D /* businessviewcell.m in Sources */,
 				577FA5D11DEDD5EB00A0AEF7 /* PublicTemplateCell.m in Sources */,
 				57D49D2C1F14BFDD0063C861 /* GroupCreateViewController.m in Sources */,
-				577FA5D71DEE7C1400A0AEF7 /* RemindCell.m in Sources */,
 				572EA9181F2F2E760052907C /* EventDetailViewController.m in Sources */,
 				E26B70071E6AFF60000A08CB /* CourseTimeCell.m in Sources */,
 				571B825A1DB8AD6C001171EE /* TimeViewCell.m in Sources */,
