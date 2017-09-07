@@ -14,8 +14,6 @@
 @interface MemberSearchTableViewCell ()
 @property (nonatomic ,weak) UIImageView *memberAvatar;
 @property (nonatomic ,weak) UILabel *memberInfo;
-@property (nonatomic ,copy) selectedBlock selectBlock;
-@property (nonatomic ,copy) deselectedBlock deselectBlock;
 @property (nonatomic ,strong) NSMutableArray *addedModels;
 @end
 
@@ -62,10 +60,14 @@
     
     if (sender.isSelected) {//已经选中了
         sender.selected = NO;//置为未选中
-        self.deselectBlock(indexPath);
-    }else{
+        if (self.deselectBlock != nil) {
+            self.deselectBlock(indexPath);
+        }
+    } else{
         sender.selected = YES;
-        self.selectBlock(indexPath);
+        if (self.selectBlock != nil) {
+            self.selectBlock(indexPath);
+        }
     }
 }
 

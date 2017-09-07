@@ -9,6 +9,6 @@
 #import <UIKit/UIKit.h>
 
 @interface TxAvatar : UIView
-+ (UIImage *)avatarWithText:(NSString *)text fontSize:(CGFloat)fz longside:(CGFloat )ls;
++ (nonnull UIImage *)avatarWithText:(nonnull NSString *)text fontSize:(CGFloat)fz longside:(CGFloat)ls;
 
 @end

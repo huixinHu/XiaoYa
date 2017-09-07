@@ -10,5 +10,5 @@
 
 @interface GroupInfoViewController : UIViewController
 - (instancetype)initWithGroupName:(NSString *)groupName;
-
+- (instancetype)init NS_UNAVAILABLE;
 @end

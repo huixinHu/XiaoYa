@@ -38,7 +38,7 @@
     // Dispose of any resources that can be recreated.
 }
 
-- (void)create{    
+- (void)groupCreate{
     GroupMemberModel *managerModel = [GroupMemberModel memberModelWithDict:@{@"identity" :@"17,胡卉馨,15918887876"}];
     GroupCreateViewController *createVC = [[GroupCreateViewController alloc]initWithGroupManager:managerModel];
     createVC.hidesBottomBarWhenPushed = YES;//从下级vc开始，tabbar都隐藏掉
@@ -154,7 +154,7 @@
     [creatGroup setTitle:@"创建群组" forState:UIControlStateNormal];
     creatGroup.titleLabel.font = [UIFont systemFontOfSize:14.0];
     creatGroup.titleEdgeInsets = UIEdgeInsetsMake(0, 13, 0, 0);
-    [creatGroup addTarget:self action:@selector(create) forControlEvents:UIControlEventTouchUpInside];
+    [creatGroup addTarget:self action:@selector(groupCreate) forControlEvents:UIControlEventTouchUpInside];
     [_menu addSubview:creatGroup];
     [creatGroup mas_makeConstraints:^(MASConstraintMaker *make) {
         make.size.mas_equalTo(CGSizeMake(113, 50));

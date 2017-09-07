@@ -18,14 +18,15 @@
 #import "SectionSelect.h"
 #import "HXTextField.h"
 #import "businessviewcell.h"
-#import "MutipleChoiceView.h"
+#import "SingleChoiceView.h"
 #import "BgView.h"
+#import "GroupInfoModel.h"
 
 #define scaleToWidth [UIApplication sharedApplication].keyWindow.bounds.size.width/750.0
 #define kScreenWidth [UIApplication sharedApplication].keyWindow.bounds.size.width
 #define kScreenHeight [UIApplication sharedApplication].keyWindow.bounds.size.height
 
-@interface EventPublishViewController () <UITextFieldDelegate ,DatePickerDelegate ,MonthPickerDelegate ,SectionSelectDelegate>
+@interface EventPublishViewController () <UITextFieldDelegate ,MonthPickerDelegate ,SectionSelectDelegate>
 @property (nonatomic ,weak) HXTextField *eventDescription;
 @property (nonatomic ,weak) businessviewcell *eventTimeView;
 @property (nonatomic ,weak) UIView *coverLayer;
@@ -33,7 +34,7 @@
 @property (nonatomic ,weak) SectionSelect *selectSection;
 @property (nonatomic ,weak) UIButton *replyDL;
 @property (nonatomic ,weak) HXTextField *commentfield;
-@property (nonatomic ,weak) MutipleChoiceView *dlRemindView;
+@property (nonatomic ,weak) SingleChoiceView *dlRemindView;
 
 @property (nonatomic , strong) NSDate *currentDate;//当前日期
 @property (nonatomic , strong) NSDate *lastSelectedDate;//上一次选择的日期
@@ -41,9 +42,10 @@
 @property (nonatomic , strong) NSMutableArray *sectionArray;//选择节数数组
 @property (nonatomic , strong) NSDate *originDate;//记录一点进来时初始的日期
 @property (nonatomic , strong) NSMutableArray *originArr;//初始节数数组
-@property (nonatomic ,copy) NSString *commentInfo;
-@property (nonatomic , strong) NSArray *remindItem;
-@property (nonatomic , strong) NSArray *remindArray;
+@property (nonatomic , copy) NSString *commentInfo;
+@property (nonatomic , strong) NSArray *remainItem;//剩余回复时间内容项
+@property (nonatomic , assign) NSInteger remainIndex;//剩余回复时间 所选项
+@property (nonatomic , strong) GroupInfoModel *infoModel;
 @end
 
 @implementation EventPublishViewController
@@ -52,11 +54,31 @@
     CGFloat cellWidth;//“日期”btn高度、宽度
     CGFloat datePickerWidth;//日期选择器宽度
 }
+
+- (instancetype)initWithInfoModel:(GroupInfoModel *)model{
+    if (self = [super init]) {
+        self.infoModel = model;
+    }
+    return self;
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
-
-    self.currentDate =  [NSDate date];
-    self.remindArray = [NSArray array];//暂时测试
+    {
+        //时间时间
+        NSDateFormatter *df = [[NSDateFormatter alloc]init];
+        [df setDateFormat:@"yyyyMMdd"];
+        self.currentDate =  [df dateFromString:self.infoModel.eventTime];
+        //学期第一天
+        AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+        self.firstDateOfTerm = appDelegate.firstDateOfTerm;
+        //节数数组
+        self.sectionArray = [self.infoModel.eventSection mutableCopy];
+        self.originDate = self.currentDate;
+        self.originArr = [self.sectionArray mutableCopy];
+        self.commentInfo = [self.infoModel.comment copy];
+        self.remainIndex = 0;//暂时测试
+    }
     [self viewsSetting];
 }
 
@@ -65,7 +87,8 @@
 }
 
 - (void)confirm{
-    
+    //网络请求
+    //如果发布成功，就添加到群组消息页
 }
 
 //导航栏右按钮要在描述和时间都有才能点击
@@ -114,45 +137,81 @@
 }
 
 #pragma mark ui相关
-//截止日期提醒
-- (void)remindSetting{
-    [self.view endEditing:YES];
+//---------------------------------日期选择
+- (void)dateSelected{
+    [self.view endEditing:YES];    
+    self.coverLayer = [Utils coverLayerAddToWindow];
     
-    UIView *coverLayer = [[UIView alloc]initWithFrame:CGRectMake(0, 0, kScreenWidth, kScreenHeight)];
-    coverLayer.backgroundColor = [UIColor colorWithRed:88/255.0 green:88/255.0  blue:88/255.0  alpha:0.5];
-    _coverLayer = coverLayer;
-    AppDelegate *app = (AppDelegate *)[[UIApplication  sharedApplication] delegate];
-    [app.window addSubview:_coverLayer];
+    //生成自定义日期选择器
+    weekWidth = 50;
+    cellWidth = 38;
+    datePickerWidth = weekWidth +cellWidth *7 +5;//5边界预留
+    
+    [self datePickerCreate:self.currentDate];
+    self.lastSelectedDate = self.currentDate;
+}
+
+- (void)datePickerCreate:(NSDate *)curDate {
+    int weekRow = [DateUtils rowNumber:curDate];//日历该有多少行
+    CGFloat datePickerHeight = cellWidth * (weekRow+1) + (76 + 178)/2 + 10;//+1:显示周几的一行，76：两个btn高度，178：顶部年月高度 10:确认取消上的预留位
+    __weak typeof(self) ws = self;
+    DatePicker *picker =
+    [[DatePicker alloc] initWithFrame:CGRectMake(0, 64, datePickerWidth, datePickerHeight)
+                                 date:curDate
+                      firstDateOfTerm:self.firstDateOfTerm
+                         confirmBlock:^(NSDate *selectedDate) {
+                             ws.currentDate = selectedDate;//下次就会默认选中上次的日期
+                             [ws bsTVBtnSetting:selectedDate];
+                             [ws.coverLayer removeFromSuperview];
+                         }
+                          cancelBlock:^{
+                              [ws.coverLayer removeFromSuperview];
+                          }
+                 monPickerCreateBlock:^(NSDate *currentDate) {
+                     __strong typeof(ws) ss = ws;
+                     MonthPicker *monthPicker = [[MonthPicker alloc]initWithFrame:CGRectMake(0, 0, 265, 322) date:currentDate];
+                     [ss.coverLayer addSubview:monthPicker];
+                     [Utils putViewOnCenter:monthPicker superView:ss.view];
+                     monthPicker.delegate = ss;
+                 }];
+    _datePicker = (DatePicker *)[Utils putViewOnCenter:picker superView:self.view];
+    [_coverLayer addSubview:_datePicker];
+}
+
+//-----------------------------时间段（节）选择
+- (void)sectionSelected{
+    [self.view endEditing:YES];
+    self.coverLayer = [Utils coverLayerAddToWindow];
+    
+    CGFloat width = 650 / 750.0 * kScreenWidth;
+    CGFloat height = (178 + 76)/2 + 245;
+    SectionSelect *selectSection = [[SectionSelect alloc]initWithFrame:CGRectMake(0, 0, width, height) sectionArr:self.sectionArray selectedDate:self.currentDate originIndexs:self.originArr originDate:self.originDate termFirstDate:self.firstDateOfTerm];
+    _selectSection = (SectionSelect *)[Utils putViewOnCenter:selectSection superView:self.view];
+    [_coverLayer addSubview:_selectSection];
+    _selectSection.delegate = self;
+}
+
+//-----------------------------截止日期回复
+- (void)remainSetting{
+    [self.view endEditing:YES];
+    self.coverLayer = [Utils coverLayerAddToWindow];
     
     __weak typeof(self) ws = self;
-    MutipleChoiceView *dlRemindView =
-    [[MutipleChoiceView alloc]initWithItems:self.remindItem
-                              selectedIndex:self.remindArray
+    SingleChoiceView *dlRemindView =
+    [[SingleChoiceView alloc] initWithItems:self.remainItem
+                              selectedIndex:self.remainIndex
                                   viewWidth:265
                                  cellHeight:40
                      confirmCancelBtnHeight:40
-                               confirmBlock:^(NSMutableArray * _Nullable selectIndexs) {
-                                   if (selectIndexs.count == 0) {
-                                       [selectIndexs addObject:@"0"];//默认是“当事件发生时”
-                                   }
-                                   [Utils sortArrayFromMinToMax:selectIndexs];
-                                   //拼接字符串
-                                   NSString *str = [Utils appendRemindStringWithArray:selectIndexs itemsArray:ws.remindItem];
-                                   [ws.replyDL setTitle:str forState:UIControlStateNormal];
-                                   ws.remindArray = [selectIndexs mutableCopy];
-                                   [ws.coverLayer removeFromSuperview];
-                               }
+                               confirmBlock:^(NSInteger selectedIndex) {
+                         ws.remainIndex = selectedIndex;
+                         [ws.replyDL setTitle:ws.remainItem[selectedIndex] forState:UIControlStateNormal];
+                         [ws.coverLayer removeFromSuperview];
+                     }
                                 cancelBlock:^{
                                     [ws.coverLayer removeFromSuperview];
-                                }
-                            selectCellBlock:^(UITableView * _Nonnull tableView, NSMutableArray * _Nullable selectIndexs, NSIndexPath * _Nullable indexPath) {
-                                [selectIndexs addObject:[NSString stringWithFormat:@"%@",[NSNumber numberWithInteger:indexPath.row]]];
-                            }];
-    _dlRemindView = dlRemindView;
-    CGPoint center =  _dlRemindView.center;
-    center.x = self.view.frame.size.width/2;
-    center.y = self.view.frame.size.height/2;
-    _dlRemindView.center = center;
+                                }];
+    _dlRemindView = (SingleChoiceView *)[Utils putViewOnCenter:dlRemindView superView:self.view];
     [_coverLayer addSubview:_dlRemindView];
 }
 
@@ -195,7 +254,7 @@
     _eventDescription.layer.cornerRadius = 2.0f;
     UIView *lv = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 8, 1)];
     [_eventDescription appearanceWithTextColor:[Utils colorWithHexString:@"#333333"] textFontSize:12.0 placeHolderColor:[Utils colorWithHexString:@"#d9d9d9"] placeHolderFontSize:12.0 placeHolderText:@"请描述你的事务" leftView:lv];
-//    _busDescription.text = self.busModel.desc;
+    _eventDescription.text = self.infoModel.event;
     [bg addSubview:_eventDescription];
     [_eventDescription mas_makeConstraints:^(MASConstraintMaker *make) {
         make.center.equalTo(bg);
@@ -239,55 +298,6 @@
     }
 }
 
-//日期选择
-- (void)dateSelected{
-    [self.view endEditing:YES];
-    
-    UIView *coverLayer = [self coverLayerInit];
-    self.coverLayer = coverLayer;
-    AppDelegate *app = (AppDelegate *)[[UIApplication sharedApplication] delegate];
-    [app.window addSubview:_coverLayer];
-    
-    //生成自定义日期选择器
-    weekWidth = 50;
-    cellWidth = 38;
-    
-    datePickerWidth = weekWidth +cellWidth *7 +5;//5边界预留
-    int weekRow = [DateUtils rowNumber:self.currentDate];//日历该有多少行
-    CGFloat datePickerHeight = cellWidth * (weekRow+1) + (76 + 178)/2 + 10;//+1:显示周几的一行，76：两个btn高度，178：顶部年月高度 10:确认取消上的预留位
-    DatePicker * picker = [[DatePicker alloc]initWithFrame:CGRectMake(0, 64, datePickerWidth, datePickerHeight) date:self.currentDate firstDateOfTerm:self.firstDateOfTerm];
-    CGPoint center =  picker.center;
-    center.x = self.view.frame.size.width/2;
-    center.y = self.view.frame.size.height/2;
-    picker.center = center;
-    _datePicker = picker;
-    [_coverLayer addSubview:_datePicker];
-    _datePicker.delegate = self;
-    
-    self.lastSelectedDate = self.currentDate;
-}
-
-//时间段（节）选择
-- (void)sectionSelected{
-    [self.view endEditing:YES];
-    
-    UIView *coverLayer = [self coverLayerInit];
-    self.coverLayer = coverLayer;
-    AppDelegate *app = (AppDelegate *)[[UIApplication  sharedApplication] delegate];
-    [app.window addSubview:_coverLayer];
-    
-    CGFloat width = 650 / 750.0 * kScreenWidth;
-    CGFloat height = (178 + 76)/2 + 245;
-    SectionSelect *selectSection = [[SectionSelect alloc]initWithFrame:CGRectMake(0, 0, width, height) sectionArr:self.sectionArray selectedDate:self.currentDate originIndexs:self.originArr originDate:self.originDate termFirstDate:self.firstDateOfTerm];
-    CGPoint center =  selectSection.center;
-    center.x = self.view.frame.size.width/2;
-    center.y = self.view.frame.size.height/2;
-    selectSection.center = center;
-    _selectSection = selectSection;
-    [_coverLayer addSubview:_selectSection];
-    _selectSection.delegate = self;
-}
-
 //_businessTime_view.button1按钮文本设置
 - (void)bsTVBtnSetting:(NSDate *) selectedDate{
     //确定这一天是周几
@@ -321,10 +331,9 @@
     _replyDL = replyDL;
     _replyDL.backgroundColor = [UIColor whiteColor];
     _replyDL.titleLabel.font = [UIFont systemFontOfSize:14.0];
-    NSString *str = [Utils appendRemindStringWithArray:self.remindArray itemsArray:self.remindItem];
-    [_replyDL setTitle:str forState:UIControlStateNormal];
+    [_replyDL setTitle:self.remainItem[self.remainIndex] forState:UIControlStateNormal];
     [_replyDL setTitleColor:[Utils colorWithHexString:@"#333333"] forState:UIControlStateNormal];
-    [_replyDL addTarget:self action:@selector(remindSetting) forControlEvents:UIControlEventTouchUpInside];
+    [_replyDL addTarget:self action:@selector(remainSetting) forControlEvents:UIControlEventTouchUpInside];
     [bg addSubview:_replyDL];
     [_replyDL mas_makeConstraints:^(MASConstraintMaker *make) {
         make.center.equalTo(bg);
@@ -355,6 +364,7 @@
     _commentfield.layer.cornerRadius = 2.0f;
     UIView *lv = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 8, 1)];
     [_commentfield appearanceWithTextColor:[Utils colorWithHexString:@"#333333"] textFontSize:12.0 placeHolderColor:[Utils colorWithHexString:@"#d9d9d9"] placeHolderFontSize:12.0 placeHolderText:@"备注" leftView:lv];
+    _commentfield.text = self.commentInfo;
     [bg2 addSubview:_commentfield];
     [_commentfield mas_makeConstraints:^(MASConstraintMaker *make) {
         make.centerX.equalTo(bg2);
@@ -370,35 +380,6 @@
         make.right.equalTo(_commentfield.mas_left).offset(-12);
         make.centerY.equalTo(_commentfield);
     }];
-}
-
-- (UIView *)coverLayerInit{
-    UIView *coverLayer = [[UIView alloc]initWithFrame:CGRectMake(0, 0, kScreenWidth, kScreenHeight)];
-    coverLayer.backgroundColor = [UIColor colorWithRed:88/255.0 green:88/255.0  blue:88/255.0  alpha:0.5];
-    return coverLayer;
-}
-
-#pragma mark DatePickerDelegate
-- (void)datePicker:(DatePicker *)datePicker createMonthPickerWithDate:(NSDate *)currentDate{
-    MonthPicker *monthPicker = [[MonthPicker alloc]initWithFrame:CGRectMake(0, 0, 265, 322) date:currentDate];
-    [_coverLayer addSubview:monthPicker];
-    CGPoint center =  monthPicker.center;
-    center.x = self.view.frame.size.width/2;
-    center.y = self.view.frame.size.height/2;
-    monthPicker.center = center;
-    monthPicker.delegate = self;
-    self.datePicker.hidden = YES;//先隐藏，如果monthpicker里面选了“取消”就让它再显示出来
-}
-
-//日历日期选择点击了确认
-- (void)datePicker:(DatePicker *)datePicker selectedDate:(NSDate *)selectedDate{
-    [_coverLayer removeFromSuperview];//移除遮罩
-    self.currentDate = selectedDate;//下次就会默认选中上次的日期
-    [self bsTVBtnSetting:selectedDate];
-}
-
-- (void)datePickerCancelAction:(DatePicker *)datePicker{
-    [_coverLayer removeFromSuperview];//移除遮罩
 }
 
 #pragma mark MonthPickerDelegate
@@ -418,16 +399,7 @@
     self.lastSelectedDate = currentDate;
     
     [self.datePicker removeFromSuperview];
-    int weekRow = [DateUtils rowNumber:currentDate];//日历该有多少行
-    CGFloat datePickerHeight = cellWidth * (weekRow+1) + (76 + 178)/2 + 10;//76：两个btn高度，178：顶部年月高度
-    DatePicker * picker = [[DatePicker alloc]initWithFrame:CGRectMake(0, 64, datePickerWidth, datePickerHeight) date:currentDate firstDateOfTerm:self.firstDateOfTerm];
-    CGPoint center =  picker.center;
-    center.x = self.view.frame.size.width/2;
-    center.y = self.view.frame.size.height/2;
-    picker.center = center;
-    _datePicker = picker;
-    [_coverLayer addSubview:_datePicker];
-    _datePicker.delegate = self;
+    [self datePickerCreate:currentDate];
 }
 
 #pragma mark SectionSelectDelegate
@@ -441,7 +413,6 @@
     [_coverLayer removeFromSuperview];
     NSInteger count = sectionArray.count;
     if (count != 0) {
-        [Utils sortArrayFromMinToMax:sectionArray];
         //拼接字符串
         NSString *str = [Utils appendSectionStringWithArray:sectionArray];
         [self.eventTimeView.button2 setTitle:[NSString stringWithFormat:@"第%@节",str] forState:UIControlStateNormal];
@@ -464,10 +435,10 @@
 
 }
 #pragma mark lazy
-- (NSArray *)remindItem{
-    if (_remindItem == nil) {
-        _remindItem = @[@"当事件发生时",@"事件开始前12小时",@"事件开始前24小时",@"事件开始前36小时",@"事件开始前48小时",@"事件开始前一周",@"事件开始前一个月"];
+- (NSArray *)remainItem{
+    if (_remainItem == nil) {
+        _remainItem = @[@"当事件发生时",@"事件开始前12小时",@"事件开始前24小时",@"事件开始前36小时",@"事件开始前48小时",@"事件开始前一周",@"事件开始前一个月"];
     }
-    return _remindItem;
+    return _remainItem;
 }
 @end

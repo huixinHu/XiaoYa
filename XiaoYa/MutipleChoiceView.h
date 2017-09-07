@@ -13,7 +13,7 @@
 
  @param selectIndexs 选中项的数组
  */
-typedef void(^confirmBlock)(NSMutableArray * _Nullable selectIndexs);
+typedef void(^confirmBlock)(NSMutableArray * _Nonnull selectIndexs);
 
 /**
  自定义取消block类型
@@ -27,9 +27,13 @@ typedef void(^cancelBlock)();
  @param selectIndexs 选中项的数组
  @param indexPath 当前选中项的indexPath
  */
-typedef void(^cellSelectBlock)(UITableView * _Nonnull tableView ,NSMutableArray * _Nullable selectIndexs, NSIndexPath * _Nullable indexPath);
+typedef void(^cellSelectBlock)(UITableView * _Nonnull tableView ,NSMutableArray * _Nonnull selectIndexs, NSIndexPath * _Nonnull indexPath);
 
 @interface MutipleChoiceView : UIView
+
+@property (nonatomic ,copy ,nullable) confirmBlock confirmBlock;
+@property (nonatomic ,copy ,nullable) cancelBlock cancelBlock;
+@property (nonatomic ,copy ,nullable) cellSelectBlock selectBlock;
 
 /**
  多选列表初始化
@@ -52,4 +56,5 @@ typedef void(^cellSelectBlock)(UITableView * _Nonnull tableView ,NSMutableArray 
                          confirmBlock:(nullable confirmBlock) confirm
                           cancelBlock:(nullable cancelBlock) cancel
                       selectCellBlock:(nullable cellSelectBlock) select;
+
 @end

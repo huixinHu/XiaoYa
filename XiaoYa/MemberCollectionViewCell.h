@@ -10,7 +10,7 @@
 @class GroupMemberModel;
 
 @interface MemberCollectionViewCell : UICollectionViewCell
-@property (nonatomic ,strong)GroupMemberModel *model;
-@property (nonatomic ,weak)UIButton *deleteSelect;
+@property (nonatomic ,strong ,nonnull)GroupMemberModel *model;
+@property (nonatomic ,weak ,nullable)UIButton *deleteSelect;
 
 @end

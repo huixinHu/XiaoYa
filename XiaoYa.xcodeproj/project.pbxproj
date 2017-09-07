@@ -23,6 +23,10 @@
 		571DB1A21F5CFF4B00D319EF /* MutipleChoiceCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 571DB1A11F5CFF4B00D319EF /* MutipleChoiceCell.m */; };
 		571DB1A51F5D000400D319EF /* MutipleChoiceView.m in Sources */ = {isa = PBXBuildFile; fileRef = 571DB1A41F5D000400D319EF /* MutipleChoiceView.m */; };
 		571DB1A81F5D8E1A00D319EF /* BgView.m in Sources */ = {isa = PBXBuildFile; fileRef = 571DB1A71F5D8E1A00D319EF /* BgView.m */; };
+		571DB1AB1F5EEBDD00D319EF /* SectionSchedule.m in Sources */ = {isa = PBXBuildFile; fileRef = 571DB1AA1F5EEBDD00D319EF /* SectionSchedule.m */; };
+		571DB1AE1F5FD97300D319EF /* GroupInfoModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 571DB1AD1F5FD97300D319EF /* GroupInfoModel.m */; };
+		571DB1B11F6126C200D319EF /* SingleChoiceCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 571DB1B01F6126C200D319EF /* SingleChoiceCell.m */; };
+		571DB1B41F6127E500D319EF /* SingleChoiceView.m in Sources */ = {isa = PBXBuildFile; fileRef = 571DB1B31F6127E500D319EF /* SingleChoiceView.m */; };
 		572B6D121F166A520069D1D2 /* AddGroupMemberViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 572B6D111F166A520069D1D2 /* AddGroupMemberViewController.m */; };
 		572B6D151F1748590069D1D2 /* JoinGroupViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 572B6D141F1748590069D1D2 /* JoinGroupViewController.m */; };
 		572EA9181F2F2E760052907C /* EventDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 572EA9171F2F2E760052907C /* EventDetailViewController.m */; };
@@ -55,8 +59,6 @@
 		577FA5CB1DEC2AF800A0AEF7 /* SectionSelectTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 577FA5CA1DEC2AF800A0AEF7 /* SectionSelectTableViewCell.m */; };
 		577FA5CE1DEC45C400A0AEF7 /* SectionSelect.m in Sources */ = {isa = PBXBuildFile; fileRef = 577FA5CD1DEC45C400A0AEF7 /* SectionSelect.m */; };
 		577FA5D11DEDD5EB00A0AEF7 /* PublicTemplateCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 577FA5D01DEDD5EB00A0AEF7 /* PublicTemplateCell.m */; };
-		577FA5DA1DEEA6B900A0AEF7 /* RepeatCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 577FA5D91DEEA6B900A0AEF7 /* RepeatCell.m */; };
-		577FA5DD1DEEA9F000A0AEF7 /* RepeatSetting.m in Sources */ = {isa = PBXBuildFile; fileRef = 577FA5DC1DEEA9F000A0AEF7 /* RepeatSetting.m */; };
 		5782CE781E7288C100DA4947 /* TimeSelectedTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 5782CE771E7288C100DA4947 /* TimeSelectedTableViewCell.m */; };
 		579C2FBE1DAD000E00E4EE54 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 579C2FBD1DAD000E00E4EE54 /* main.m */; };
 		579C2FC11DAD000E00E4EE54 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 579C2FC01DAD000E00E4EE54 /* AppDelegate.m */; };
@@ -157,6 +159,14 @@
 		571DB1A41F5D000400D319EF /* MutipleChoiceView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MutipleChoiceView.m; sourceTree = "<group>"; };
 		571DB1A61F5D8E1A00D319EF /* BgView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BgView.h; sourceTree = "<group>"; };
 		571DB1A71F5D8E1A00D319EF /* BgView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BgView.m; sourceTree = "<group>"; };
+		571DB1A91F5EEBDD00D319EF /* SectionSchedule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SectionSchedule.h; sourceTree = "<group>"; };
+		571DB1AA1F5EEBDD00D319EF /* SectionSchedule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SectionSchedule.m; sourceTree = "<group>"; };
+		571DB1AC1F5FD97300D319EF /* GroupInfoModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GroupInfoModel.h; sourceTree = "<group>"; };
+		571DB1AD1F5FD97300D319EF /* GroupInfoModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GroupInfoModel.m; sourceTree = "<group>"; };
+		571DB1AF1F6126C200D319EF /* SingleChoiceCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SingleChoiceCell.h; sourceTree = "<group>"; };
+		571DB1B01F6126C200D319EF /* SingleChoiceCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SingleChoiceCell.m; sourceTree = "<group>"; };
+		571DB1B21F6127E500D319EF /* SingleChoiceView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SingleChoiceView.h; sourceTree = "<group>"; };
+		571DB1B31F6127E500D319EF /* SingleChoiceView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SingleChoiceView.m; sourceTree = "<group>"; };
 		572B6D101F166A520069D1D2 /* AddGroupMemberViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AddGroupMemberViewController.h; sourceTree = "<group>"; };
 		572B6D111F166A520069D1D2 /* AddGroupMemberViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AddGroupMemberViewController.m; sourceTree = "<group>"; };
 		572B6D131F1748590069D1D2 /* JoinGroupViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JoinGroupViewController.h; sourceTree = "<group>"; };
@@ -219,10 +229,6 @@
 		577FA5CD1DEC45C400A0AEF7 /* SectionSelect.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SectionSelect.m; sourceTree = "<group>"; };
 		577FA5CF1DEDD5EB00A0AEF7 /* PublicTemplateCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PublicTemplateCell.h; sourceTree = "<group>"; };
 		577FA5D01DEDD5EB00A0AEF7 /* PublicTemplateCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PublicTemplateCell.m; sourceTree = "<group>"; };
-		577FA5D81DEEA6B900A0AEF7 /* RepeatCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RepeatCell.h; sourceTree = "<group>"; };
-		577FA5D91DEEA6B900A0AEF7 /* RepeatCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RepeatCell.m; sourceTree = "<group>"; };
-		577FA5DB1DEEA9F000A0AEF7 /* RepeatSetting.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RepeatSetting.h; sourceTree = "<group>"; };
-		577FA5DC1DEEA9F000A0AEF7 /* RepeatSetting.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RepeatSetting.m; sourceTree = "<group>"; };
 		5782CE761E7288C100DA4947 /* TimeSelectedTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TimeSelectedTableViewCell.h; sourceTree = "<group>"; };
 		5782CE771E7288C100DA4947 /* TimeSelectedTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TimeSelectedTableViewCell.m; sourceTree = "<group>"; };
 		579C2FB91DAD000E00E4EE54 /* XiaoYa.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = XiaoYa.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -421,6 +427,8 @@
 				57D49D701F160D6A0063C861 /* GroupMemberModel.m */,
 				57D65F691F2764C500D3BE72 /* GroupSearchModel.h */,
 				57D65F6A1F2764C500D3BE72 /* GroupSearchModel.m */,
+				571DB1AC1F5FD97300D319EF /* GroupInfoModel.h */,
+				571DB1AD1F5FD97300D319EF /* GroupInfoModel.m */,
 			);
 			name = models;
 			sourceTree = "<group>";
@@ -520,10 +528,6 @@
 				577FA5CA1DEC2AF800A0AEF7 /* SectionSelectTableViewCell.m */,
 				577FA5CC1DEC45C400A0AEF7 /* SectionSelect.h */,
 				577FA5CD1DEC45C400A0AEF7 /* SectionSelect.m */,
-				577FA5D81DEEA6B900A0AEF7 /* RepeatCell.h */,
-				577FA5D91DEEA6B900A0AEF7 /* RepeatCell.m */,
-				577FA5DB1DEEA9F000A0AEF7 /* RepeatSetting.h */,
-				577FA5DC1DEEA9F000A0AEF7 /* RepeatSetting.m */,
 			);
 			name = "事务管理";
 			sourceTree = "<group>";
@@ -638,6 +642,10 @@
 				571DB1A11F5CFF4B00D319EF /* MutipleChoiceCell.m */,
 				571DB1A31F5D000400D319EF /* MutipleChoiceView.h */,
 				571DB1A41F5D000400D319EF /* MutipleChoiceView.m */,
+				571DB1AF1F6126C200D319EF /* SingleChoiceCell.h */,
+				571DB1B01F6126C200D319EF /* SingleChoiceCell.m */,
+				571DB1B21F6127E500D319EF /* SingleChoiceView.h */,
+				571DB1B31F6127E500D319EF /* SingleChoiceView.m */,
 				573F110D1EE7157000E9F99E /* HXTextField.h */,
 				573F110E1EE7157000E9F99E /* HXTextField.m */,
 				573F11101EE7A6AB00E9F99E /* HXButton.h */,
@@ -655,6 +663,8 @@
 				57D65FB71F2E3ABB00D3BE72 /* GroupInfoTableViewCell.m */,
 				572EA91C1F301CF50052907C /* ReasonView.h */,
 				572EA91D1F301CF50052907C /* ReasonView.m */,
+				571DB1A91F5EEBDD00D319EF /* SectionSchedule.h */,
+				571DB1AA1F5EEBDD00D319EF /* SectionSchedule.m */,
 			);
 			name = "聊天";
 			sourceTree = "<group>";
@@ -1007,6 +1017,7 @@
 				57BDFA241E52F06A00C0E254 /* UIAlertController+Appearance.m in Sources */,
 				571A3B2A1DE0D05A009042BC /* DateUtils.m in Sources */,
 				579C2FC11DAD000E00E4EE54 /* AppDelegate.m in Sources */,
+				571DB1AB1F5EEBDD00D319EF /* SectionSchedule.m in Sources */,
 				E26B70151E6AFF75000A08CB /* timeselecteview.m in Sources */,
 				577C671A1EED676B0006E783 /* HXNetworking.m in Sources */,
 				E26B70141E6AFF75000A08CB /* weekselectview.m in Sources */,
@@ -1017,7 +1028,8 @@
 				57D65FB81F2E3ABB00D3BE72 /* GroupInfoTableViewCell.m in Sources */,
 				57D49D1F1F0FB9660063C861 /* GroupHomePageViewController.m in Sources */,
 				577430961E9374020027D471 /* EventKitManager.m in Sources */,
-				577FA5DD1DEEA9F000A0AEF7 /* RepeatSetting.m in Sources */,
+				571DB1AE1F5FD97300D319EF /* GroupInfoModel.m in Sources */,
+				571DB1B41F6127E500D319EF /* SingleChoiceView.m in Sources */,
 				577FA5CB1DEC2AF800A0AEF7 /* SectionSelectTableViewCell.m in Sources */,
 				57BDFA131E2E038D00C0E254 /* DbManager.m in Sources */,
 				57C761241E7D9EBC0002FA77 /* CollectView.m in Sources */,
@@ -1045,6 +1057,7 @@
 				57DC77791F4A9B0500F5FF94 /* HXSocketBusinessManager.m in Sources */,
 				57BDFA211E52EF1300C0E254 /* CommentViewController.m in Sources */,
 				571A3D0A1DE82F0C009042BC /* BusinessViewController.m in Sources */,
+				571DB1B11F6126C200D319EF /* SingleChoiceCell.m in Sources */,
 				572B6D151F1748590069D1D2 /* JoinGroupViewController.m in Sources */,
 				E2647DF71DD05CAD0034BE4D /* businessviewcell.m in Sources */,
 				577FA5D11DEDD5EB00A0AEF7 /* PublicTemplateCell.m in Sources */,
@@ -1057,7 +1070,6 @@
 				571A3B2F1DE0D071009042BC /* CalendarView.m in Sources */,
 				57D49D2F1F15178D0063C861 /* MemberCollectionViewCell.m in Sources */,
 				57EA0A221F20E9490003BE87 /* LoginManager.m in Sources */,
-				577FA5DA1DEEA6B900A0AEF7 /* RepeatCell.m in Sources */,
 				579C2FF71DAD036000E4EE54 /* WeekSheet.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

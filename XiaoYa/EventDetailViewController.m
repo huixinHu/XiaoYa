@@ -7,41 +7,161 @@
 //事件详情
 
 #import "EventDetailViewController.h"
+#import "EventPublishViewController.h"
 #import "Utils.h"
+#import "DateUtils.h"
+#import "NSDate+Calendar.h"
 #import "Masonry.h"
 #import "ReasonView.h"
 #import "AppDelegate.h"
+#import "SectionSchedule.h"
+#import "GroupInfoModel.h"
 
 #define kScreenWidth [UIApplication sharedApplication].keyWindow.bounds.size.width
 #define kScreenHeight [UIApplication sharedApplication].keyWindow.bounds.size.height
+typedef NS_ENUM(NSInteger, HXReplyStatus) {
+    HXReplyStatusNotReply = 0,          // 未回复
+    HXReplyStatusParticipate = 1,       // 参加
+    HXReplyStatusNotParticipate = 2       // 不参加
+};
+
 @interface EventDetailViewController ()
-@property (nonatomic ,weak) UILabel *publishTime;
-@property (nonatomic ,weak) UILabel *publisher;
-@property (nonatomic ,weak) UILabel *event;
-@property (nonatomic ,weak) UILabel *eventTime;
-@property (nonatomic ,weak) UILabel *replyTag;
-@property (nonatomic ,weak) UILabel *comment;
-@property (nonatomic ,weak) UIButton *schedule;
-@property (nonatomic ,weak) UILabel *replyState;
-@property (nonatomic ,weak) UIButton *participate;
-@property (nonatomic ,weak) UIButton *notParticipate;
-@property (nonatomic ,weak) UIButton *modify;
+@property (nonatomic ,weak) UILabel *publishTime;//发布时间
+@property (nonatomic ,weak) UILabel *publisher;//发布者
+@property (nonatomic ,weak) UILabel *event;//事件
+@property (nonatomic ,weak) UILabel *eventTime;//事件时间
+@property (nonatomic ,weak) UILabel *replyTag;//右上角标签
+@property (nonatomic ,weak) UILabel *comment;//备注
+@property (nonatomic ,weak) UIButton *schedule;//当日日程
+@property (nonatomic ,weak) UILabel *replyStateLab;//回复状态
+@property (nonatomic ,weak) UIButton *participate;//参加
+@property (nonatomic ,weak) UIButton *notParticipate;//不参加
+@property (nonatomic ,weak) UIButton *modify;//修改
 @property (nonatomic ,weak) UIView *coverLayer;
 
-@property (nonatomic ,copy) NSString *notPartiReason;
+@property (nonatomic ,copy) NSString *notPartiReason;//不参加的理由
+@property (nonatomic ,assign) HXReplyStatus state;
+@property (nonatomic ,strong) GroupInfoModel *infoModel;
 
 @end
 
 @implementation EventDetailViewController
+- (instancetype)initWithInfoModel:(GroupInfoModel *)model{
+    if (self = [super init]) {
+        self.infoModel = model;
+    }
+    return self;
+}
 
 - (void)viewDidLoad {
     [super viewDidLoad];
 
     [self viewsSetting];
+    [self addObserver:self forKeyPath:NSStringFromSelector(@selector(state)) options:NSKeyValueObservingOptionNew context:nil];
+    //此处获取回复状态
+    self.state = HXReplyStatusNotReply;//测试
 }
 
 - (void)back{
     [self.navigationController popViewControllerAnimated:YES];
+}
+
+#pragma mark ui相关
+//重新编辑事务,只有时间发布者能看到这个按钮
+- (void)editEvent{
+    EventPublishViewController *vc = [[EventPublishViewController alloc]initWithInfoModel:self.infoModel];
+    [self.navigationController pushViewController:vc animated:YES];
+}
+
+- (void)curDateScuedule{
+    self.coverLayer = [Utils coverLayerAddToWindow];
+    CGFloat width = 650 / 750.0 * kScreenWidth -50;
+    CGFloat height = (178 + 76)/2 + 245;
+    __weak typeof(self) ws = self;
+    SectionSchedule *scheduleView = [[SectionSchedule alloc]initWithFrame:CGRectMake(0, 0, width, height) selectedDate:[NSDate date] confirmBlock:^{
+        [ws.coverLayer removeFromSuperview];
+    }];
+    [Utils putViewOnCenter:scheduleView superView:self.view];
+    [_coverLayer addSubview:scheduleView];
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context{
+    int state = [change[NSKeyValueChangeNewKey] intValue];
+    if (state == HXReplyStatusNotReply) {
+        self.replyTag.text = @"未回复";
+        self.replyStateLab.text = @"回复状态：未回复";
+        self.participate.hidden = NO;
+        self.notParticipate.hidden = NO;
+        self.modify.hidden = YES;
+    }else{
+        self.replyTag.text = @"已回复";
+        self.participate.hidden = YES;
+        self.notParticipate.hidden = YES;
+        self.modify.hidden = NO;
+        if (state == HXReplyStatusParticipate) {
+            self.replyStateLab.text = @"回复状态：已参加";
+        } else{
+            self.replyStateLab.text = @"回复状态：不参加";
+        }
+    }
+}
+
+//修改回复状态。参加、不参加
+- (void)modifyState:(UIButton *)sender{
+    sender.hidden = YES;
+    self.participate.hidden = NO;
+    self.notParticipate.hidden = NO;
+    self.replyTag.text = @"未回复";
+}
+
+//输入不参加的原因
+- (void)notPartiAction{
+    self.coverLayer = [Utils coverLayerAddToWindow];
+    __weak typeof(self) ws = self;
+    ReasonView *reasonView = [[ReasonView alloc]initWithCancelBlock:^{
+        [ws.coverLayer removeFromSuperview];
+    } confirmBlock:^(NSString *reason) {
+        ws.notPartiReason = [reason copy];
+        ws.state = HXReplyStatusNotParticipate;
+        NSLog(@"%@",ws.notPartiReason);
+        [ws.coverLayer removeFromSuperview];
+    }];
+    reasonView = (ReasonView *)[Utils putViewOnCenter:reasonView superView:self.view];
+    [_coverLayer addSubview:reasonView];
+}
+
+//参加
+- (void)partiAction{
+    self.state = HXReplyStatusParticipate;
+}
+
+#pragma mark 其他
+//发布时间格式化
+- (NSString *)publishTimeToFormatStr:(NSDate *)date{
+    NSDateFormatter *df = [[NSDateFormatter alloc]init];
+    [df setDateFormat:@"yyyy-MM-dd HH:mm"];
+    return [df stringFromDate:date];
+}
+
+//时间时间格式化
+- (NSString *)eventTimeToFormatStr:(NSString *)eventTime eventSection:(NSMutableArray *)secArr{
+    //这里基本照抄 事务管理 对应的逻辑
+    NSDateFormatter *df = [[NSDateFormatter alloc]init];
+    [df setDateFormat:@"yyyyMMdd"];
+    NSDate * eventDate = [df dateFromString:eventTime];//日期 年月日
+    NSString * dayStr = [eventDate dayOfCHNWeek];//周几
+    NSCalendar *gregorian = [[NSCalendar alloc]initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
+    NSDateComponents *curDateComp = [gregorian components:(NSCalendarUnitYear|NSCalendarUnitMonth|NSCalendarUnitDay) fromDate:eventDate];
+    NSInteger month = curDateComp.month;//月
+    NSInteger day = curDateComp.day;//日
+    AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+    NSInteger dateDistance = [DateUtils dateDistanceFromDate:eventDate toDate:appDelegate.firstDateOfTerm];
+    NSInteger week = dateDistance / 7 + 1;
+    if (week < 1 || week > 24){
+        return [NSString stringWithFormat:@"第 周 周%@ %@月%@日 %@节",dayStr,[NSNumber numberWithInteger:month],[NSNumber numberWithInteger:day],[Utils sectionArrToFormatStr:secArr]];
+    }else{
+        return [NSString stringWithFormat:@"第%@周 周%@ %@月%@日 %@节",[NSNumber numberWithInteger:week],dayStr,[NSNumber numberWithInteger:month],[NSNumber numberWithInteger:day],[Utils sectionArrToFormatStr:secArr]];
+    }
 }
 
 #pragma mark viewsSetting
@@ -60,7 +180,7 @@
     
     UILabel *publishTime = [[UILabel alloc]init];
     _publishTime = publishTime;
-    _publishTime.text = @"2016-8-20 19:00";
+    _publishTime.text = [self publishTimeToFormatStr:self.infoModel.publishTime];
     _publishTime.textColor = [Utils colorWithHexString:@"#999999"];
     _publishTime.font = [UIFont systemFontOfSize:11];
     [self.view addSubview:_publishTime];
@@ -72,10 +192,6 @@
     UIView *bg = [[UIView alloc]init];
     bg.backgroundColor = [UIColor whiteColor];
     bg.layer.cornerRadius = 5.0;
-//    bg.layer.shadowColor = [UIColor blackColor].CGColor;
-//    bg.layer.shadowOffset = CGSizeMake(4, 4);
-//    bg.layer.shadowRadius = 4;
-//    bg.layer.opaque = 1;
     [self.view addSubview:bg];
     [bg mas_makeConstraints:^(MASConstraintMaker *make) {
         make.left.equalTo(self.view).offset(12);
@@ -97,7 +213,7 @@
     
     UILabel *publisher = [[UILabel alloc]init];
     _publisher = publisher;
-    _publisher.text = @"发布者：";
+    _publisher.text = [NSString stringWithFormat:@"发布者：%@", self.infoModel.publisher];
     _publisher.textColor = [Utils colorWithHexString:@"#333333"];
     _publisher.font = [UIFont systemFontOfSize:15];
     [bg addSubview:_publisher];
@@ -109,7 +225,7 @@
     
     UILabel *event = [[UILabel alloc]init];
     _event = event;
-    _event.text = @"事件：";
+    _event.text = [NSString stringWithFormat:@"事件：%@", self.infoModel.event];
     _event.textColor = [Utils colorWithHexString:@"#333333"];
     _event.font = [UIFont systemFontOfSize:13];
     [bg addSubview:_event];
@@ -121,7 +237,7 @@
     
     UILabel *eventTime = [[UILabel alloc]init];
     _eventTime = eventTime;
-    _eventTime.text = @"时间：";
+    _eventTime.text = [NSString stringWithFormat:@"时间：%@", [self eventTimeToFormatStr:self.infoModel.eventTime eventSection:self.infoModel.eventSection]];
     _eventTime.textColor = [Utils colorWithHexString:@"#333333"];
     _eventTime.font = [UIFont systemFontOfSize:13];
     [bg addSubview:_eventTime];
@@ -133,7 +249,7 @@
     
     UILabel *comment = [[UILabel alloc]init];
     _comment = comment;
-    _comment.text = @"备注：";
+    _comment.text = [NSString stringWithFormat:@"备注：%@", self.infoModel.comment];
     _comment.numberOfLines = 0;
     _comment.textColor = [Utils colorWithHexString:@"#333333"];
     _comment.font = [UIFont systemFontOfSize:13];
@@ -150,6 +266,7 @@
     _schedule.titleLabel.font = [UIFont systemFontOfSize:12];
     [_schedule setTitleColor:[Utils colorWithHexString:@"#00a7fa"] forState:UIControlStateNormal];
     [_schedule setTitle:@"查看当日行程" forState:UIControlStateNormal];
+    [_schedule addTarget:self action:@selector(curDateScuedule) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:_schedule];
     [_schedule mas_makeConstraints:^(MASConstraintMaker *make) {
         make.size.mas_equalTo(CGSizeMake(80, 40));
@@ -158,12 +275,12 @@
     }];
     
     UILabel *replyState = [[UILabel alloc]init];
-    _replyState = replyState;
-    _replyState.text = @"回复状态：已参加";
-    _replyState.textColor = [Utils colorWithHexString:@"#333333"];
-    _replyState.font = [UIFont systemFontOfSize:15];
-    [self.view addSubview:_replyState];
-    [_replyState mas_makeConstraints:^(MASConstraintMaker *make) {
+    _replyStateLab = replyState;
+    _replyStateLab.text = @"回复状态：未回复";
+    _replyStateLab.textColor = [Utils colorWithHexString:@"#333333"];
+    _replyStateLab.font = [UIFont systemFontOfSize:15];
+    [self.view addSubview:_replyStateLab];
+    [_replyStateLab mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(bg.mas_bottom).offset(100);
         make.centerX.equalTo(self.view);
     }];
@@ -173,11 +290,12 @@
     _modify.titleLabel.font = [UIFont systemFontOfSize:15];
     [_modify setTitleColor:[Utils colorWithHexString:@"#00a7fa"] forState:UIControlStateNormal];
     [_modify setTitle:@"修改" forState:UIControlStateNormal];
+    [_modify addTarget:self action:@selector(modifyState:) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:_modify];
     [_modify mas_makeConstraints:^(MASConstraintMaker *make) {
         make.size.mas_equalTo(CGSizeMake(40, 40));
-        make.left.equalTo(_replyState.mas_right).offset(55);
-        make.centerY.equalTo(_replyState);
+        make.left.equalTo(_replyStateLab.mas_right).offset(55);
+        make.centerY.equalTo(_replyStateLab);
     }];
     
     UIButton *notParticipate = [[UIButton alloc]init];
@@ -186,11 +304,11 @@
     _notParticipate.titleLabel.font = [UIFont systemFontOfSize:14];
     _notParticipate.layer.cornerRadius = 5;
     [_notParticipate setTitle:@"不参加" forState:UIControlStateNormal];
-    [_notParticipate addTarget:self action:@selector(editReason) forControlEvents:UIControlEventTouchUpInside];
+    [_notParticipate addTarget:self action:@selector(notPartiAction) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:_notParticipate];
     [_notParticipate mas_makeConstraints:^(MASConstraintMaker *make) {
         make.size.mas_equalTo(CGSizeMake(90, 40));
-        make.top.equalTo(_replyState.mas_bottom).offset(18);
+        make.top.equalTo(_replyStateLab.mas_bottom).offset(18);
         make.right.equalTo(self.view.mas_centerX).offset(-15);
     }];
     
@@ -200,39 +318,13 @@
     _participate.titleLabel.font = [UIFont systemFontOfSize:14];
     _participate.layer.cornerRadius = 5;
     [_participate setTitle:@"参加" forState:UIControlStateNormal];
+    [_participate addTarget:self action:@selector(partiAction) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:_participate];
     [_participate mas_makeConstraints:^(MASConstraintMaker *make) {
         make.size.mas_equalTo(CGSizeMake(90, 40));
-        make.top.equalTo(_replyState.mas_bottom).offset(18);
+        make.top.equalTo(_replyStateLab.mas_bottom).offset(18);
         make.left.equalTo(self.view.mas_centerX).offset(15);
     }];
-}
-
-//输入不参加的原因
-- (void)editReason{
-    UIView *coverLayer = [self coverLayerInit];
-    self.coverLayer = coverLayer;
-    AppDelegate *app = (AppDelegate *)[[UIApplication  sharedApplication] delegate];
-    [app.window addSubview:_coverLayer];
-    
-    ReasonView *reasonView = [[ReasonView alloc]initWithCancelBlock:^{
-        [self.coverLayer removeFromSuperview];
-    } confirmBlock:^(NSString *reason) {
-        [self.coverLayer removeFromSuperview];
-        self.notPartiReason = [reason copy];
-        NSLog(@"%@",self.notPartiReason);
-    }];
-    CGPoint center =  reasonView.center;
-    center.x = self.view.frame.size.width/2;
-    center.y = self.view.frame.size.height/2;
-    reasonView.center = center;
-    [_coverLayer addSubview:reasonView];
-}
-
-- (UIView *)coverLayerInit{
-    UIView *coverLayer = [[UIView alloc]initWithFrame:CGRectMake(0, 0, kScreenWidth, kScreenHeight)];
-    coverLayer.backgroundColor = [UIColor colorWithRed:88/255.0 green:88/255.0  blue:88/255.0  alpha:0.5];
-    return coverLayer;
 }
 
 #pragma mark lazy
@@ -248,4 +340,7 @@
     // Dispose of any resources that can be recreated.
 }
 
+- (void)dealloc{
+    [self removeObserver:self forKeyPath:NSStringFromSelector(@selector(state))];
+}
 @end

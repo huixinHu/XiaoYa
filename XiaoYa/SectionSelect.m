@@ -47,7 +47,7 @@
 
 - (instancetype)initWithFrame:(CGRect)frame sectionArr:(NSMutableArray* )sectionArray selectedDate:(NSDate*)date originIndexs:(NSMutableArray*)originIndexs originDate:(NSDate* )originDate termFirstDate:(NSDate*)firstDate
 {
-    if (self = [super initWithFrame:frame]) {
+    if (self = [super initWithFrame:frame]) {//固定size：宽650/750*屏宽，高：178/2+(40*6+5)+76/2
         self.backgroundColor = [UIColor whiteColor];
         self.layer.cornerRadius = 10.0;
 //        self.layer.masksToBounds = YES;
@@ -218,22 +218,6 @@
     _multipleChoiceTable.frame = CGRectMake(0, 178/2, self.frame.size.width,245);
 }
 
-//- (void)drawRect:(CGRect)rect{
-//    CGFloat width = self.frame.size.width;
-//    CGFloat radius = 10;
-//    UIBezierPath*path = [UIBezierPath bezierPath];
-//    [path addArcWithCenter:CGPointMake(radius, radius) radius:radius startAngle:M_PI endAngle:M_PI/2*3 clockwise:1];
-//    [path moveToPoint:CGPointMake(radius, 0)];
-//    [path addLineToPoint:CGPointMake(width - radius, 0)];
-//    [path addArcWithCenter:CGPointMake(width - radius , radius) radius:radius startAngle:M_PI*3/2 endAngle:M_PI*2 clockwise:1];
-//    [path addLineToPoint:CGPointMake(width, 178/2)];
-//    [path addLineToPoint:CGPointMake(0 , 178/2)];
-//    [path addLineToPoint:CGPointMake(0, radius)];
-//    [path closePath];
-//    UIColor *fillColor = [UIColor colorWithRed:57/255.0 green:185/255.0 blue:248/255.0 alpha:1.0];//39b9f8
-//    [fillColor set];
-//    [path fill];
-//}
 - (void)drawHeader{
     UIGraphicsBeginImageContextWithOptions(CGSizeMake(650 / 750.0 * kScreenWidth, 322), NO, 0.0);
     CGContextRef ctx = UIGraphicsGetCurrentContext();

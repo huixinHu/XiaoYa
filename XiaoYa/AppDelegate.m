@@ -32,10 +32,6 @@
     CourseTableViewController *courseTable = [[CourseTableViewController alloc]init];
     UINavigationController *courseNavVC = [[UINavigationController alloc]initWithRootViewController:courseTable];
     [self setTabBarItem:courseTable.tabBarItem image:@"schedule" selectedImage:@"日程" title:@"日程" tag:0];
-//    courseTable.tabBarItem.title = @"日程";
-//    courseTable.tabBarItem.image = [[UIImage imageNamed:@"schedule"]imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
-//    courseTable.tabBarItem.selectedImage = [[UIImage imageNamed:@"日程"]imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
-    
     GroupHomePageViewController *group = [[GroupHomePageViewController alloc]init];
     UINavigationController *groupNavVC = [[UINavigationController alloc]initWithRootViewController:group];
     [self setTabBarItem:group.tabBarItem image:@"群组未选中" selectedImage:@"群组" title:@"群组" tag:1];
@@ -50,6 +46,10 @@
     
     [self.window makeKeyAndVisible];
     self.isLogin = YES;//赋初值，未登录
+    
+    NSDateFormatter * dateFormatter = [[NSDateFormatter alloc] init];
+    [dateFormatter setDateFormat:@"yyyyMMdd"];
+    self.firstDateOfTerm = [dateFormatter dateFromString:@"20170904"];
     return YES;
 }
 

@@ -22,4 +22,5 @@
  *  @param controllersArray         子控制器数组
  */
 - (instancetype)initWithControllersArray:(NSArray *)controllersArray firstDateOfTerm:(NSDate *)firstDateOfTerm;
+- (instancetype)init NS_UNAVAILABLE;
 @end

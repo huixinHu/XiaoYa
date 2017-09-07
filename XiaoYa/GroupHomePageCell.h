@@ -10,8 +10,8 @@
 @class GroupListModel;
 
 @interface GroupHomePageCell : UITableViewCell
-@property (nonatomic ,strong)GroupListModel *group;
+@property (nonatomic ,strong ,nonnull)GroupListModel *group;
 
-+ (instancetype)groupHomePageCellWithTableView:(UITableView *)tableView;
++ (nonnull instancetype)groupHomePageCellWithTableView:(nonnull UITableView *)tableView;
 
 @end

@@ -9,13 +9,15 @@
 #import <UIKit/UIKit.h>
 @class GroupMemberModel;
 
-typedef void(^selectedBlock)(NSIndexPath *indexPath);
-typedef void(^deselectedBlock)(NSIndexPath *indexPath);
+typedef void(^selectedBlock)(NSIndexPath * _Nullable indexPath);
+typedef void(^deselectedBlock)(NSIndexPath * _Nullable indexPath);
 
 @interface MemberSearchTableViewCell : UITableViewCell
-@property (nonatomic ,strong) GroupMemberModel *member;
-@property (nonatomic ,weak) UIButton *selectBtn;
+@property (nonatomic ,strong ,nonnull) GroupMemberModel *member;
+@property (nonatomic ,weak) UIButton * _Nullable selectBtn;
+@property (nonatomic ,copy ,nullable) selectedBlock selectBlock;
+@property (nonatomic ,copy ,nullable) deselectedBlock deselectBlock;
 
-+ (instancetype)MemberSearchCellWithTableView:(UITableView *)tableView selectBlock:(selectedBlock)select deselectBlock:(deselectedBlock)deselect addedMembers:(NSMutableArray *)addedModels;
++ (nonnull instancetype)MemberSearchCellWithTableView:(nonnull UITableView *)tableView selectBlock:(nullable selectedBlock)select deselectBlock:(nullable deselectedBlock)deselect addedMembers:(nullable NSMutableArray *)addedModels;
 
 @end

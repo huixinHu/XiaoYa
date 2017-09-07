@@ -15,7 +15,7 @@
 @implementation MutipleChoiceCell
 
 + (instancetype)MutipleChoiceCellWithTableView:(UITableView *)tableview selectBlock:(selectedBlock)select deselectBlock:(deselectedBlock)deselect {
-    static NSString *ID = @"ReplyDeadlineCell";
+    static NSString *ID = @"MutipleChoiceCell";
     MutipleChoiceCell *cell = [tableview dequeueReusableCellWithIdentifier:ID];
     if (cell == nil) {
         cell = [[MutipleChoiceCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:ID selectBlock:[select copy] deselectBlock:[deselect copy]];
@@ -40,10 +40,14 @@
     
     if (sender.isSelected) {//已经选中了
         sender.selected = NO;//置为未选中
-        self.deselectBlock(indexPath);
+        if (self.deselectBlock != nil) {
+            self.deselectBlock(indexPath);
+        }
     }else{
         sender.selected = YES;
-        self.selectBlock(indexPath);
+        if (self.selectBlock != nil) {
+            self.selectBlock(indexPath);
+        }
     }
 }
 @end

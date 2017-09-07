@@ -132,24 +132,24 @@
     [self.view endEditing:YES];
     NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"MATCH",@"type",self.textCode.text,@"textCode", nil];
     __weak typeof (self)weakself = self;
-//    dispatch_async(dispatch_get_global_queue(0, 0), ^{
-//        [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict success:^(NSURLSessionDataTask *task, id responseObject) {
-//            NSDictionary *responseDict = (NSDictionary *)responseObject;
-//            NSLog(@"dataMessage:%@",[responseDict objectForKey:@"message"]);
-//            dispatch_async(dispatch_get_main_queue(), ^{
-//                if ([[responseDict objectForKey:@"state"]boolValue] == 0){
-//                    if([[responseDict objectForKey:@"message"]  isEqual: @"验证失败！请核对您输入的验证码是否正确。"]){
-//                        weakself.prompt.text = @"验证码错误";
-//                    }
-//                }else{
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
+            NSDictionary *responseDict = (NSDictionary *)responseObject;
+            NSLog(@"dataMessage:%@",[responseDict objectForKey:@"message"]);
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if ([[responseDict objectForKey:@"state"]boolValue] == 0){
+                    if([[responseDict objectForKey:@"message"]  isEqual: @"验证失败！请核对您输入的验证码是否正确。"]){
+                        weakself.prompt.text = @"验证码错误";
+                    }
+                }else{
                     RegiPwdViewController *nextVC = [[RegiPwdViewController alloc]initWithPhoneNum:self.phoneNum];
                     [weakself.navigationController pushViewController:nextVC animated:YES];
-//                }
-//            });
-//        } failure:^(NSURLSessionDataTask *task, NSError *error) {
-//            NSLog(@"Error: %@", error);
-//        } refresh:NO];
-//    });
+                }
+            });
+        } failure:^(NSURLSessionDataTask *task, NSError *error) {
+            NSLog(@"Error: %@", error);
+        } refresh:NO];
+    });
 }
 
 #pragma mark textfield

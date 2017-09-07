@@ -13,12 +13,14 @@
 #import "EventPublishViewController.h"
 #import "Utils.h"
 #import "Masonry.h"
+#import "GroupInfoModel.h"
 
 @interface GroupInfoViewController ()<UITableViewDelegate ,UITableViewDataSource >
 @property (nonatomic ,weak) UITableView *infoList;
 @property (nonatomic ,weak) UIButton *publish;
 
 @property (nonatomic ,copy) NSString *groupName;
+@property (nonatomic ,strong) NSMutableArray *infoModels;
 @end
 
 @implementation GroupInfoViewController
@@ -43,12 +45,6 @@
     [self.navigationController popViewControllerAnimated:YES];
 }
 
-//#pragma mark GroupInfoCellDelegate
-//- (void)GroupInfoCell:(GroupInfoTableViewCell *)cell selectIndex:(NSIndexPath *)indexPath{
-//    EventDetailViewController *VC = [[EventDetailViewController alloc]init];
-//    [self.navigationController pushViewController:VC animated:YES];
-//}
-
 - (void)groupDetailData{
     GroupDetailViewController *groupDetailVC = [[GroupDetailViewController alloc] init];
     [self.navigationController pushViewController:groupDetailVC animated:YES];
@@ -56,7 +52,7 @@
 
 #pragma mark tableview datasource &delegate
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
-    return 2;
+    return self.infoModels.count;
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
@@ -64,12 +60,12 @@
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
-    GroupInfoTableViewCell *cell = [GroupInfoTableViewCell GroupInfoCellWithTableView:tableView eventDetailBlock:^{
-        EventDetailViewController *VC = [[EventDetailViewController alloc]init];
-        [self.navigationController pushViewController:VC animated:YES];
+    __weak typeof(self) ws = self;
+    GroupInfoTableViewCell *cell = [GroupInfoTableViewCell GroupInfoCellWithTableView:tableView eventDetailBlock:^(GroupInfoModel *model) {
+        EventDetailViewController *VC = [[EventDetailViewController alloc]initWithInfoModel:ws.infoModels[indexPath.row]];
+        [ws.navigationController pushViewController:VC animated:YES];
     }];
-//    cell.member = self.memberModels[indexPath.row];;
-//    cell.delegate = self;
+    cell.model = self.infoModels[indexPath.row];
     return cell;
 }
 
@@ -125,8 +121,20 @@
 }
 
 - (void)publishEvent{
-    EventPublishViewController *VC = [[EventPublishViewController alloc]init];
+    GroupInfoModel *dfm = [GroupInfoModel defaultModel];
+    EventPublishViewController *VC = [[EventPublishViewController alloc]initWithInfoModel:dfm];
     [self.navigationController pushViewController:VC animated:YES];
+}
+
+- (NSMutableArray *)infoModels{
+    if (_infoModels == nil) {
+        NSMutableArray *modelArr = [NSMutableArray array];
+        NSDictionary *testDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"201709011200",@"publishTime",@"张3",@"publisher",@"开会",@"event",@"20170910",@"eventTime",@",1,2,",@"eventSection",@"记得准时到",@"comment",@"201709091100",@"deadlineTime",nil];
+        GroupInfoModel *model = [GroupInfoModel groupInfoWithDict:testDict];
+        [modelArr addObject:model];
+        _infoModels = modelArr;
+    }
+    return _infoModels;
 }
 
 - (void)didReceiveMemoryWarning {

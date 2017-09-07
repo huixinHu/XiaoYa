@@ -8,6 +8,10 @@
 
 #import "Utils.h"
 #import "NSDate+Calendar.h"
+#import "AppDelegate.h"
+
+#define kScreenWidth [UIApplication sharedApplication].keyWindow.bounds.size.width
+#define kScreenHeight [UIApplication sharedApplication].keyWindow.bounds.size.height
 @implementation Utils
 #pragma mark - 颜色转换 IOS中十六进制的颜色转换为UIColor
 + (UIColor *)colorWithHexString: (NSString *)color
@@ -57,6 +61,7 @@
     if (sectionArray.count == 0) {
         return [NSMutableArray array];
     }
+    [self sortArrayFromMinToMax:sectionArray];
     NSMutableArray *sections = [NSMutableArray array];
     NSInteger count = sectionArray.count;
     int sectionCount = 1;
@@ -243,7 +248,8 @@
 }
 
 //把数组中每一个选项依次拼接成一个字符串，用“、”分割
-+ (NSString *)appendRemindStringWithArray:(NSArray *)selectArray itemsArray:(NSArray *)items{
++ (NSString *)appendRemindStringWithArray:(NSMutableArray *)selectArray itemsArray:(NSArray *)items{
+    [self sortArrayFromMinToMax:selectArray];
     if (selectArray.count == 0) {
         return nil;
     }
@@ -256,6 +262,7 @@
 
 //拼接节数字符串，参数是代表节数的数组，先将早午晚的特殊节数做转换，再把数组中每一个选项依次拼接成一个字符串，用“、”分割
 + (NSString *)appendSectionStringWithArray:(NSMutableArray<NSString*>*)sectionArray{
+    [self sortArrayFromMinToMax:sectionArray];
     NSMutableArray *tempArray = [sectionArray mutableCopy];
     for (int i = 0; i < tempArray.count ; i ++) {
         if ([tempArray[i] intValue] == 0) {
@@ -288,5 +295,58 @@
             return NSOrderedDescending;//将第一个元素放在第二个元素之后
         }
     }];
+}
+
+//生成屏幕遮罩
++ (UIView *)coverLayerAddToWindow{
+    UIView *coverLayer = [[UIView alloc]initWithFrame:CGRectMake(0, 0, kScreenWidth, kScreenHeight)];//生成遮罩层
+    coverLayer.backgroundColor = [UIColor colorWithRed:88/255.0 green:88/255.0  blue:88/255.0  alpha:0.5];
+    AppDelegate *app = (AppDelegate *)[[UIApplication  sharedApplication] delegate];
+    [app.window addSubview:coverLayer];//全屏遮罩要加到window上
+    return coverLayer;
+}
+
+//把viewd定位到屏幕正中央,然后view原样返回
++ (UIView *)putViewOnCenter:(UIView *)subview superView:(UIView *)supView{
+    CGPoint center =  subview.center;
+    center.x = supView.frame.size.width/2;
+    center.y = supView.frame.size.height/2;
+    subview.center = center;
+    return subview;
+}
+
+//
++ (NSString *)sectionArrToFormatStr:(NSMutableArray *)sectionsArr{
+    [self sortArrayFromMinToMax:sectionsArr];
+    
+    NSMutableString *formatStr = [NSMutableString string];
+    NSMutableArray *sections = [self subSectionArraysFromArray:sectionsArr];
+    [sections enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSMutableArray *subArr = (NSMutableArray *)obj;
+        subArr[0] = [self sectionStrConvert:subArr[0]];
+        if (subArr.count == 1) {
+            [formatStr appendString:[NSString stringWithFormat:@"%@、", subArr[0]]];
+        } else{
+            subArr[subArr.count-1] = [self sectionStrConvert:[subArr lastObject]];
+            [formatStr appendString:[NSString stringWithFormat:@"%@-%@、", [subArr firstObject], [subArr lastObject]]];
+        }
+    }];
+    return [formatStr substringToIndex:formatStr.length-1];//截去最后一个"、"
+}
+
+//sectionStr节数
++ (NSString *)sectionStrConvert:(NSString *)sectionStr{
+    NSString *tempStr = sectionStr;
+    if ([sectionStr intValue] == 0) {
+        tempStr = @"早间";
+    }else if ([sectionStr intValue] == 5){
+        tempStr = @"午间";
+    }else if([sectionStr intValue] > 5 && [sectionStr intValue] < 14){
+        tempStr = [NSString stringWithFormat:@"%d",[sectionStr intValue] - 1];
+    }
+    else if ([sectionStr intValue] == 14){
+        tempStr = @"晚间";
+    }
+    return tempStr;
 }
 @end

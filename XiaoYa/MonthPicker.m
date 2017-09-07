@@ -130,9 +130,7 @@
 
 - (void)layoutSubviews{
     [super layoutSubviews];
-//    _pickerview.frame = CGRectMake(0, 86, 265, 200);
     CGPoint center =  _pickerview.center;
-//    center.x = self.frame.size.width/2;
     
     _yearLab.frame = CGRectMake(0, 13, 50, 18);
     center =  _yearLab.center;
@@ -181,23 +179,6 @@
     self.monthLab.text = [NSString stringWithFormat: @"%@月", [NSNumber numberWithInteger:_month]];
     lastyear = newyear;
 }
-
-//- (void)drawRect:(CGRect)rect{
-//    CGFloat width = self.frame.size.width;
-//    CGFloat radius = 10;
-//    UIBezierPath*path = [UIBezierPath bezierPath];
-//    [path addArcWithCenter:CGPointMake(radius, radius) radius:radius startAngle:M_PI endAngle:M_PI/2*3 clockwise:1];
-//    [path moveToPoint:CGPointMake(radius, 0)];
-//    [path addLineToPoint:CGPointMake(width - radius, 0)];
-//    [path addArcWithCenter:CGPointMake(width - radius , radius) radius:radius startAngle:M_PI*3/2 endAngle:M_PI*2 clockwise:1];
-//    [path addLineToPoint:CGPointMake(width, 86)];
-//    [path addLineToPoint:CGPointMake(0 , 86)];
-//    [path addLineToPoint:CGPointMake(0, radius)];
-//    [path closePath];
-//    UIColor *fillColor = [UIColor colorWithRed:57/255.0 green:185/255.0 blue:248/255.0 alpha:1.0];//39b9f8
-//    [fillColor set];
-//    [path fill];
-//}
 
 - (void)drawHeader{
     UIGraphicsBeginImageContextWithOptions(CGSizeMake(265, 322), NO, 0.0);

@@ -20,4 +20,5 @@
 
 //传入已经添加过的成员模型数组
 - (instancetype)initWithAddedMembers:(NSMutableArray *)addedMembers;
+- (instancetype)init NS_UNAVAILABLE;
 @end

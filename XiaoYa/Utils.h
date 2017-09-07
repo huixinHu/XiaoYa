@@ -76,4 +76,28 @@
  @param arr 数字字符串数组
  */
 + (void)sortArrayFromMinToMax:(NSMutableArray *)arr;
+
+/**
+ 生成屏幕遮罩并添加到屏幕上
+
+ @return 遮罩视图
+ */
++ (UIView *)coverLayerAddToWindow;
+
+/**
+ 把子view定位到父view正中央,然后子view原样返回
+
+ @param subview 子view
+ @param supView 父view
+ @return 子view
+ */
++ (UIView *)putViewOnCenter:(UIView *)subview superView:(UIView *)supView;
+
+/**
+ 把节数数组转换为格式化的节数表示形式，对节数数组从小到大排序，然后分割连续段。连续段首尾用“-”连接，连续段之间用“、”连接：1-2、4-7
+
+ @param sectionsArr 节数数组
+ @return 格式化的节数表示字符串
+ */
++ (NSString *)sectionArrToFormatStr:(NSMutableArray *)sectionsArr;
 @end

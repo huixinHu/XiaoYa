@@ -10,4 +10,5 @@
 
 @interface RegiTextCodeViewController : UIViewController
 - (instancetype)initWithPhoneNum:(NSString *)phoneNum;
+- (instancetype)init NS_UNAVAILABLE;
 @end

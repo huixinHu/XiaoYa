@@ -11,5 +11,5 @@
 
 @interface GroupCreateViewController : UIViewController
 - (instancetype)initWithGroupManager:(GroupMemberModel *)model;
-
+- (instancetype)init NS_UNAVAILABLE;
 @end

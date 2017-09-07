@@ -7,7 +7,10 @@
 //
 
 #import <UIKit/UIKit.h>
+@class GroupInfoModel;
 
 @interface EventDetailViewController : UIViewController
 
+- (instancetype)initWithInfoModel:(GroupInfoModel *)model;
+- (instancetype)init NS_UNAVAILABLE;
 @end

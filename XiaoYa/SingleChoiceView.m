@@ -1,37 +1,36 @@
 //
-//  MutipleChoiceView.m
+//  SingleChoiceView.m
 //  XiaoYa
 //
-//  Created by commet on 2017/9/4.
+//  Created by commet on 2017/9/7.
 //  Copyright © 2017年 commet. All rights reserved.
-//多选列表弹窗
+//单选列表弹窗
 
-#import "MutipleChoiceView.h"
+#import "SingleChoiceView.h"
 #import "Utils.h"
 #import "Masonry.h"
-#import "MutipleChoiceCell.h"
+#import "SingleChoiceCell.h"
 
-@interface MutipleChoiceView() <UITableViewDelegate ,UITableViewDataSource>
+@interface SingleChoiceView() <UITableViewDelegate ,UITableViewDataSource>
 @property (nonatomic , weak) UIButton *confirmBtn;
 @property (nonatomic , weak) UIButton *cancelBtn;
-@property (nonatomic , weak) UITableView *multipleChoiceTable;
+@property (nonatomic , weak) UITableView *singleChoiceTable;
 @property (nonatomic , weak) UIView *line1;//横灰线
 @property (nonatomic , weak) UIView *line2;//竖灰线
 
 @property (nonatomic ,strong) NSArray *itemData;//单元格内容
-@property (strong, nonatomic) NSMutableArray *selectIndexs;//多选选中的行
+@property (nonatomic ,assign) NSInteger lastSelectIndex;//单选选中的行
 @property (nonatomic ,assign) CGFloat cellRowHeight;
 @end
 
-@implementation MutipleChoiceView
+@implementation SingleChoiceView
 - (instancetype)initWithItems:(NSArray *) items
-                selectedIndex:(NSArray *) indexsArray
+                selectedIndex:(NSInteger) index
                     viewWidth:(CGFloat) width
                    cellHeight:(CGFloat) rowHeight
        confirmCancelBtnHeight:(CGFloat) btnHeight
-                 confirmBlock:(confirmBlock) confirm
-                  cancelBlock:(cancelBlock) cancel
-              selectCellBlock:(cellSelectBlock) select
+                 confirmBlock:(singleConfirmBlock) confirm
+                  cancelBlock:(singleCancelBlock) cancel
 {
     CGFloat height = (items.count>7?7:items.count) * rowHeight + btnHeight;//设置最多显示7行选项
     if (self = [super initWithFrame:CGRectMake(0, 0, width, height)]) {
@@ -40,11 +39,10 @@
         self.layer.masksToBounds = YES;
         
         self.itemData = [items copy];
-        self.selectIndexs = [indexsArray mutableCopy];
+        self.lastSelectIndex = index;
         self.cellRowHeight = rowHeight;
         self.confirmBlock = [confirm copy];
         self.cancelBlock = [cancel copy];
-        self.selectBlock = select;
         [self commonInit];
     }
     return self;
@@ -54,7 +52,7 @@
 - (void)confirmAction{
     [self removeFromSuperview];
     if (self.confirmBlock != nil) {
-        self.confirmBlock(self.selectIndexs);
+        self.confirmBlock(self.lastSelectIndex);
     }
 }
 
@@ -69,14 +67,14 @@
 #pragma mark viewsetting
 - (void)commonInit{
     //单元格固定高度40；7行
-    UITableView *multipleChoiceTable = [[UITableView alloc]init];
-    _multipleChoiceTable = multipleChoiceTable;
-    _multipleChoiceTable.delegate = self;
-    _multipleChoiceTable.dataSource = self;
-    _multipleChoiceTable.separatorStyle = UITableViewCellSeparatorStyleNone;//去掉原生分割线
-    _multipleChoiceTable.bounces = NO;
-    [self addSubview:_multipleChoiceTable];
-    [_multipleChoiceTable mas_makeConstraints:^(MASConstraintMaker *make) {
+    UITableView *singleChoiceTable = [[UITableView alloc]init];
+    _singleChoiceTable = singleChoiceTable;
+    _singleChoiceTable.delegate = self;
+    _singleChoiceTable.dataSource = self;
+    _singleChoiceTable.separatorStyle = UITableViewCellSeparatorStyleNone;//去掉原生分割线
+    _singleChoiceTable.bounces = NO;
+    [self addSubview:_singleChoiceTable];
+    [_singleChoiceTable mas_makeConstraints:^(MASConstraintMaker *make) {
         make.size.mas_equalTo(CGSizeMake(self.frame.size.width, 280));
         make.centerX.top.equalTo(self);
     }];
@@ -135,20 +133,17 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
     __weak typeof(self) ws = self;
-    MutipleChoiceCell *cell = [MutipleChoiceCell MutipleChoiceCellWithTableView:tableView selectBlock:^(NSIndexPath * indexPath) {
-        if (ws.selectBlock != nil) {
-            ws.selectBlock(tableView ,ws.selectIndexs ,indexPath);
-        }
-    } deselectBlock:^(NSIndexPath * indexPath) {
-        [ws.selectIndexs removeObject:[NSString stringWithFormat:@"%@",[NSNumber numberWithInteger:indexPath.row]]];
+    SingleChoiceCell *cell = [SingleChoiceCell SingleChoiceCellWithTableView:tableView selectBlock:^(NSIndexPath * _Nullable indexPath) {
+        NSUInteger newIndex[] = {0, ws.lastSelectIndex};
+        NSIndexPath *newPath = [[NSIndexPath alloc] initWithIndexes:newIndex length:2];
+        SingleChoiceCell *lastCell = [tableView cellForRowAtIndexPath:newPath];
+        lastCell.choiceBtn.selected = NO;
+        ws.lastSelectIndex = indexPath.row;
     }];
-    
     cell.model = self.itemData[indexPath.row];
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
-    if ([_selectIndexs containsObject:[NSString stringWithFormat:@"%@",[NSNumber numberWithInteger:indexPath.row]]]) {
-        [cell.choiceBtn setSelected:YES];
-    }else{
-        [cell.choiceBtn setSelected:NO];
+    if (indexPath.row == self.lastSelectIndex) {
+        cell.choiceBtn.selected = YES;
     }
     return cell;
 }

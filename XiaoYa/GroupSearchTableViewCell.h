@@ -11,13 +11,13 @@
 @class GroupSearchTableViewCell;
 @protocol GroupSearchCellDelegate <NSObject>
 //传回当前选中的indexpath
-- (void)groupSearchCell:(GroupSearchTableViewCell *)cell selectIndex:(NSIndexPath *)indexPath;
+- (void)groupSearchCell:(nonnull GroupSearchTableViewCell *)cell selectIndex:(nonnull NSIndexPath *)indexPath;
 
 @end
 
 @interface GroupSearchTableViewCell : UITableViewCell
-@property (nonatomic ,strong) GroupSearchModel *model;
-@property (nonatomic ,weak) id <GroupSearchCellDelegate> delegate;
+@property (nonatomic ,strong ,nonnull) GroupSearchModel *model;
+@property (nonatomic ,weak ,nullable) id <GroupSearchCellDelegate> delegate;
 
-+ (instancetype)GroupSearchCellWithTableView:(UITableView *)tableView;
++ (nonnull instancetype)GroupSearchCellWithTableView:(nonnull UITableView *)tableView;
 @end

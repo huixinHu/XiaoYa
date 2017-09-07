@@ -24,6 +24,8 @@
 @property (nonatomic , weak) id <BusinessViewControllerDelegate> delegate;
 
 - (instancetype)initWithfirstDateOfTerm:(NSDate *)firstDateOfTerm businessModel:(BusinessModel *)busModel;
+- (instancetype)init NS_UNAVAILABLE;
+
 - (void)dataStore;
 - (void)rightBarBtnCanBeSelect;
 @end

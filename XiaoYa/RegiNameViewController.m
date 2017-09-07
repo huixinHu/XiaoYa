@@ -60,25 +60,25 @@
         return;
     }
     
-//    NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"REGISTER",@"type",self.name.text,@"name", self.pwd,@"password",nil];
-//    __weak typeof (self)weakself = self;
-//    dispatch_group_t group = dispatch_group_create();
-//    dispatch_group_enter(group);
-//    [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict success:^(NSURLSessionDataTask *task, id responseObject) {
-//        NSDictionary *responseDict = (NSDictionary *)responseObject;
-//        NSLog(@"dataMessage:%@",[responseDict objectForKey:@"message"]);
-//        if ([[responseDict objectForKey:@"state"]boolValue] == 0){
-//            weakself.prompt.text = @"注册失败";
-//            return;
-//        }
-//        dispatch_group_leave(group);
-//    } failure:^(NSURLSessionDataTask *task, NSError *error) {
-//        NSLog(@"Error: %@", error);
-//        return;
-//    } refresh:NO];
-//    dispatch_group_notify(group, dispatch_get_global_queue(0, 0), ^{
+    NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"REGISTER",@"type",self.name.text,@"name", self.pwd,@"password",nil];
+    __weak typeof (self)weakself = self;
+    dispatch_group_t group = dispatch_group_create();
+    dispatch_group_enter(group);
+    [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
+        NSDictionary *responseDict = (NSDictionary *)responseObject;
+        NSLog(@"dataMessage:%@",[responseDict objectForKey:@"message"]);
+        if ([[responseDict objectForKey:@"state"]boolValue] == 0){
+            weakself.prompt.text = @"注册失败";
+            return;
+        }
+        dispatch_group_leave(group);
+    } failure:^(NSURLSessionDataTask *task, NSError *error) {
+        NSLog(@"Error: %@", error);
+        return;
+    } refresh:NO];
+    dispatch_group_notify(group, dispatch_get_global_queue(0, 0), ^{
         [self login];
-//    });
+    });
 
 }
 

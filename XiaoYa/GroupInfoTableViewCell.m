@@ -8,7 +8,11 @@
 
 #import "GroupInfoTableViewCell.h"
 #import "Utils.h"
+#import "DateUtils.h"
+#import "NSDate+Calendar.h"
 #import "Masonry.h"
+#import "GroupInfoModel.h"
+#import "AppDelegate.h"
 @interface GroupInfoTableViewCell()
 @property (nonatomic ,weak) UILabel *publishTime;
 @property (nonatomic ,weak) UIButton *infoPresentBtn;
@@ -19,11 +23,65 @@
 @property (nonatomic ,weak) UILabel *remainTime;
 @property (nonatomic ,weak) UIButton *replyDetail;
 
-@property (nonatomic ,copy) void(^detailBlock)();
+@property (nonatomic ,copy) GroupInfoDetail detailBlock;
+@property (nonatomic ,strong) NSDate *firstDateOfTerm;
 @end
 
 @implementation GroupInfoTableViewCell
-+ (instancetype)GroupInfoCellWithTableView:(UITableView *)tableView eventDetailBlock:(void(^)())block{
+- (void)setModel:(GroupInfoModel *)model{
+    self.publishTime.text = [self publishTimeToFormatStr:model.publishTime];
+    self.publisher.text = [NSString stringWithFormat:@"发布者：%@", model.publisher];
+    self.event.text = [NSString stringWithFormat:@"事件：%@", model.event];
+    self.eventTime.text = [NSString stringWithFormat:@"时间：%@", [self eventTimeToFormatStr:model.eventTime eventSection:model.eventSection]];
+    self.remainTime.text = [NSString stringWithFormat:@"剩余回复时间：%@", [self dlTimeToFormatStr:model.deadlineTime]];
+    //应有计时器刷新剩余回复时间界面的显示？
+}
+
+//把发布时间转换为特定格式时间字符串
+-(NSString *)publishTimeToFormatStr:(NSDate *)date{
+    NSDateFormatter *df = [[NSDateFormatter alloc]init];
+    [df setDateFormat:@"yyyy-MM-dd\nHH:mm"];
+    return [df stringFromDate:date];
+}
+
+//把截止回复时间转换为剩余回复时间格式
+- (NSString *)dlTimeToFormatStr:(NSString *)dlTimeStr{
+    NSDateFormatter *df = [[NSDateFormatter alloc]init];
+    [df setDateFormat:@"yyyyMMddHHmm"];
+    int ti = [[df dateFromString:dlTimeStr] timeIntervalSince1970] - [[NSDate date] timeIntervalSince1970];
+    NSString *formatStr = [NSString string];
+    if (ti < 0) {
+        formatStr = @"0天0小时0分";
+    } else{
+        int day = ti / (24 * 3600);
+        int hour = (ti%(24*3600))/3600;
+        int minute = ((ti%(24*3600))%3600)/60;
+        formatStr = [NSString stringWithFormat:@"%d天%d小时%d分", day, hour, minute];
+    }
+    return formatStr;
+}
+
+- (NSString *)eventTimeToFormatStr:(NSString *)eventTime eventSection:(NSMutableArray *)secArr{
+    //这里基本照抄 事务管理 对应的逻辑
+    NSDateFormatter *df = [[NSDateFormatter alloc]init];
+    [df setDateFormat:@"yyyyMMdd"];
+    NSDate * eventDate = [df dateFromString:eventTime];//日期 年月日
+    NSString * dayStr = [eventDate dayOfCHNWeek];//周几
+    NSCalendar *gregorian = [[NSCalendar alloc]initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
+    NSDateComponents *curDateComp = [gregorian components:(NSCalendarUnitYear|NSCalendarUnitMonth|NSCalendarUnitDay) fromDate:eventDate];
+    NSInteger month = curDateComp.month;//月
+    NSInteger day = curDateComp.day;//日
+    AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+    NSInteger dateDistance = [DateUtils dateDistanceFromDate:eventDate toDate:appDelegate.firstDateOfTerm];
+    NSInteger week = dateDistance / 7 + 1;
+    if (week < 1 || week > 24){
+        return [NSString stringWithFormat:@"第 周 周%@ %@月%@日 %@节",dayStr,[NSNumber numberWithInteger:month],[NSNumber numberWithInteger:day],[Utils sectionArrToFormatStr:secArr]];
+    }else{
+        return [NSString stringWithFormat:@"第%@周 周%@ %@月%@日 %@节",[NSNumber numberWithInteger:week],dayStr,[NSNumber numberWithInteger:month],[NSNumber numberWithInteger:day],[Utils sectionArrToFormatStr:secArr]];
+    }
+}
+
++ (instancetype)GroupInfoCellWithTableView:(UITableView *)tableView eventDetailBlock:(GroupInfoDetail)block{
     static NSString *ID = @"GroupInfoTableViewCell";
     GroupInfoTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:ID];
     if (cell == nil) {
@@ -32,7 +90,7 @@
     return cell;
 }
 
-- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier eventDetailBlock:(void(^)())block{
+- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier eventDetailBlock:(GroupInfoDetail)block{
     self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
     if (self) {
         self.detailBlock = [block copy];
@@ -42,7 +100,7 @@
 }
 
 - (void)eventDetail:(UIButton *)sender{
-    self.detailBlock();
+    self.detailBlock(self.model);
 }
 
 #pragma mark viewsSetting
@@ -68,15 +126,6 @@
         make.top.equalTo(verLine1.mas_bottom).offset(3);
         make.size.mas_equalTo(CGSizeMake(10, 10));
     }];
-//    UIView *verLine2 = [[UIView alloc]init];
-//    verLine2.backgroundColor = [Utils colorWithHexString:@"#d9d9d9"];
-//    [self.contentView addSubview:verLine2];
-//    [verLine2 mas_makeConstraints:^(MASConstraintMaker *make) {
-//        make.centerX.equalTo(verLine1);
-//        make.top.equalTo(circle.mas_bottom).offset(3);
-//        make.width.mas_equalTo(2);
-//        make.bottom.equalTo(self.contentView);
-//    }];
     
     //信息部分
     UILabel *publishTime = [[UILabel alloc]init];

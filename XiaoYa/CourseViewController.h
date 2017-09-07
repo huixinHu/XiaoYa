@@ -18,6 +18,7 @@
 @property (nonatomic,weak) id <CourseViewControllerDelegate> delegate;
 
 - (instancetype)initWithCourseModel:(NSMutableArray *)modelArray;
+- (instancetype)init NS_UNAVAILABLE;
 - (void)dataStore;
 - (void)rightBarBtnCanBeSelected;
 @end

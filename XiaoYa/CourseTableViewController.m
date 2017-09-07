@@ -138,8 +138,8 @@ static BOOL flag = false ;
 - (void)dataBase{
     //-------数据库
     [self.dbManager openDb:@"eventData.sqlite"];
-    [self.dbManager executeNonQuery:@"drop table if exists course_table"];
-    NSString *sql2 = [NSString stringWithFormat:@"create table IF NOT EXISTS  course_table(                                                                                                                id integer primary key autoincrement,                                                                       courseName text not null,                                                                                                                                        weeks text not null,                                                                                                                                                            weekday text not null,                                                                                                                                                              time text not null,                                                                                                                                                               place text not null);"];
+//    [self.dbManager executeNonQuery:@"drop table if exists course_table"];
+    NSString *sql2 = [NSString stringWithFormat:@"create table IF NOT EXISTS course_table(id integer primary key autoincrement,courseName text not null,                                                                                                                                        weeks text not null,                                                                                                                                                            weekday text not null,                                                                                                                                                              time text not null,                                                                                                                                                               place text not null);"];
     [self.dbManager executeNonQuery:sql2];
 }
 
@@ -1039,7 +1039,7 @@ static BOOL flag = false ;
     if (_firstDateOfTerm == nil) {
         NSDateFormatter * dateFormatter = [[NSDateFormatter alloc] init];
         [dateFormatter setDateFormat:@"yyyyMMdd"];
-        _firstDateOfTerm = [dateFormatter dateFromString:@"20170227"];
+        _firstDateOfTerm = [dateFormatter dateFromString:@"20170904"];
     }
     return _firstDateOfTerm;
 }

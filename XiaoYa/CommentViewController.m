@@ -50,7 +50,7 @@
 - (void)confirm{
     [self.navigationController popViewControllerAnimated:YES];
     [_commentTv resignFirstResponder];
-    self.cmpBlock(self.commentInfo);
+    self.cmpBlock(self.commentTv.text);
 }
 
 - (void)cancel{

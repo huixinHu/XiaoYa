@@ -11,4 +11,5 @@
 @interface RegiNameViewController : UIViewController
 
 - (instancetype)initWithPwd:(NSString *)pwd phoneNum:(NSString *)phoneNum;
+- (instancetype)init NS_UNAVAILABLE;
 @end
