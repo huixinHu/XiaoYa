@@ -7,6 +7,7 @@
 //
 
 #import "RegiNameViewController.h"
+#import "AppDelegate.h"
 #import "HXTextField.h"
 #import "Utils.h"
 #import "Masonry.h"
@@ -55,8 +56,8 @@
             return;
         }
     }
-    if (self.name.text.length >= 4) {
-        self.prompt.text = @"姓名最大长度不超过四个字";
+    if (self.name.text.length > 4) {
+        self.prompt.text = @"不超过4个字";
         return;
     }
     
@@ -85,18 +86,21 @@
 //注册成功自动登录
 - (void)login{
     NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"LOGIN",@"type",self.phoneNum,@"mobile",self.pwd,@"password", nil];
+    __weak typeof (self)ws = self;
     [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
         NSLog(@"登录dataID:%@",[responseObject objectForKey:@"identity"]);
         dispatch_async(dispatch_get_main_queue(), ^{
             if ([[responseObject objectForKey:@"state"]boolValue] == 0) {
                 _prompt.text = @"登录失败";
             }else {
-                UIViewController *temp = self.presentingViewController;//先取得presentingViewController。不先保存的话，popvc之后可能就为空了
-                [self.navigationController popToRootViewControllerAnimated:YES];
+                UIViewController *temp = ws.presentingViewController;//先取得presentingViewController。不先保存的话，popvc之后可能就为空了
+                [ws.navigationController popToRootViewControllerAnimated:YES];
                 [temp dismissViewControllerAnimated:YES completion:^{
                     [[NSNotificationCenter defaultCenter] postNotificationName:HXPushViewControllerNotification object:nil];
                 }];
-//                [self.navigationController popToRootViewControllerAnimated:YES];
+                AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+                appDelegate.user = [responseObject objectForKey:@"identity"];
+                appDelegate.phone = ws.phoneNum;
             }
         });
     } failure:^(NSURLSessionDataTask *task, NSError *error) {

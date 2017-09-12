@@ -7,7 +7,7 @@
 // 群首页群数据模型
 
 #import "GroupListModel.h"
-
+#import "GroupMemberModel.h"
 @implementation GroupListModel
 
 - (instancetype)initWithDict:(NSDictionary *)dict{
@@ -16,6 +16,8 @@
         self.groupMessage = dict[@"groupMessage"];
         self.time = dict[@"time"];
 //        self.jsonKey = dict[@"jsonKey"];
+        self.groupAvatarId = [dict[@"groupAvatarId"] integerValue];
+        self.groupMembers = dict[@"groupMembers"];
     }
     return self;
 }

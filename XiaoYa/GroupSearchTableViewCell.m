@@ -43,13 +43,13 @@
     self.groupManager.text = [NSString stringWithFormat:@"群主：%@",model.managerName];
     switch ([model.avatarId intValue]) {
         case 0:
-            self.avatar.image = [UIImage imageNamed:@"删除勾选"];
+            self.avatar.image = [UIImage imageNamed:@"头像1"];
            break;
         case 1:
-            self.avatar.image = [UIImage imageNamed:@"删除圆"];
+            self.avatar.image = [UIImage imageNamed:@"头像2"];
             break;
         case 2:
-            self.avatar.image = [UIImage imageNamed:@"删除不勾选"];
+            self.avatar.image = [UIImage imageNamed:@"头像3"];
             break;
 
         default:

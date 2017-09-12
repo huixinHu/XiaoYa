@@ -7,8 +7,10 @@
 //
 
 #import <UIKit/UIKit.h>
+@class GroupListModel;
 
 @interface GroupInfoViewController : UIViewController
 - (instancetype)initWithGroupName:(NSString *)groupName;
+- (instancetype)initWithGroupName:(NSString *)groupName groupDetail:(GroupListModel *)model;
 - (instancetype)init NS_UNAVAILABLE;
 @end

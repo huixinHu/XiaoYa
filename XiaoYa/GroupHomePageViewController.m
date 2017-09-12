@@ -16,6 +16,7 @@
 #import "GroupMemberModel.h"
 #import "TxAvatar.h"
 #import "GroupInfoViewController.h"
+#import "AppDelegate.h"
 
 @interface GroupHomePageViewController ()<UITableViewDelegate,UITableViewDataSource>
 @property (nonatomic ,weak)UIImageView *menu;
@@ -39,8 +40,18 @@
 }
 
 - (void)groupCreate{
-    GroupMemberModel *managerModel = [GroupMemberModel memberModelWithDict:@{@"identity" :@"17,胡卉馨,15918887876"}];
-    GroupCreateViewController *createVC = [[GroupCreateViewController alloc]initWithGroupManager:managerModel];
+    AppDelegate *apd = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+    NSString *userid = [[[[apd.user componentsSeparatedByString:@"("]lastObject] componentsSeparatedByString:@")"]firstObject];
+    NSString *user = [[apd.user componentsSeparatedByString:@"("]firstObject];
+    
+    GroupMemberModel *managerModel = [GroupMemberModel memberModelWithDict:@{@"identity":[NSString stringWithFormat:@"%@,%@,%@",userid,user,apd.phone]}];
+    GroupCreateViewController *createVC = [[GroupCreateViewController alloc]initWithGroupManager:managerModel successBlock:^(GroupListModel *model) {
+        [self.groupModels insertObject:model atIndex:0];
+        
+//        GroupInfoViewController *groupInfoVC = [[GroupInfoViewController alloc]initWithGroupName:model.groupName groupDetail:model];
+//        groupInfoVC.hidesBottomBarWhenPushed = YES;
+//        [self.navigationController pushViewController:groupInfoVC animated:YES];
+    }];
     createVC.hidesBottomBarWhenPushed = YES;//从下级vc开始，tabbar都隐藏掉
     [self.navigationController pushViewController:createVC animated:YES];
     _menuBtn.selected = NO;
@@ -74,7 +85,7 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
     GroupListModel *model = self.groupModels[indexPath.row];
-    GroupInfoViewController *groupInfoVC = [[GroupInfoViewController alloc]initWithGroupName:model.groupName];
+    GroupInfoViewController *groupInfoVC = [[GroupInfoViewController alloc]initWithGroupName:model.groupName groupDetail:model];
     groupInfoVC.hidesBottomBarWhenPushed = YES;
     [self.navigationController pushViewController:groupInfoVC animated:YES];
 }

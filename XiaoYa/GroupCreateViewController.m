@@ -10,11 +10,13 @@
 #import "HXTextField.h"
 #import "MemberCollectionViewCell.h"
 #import "GroupMemberModel.h"
+#import "GroupListModel.h"
 #import "AddGroupMemberViewController.h"
 #import "Utils.h"
 #import "Masonry.h"
 #import "HXNetworking.h"
 #import "UIAlertController+Appearance.h"
+#import "GroupInfoViewController.h"
 
 #define kScreenWidth [UIApplication sharedApplication].keyWindow.bounds.size.width
 #define kScreenHeight [UIApplication sharedApplication].keyWindow.bounds.size.height
@@ -28,9 +30,10 @@
 @property (nonatomic ,weak) UILabel *hint;
 @property (nonatomic ,weak) UICollectionView *collectionView;
 
-@property (nonatomic, strong) NSMutableArray *dataArray;//存储数据(模型)
+@property (nonatomic, strong) NSMutableArray <GroupMemberModel *> *dataArray;//存储数据(模型)
 @property (nonatomic ,strong) NSMutableArray *indexArray;//存储index
 //@property (nonatomic ,strong) GroupMemberModel *groupManagerModel;
+@property (nonatomic ,copy) gCreateSucBlock sucBlock;
 @end
 
 static NSString *identifier = @"collectionCell";
@@ -49,9 +52,10 @@ static NSString *identifier = @"collectionCell";
     avatarID = -1;
 }
 
-- (instancetype)initWithGroupManager:(GroupMemberModel *)model{
+- (instancetype)initWithGroupManager:(GroupMemberModel *)model successBlock:(gCreateSucBlock)block{
     if (self = [super init]) {
         [self.dataArray addObject:model];
+        self.sucBlock = [block copy];
     }
     return self;
 }
@@ -82,12 +86,25 @@ static NSString *identifier = @"collectionCell";
     }
     NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"INITGROUP", @"type", self.groupName.text,@"groupName", manager.memberId, @"managerId", [NSNumber numberWithInteger:avatarID-101], @"picId", usersStr, @"users",nil];
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        __weak typeof(self) ws = self;
         [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
             NSDictionary *responseDic = (NSDictionary *)responseObject;
             NSLog(@"dataID:%@",[responseDic objectForKey:@"identity"]);
             NSLog(@"dataMessage:%@",[responseDic objectForKey:@"message"]);
             NSLog(@"dataState:%@",[responseDic objectForKey:@"state"]);
 
+            
+            GroupListModel *model = [[GroupListModel alloc]init];
+            model.groupMembers = ws.dataArray;
+            model.groupAvatarId = avatarID;
+            model.groupId = [[[[[responseDic objectForKey:@"identity"] componentsSeparatedByString:@"("] lastObject] componentsSeparatedByString:@")"] firstObject];
+            model.groupName = ws.groupName.text;
+            ws.sucBlock(model);
+            GroupInfoViewController *groupInfoVC = [[GroupInfoViewController alloc]initWithGroupName:model.groupName groupDetail:model];
+            groupInfoVC.hidesBottomBarWhenPushed = YES;
+            [ws.navigationController popViewControllerAnimated:YES];
+            [ws.navigationController pushViewController:groupInfoVC animated:YES];
+            
         } failure:^(NSURLSessionDataTask *task, NSError *error) {
             NSLog(@"Error: %@", error);
         } refresh:NO];
@@ -297,8 +314,6 @@ static NSString *identifier = @"collectionCell";
     UIWindow *theWindow = [[UIApplication sharedApplication] delegate].window;
     [theWindow addSubview:_coverLayer];
     [self coverViewsSetting];
-    
-    [self bottomBtnCanBeSelectd];
 }
 
 - (void)teamerListSetting{
@@ -365,7 +380,7 @@ static NSString *identifier = @"collectionCell";
         make.centerX.bottom.mas_equalTo(self.view);
     }];
     
-    UIButton *avatar2 = [self groupAvatarBtnWithBgImage:[UIImage imageNamed:@"删除圆"]];
+    UIButton *avatar2 = [self groupAvatarBtnWithBgImage:[UIImage imageNamed:@"头像2"]];
     avatar2.tag = 102;
     [bg addSubview:avatar2];
     [avatar2 mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -373,7 +388,7 @@ static NSString *identifier = @"collectionCell";
         make.size.mas_equalTo(CGSizeMake(100, 100));
     }];
     
-    UIButton *avatar1 = [self groupAvatarBtnWithBgImage:[UIImage imageNamed:@"删除勾选"]];
+    UIButton *avatar1 = [self groupAvatarBtnWithBgImage:[UIImage imageNamed:@"头像1"]];
     avatar1.tag = 101;
     [bg addSubview:avatar1];
     [avatar1 mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -384,7 +399,7 @@ static NSString *identifier = @"collectionCell";
     avatar1.selected = YES;
     self.lastSelectedAvatar = avatar1;
     
-    UIButton *avatar3 = [self groupAvatarBtnWithBgImage:[UIImage imageNamed:@"删除不勾选"]];
+    UIButton *avatar3 = [self groupAvatarBtnWithBgImage:[UIImage imageNamed:@"头像3"]];
     avatar3.tag = 103;
     [bg addSubview:avatar3];
     [avatar3 mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -410,18 +425,19 @@ static NSString *identifier = @"collectionCell";
     self.hint.hidden = YES;
     switch (self.lastSelectedAvatar.tag) {
         case 101:
-            [self.avatar setBackgroundImage:[UIImage imageNamed:@"删除勾选"] forState:UIControlStateNormal];
+            [self.avatar setBackgroundImage:[UIImage imageNamed:@"头像1"] forState:UIControlStateNormal];
             break;
         case 102:
-            [self.avatar setBackgroundImage:[UIImage imageNamed:@"删除圆"] forState:UIControlStateNormal];
+            [self.avatar setBackgroundImage:[UIImage imageNamed:@"头像2"] forState:UIControlStateNormal];
             break;
         case 103:
-            [self.avatar setBackgroundImage:[UIImage imageNamed:@"删除不勾选"] forState:UIControlStateNormal];
+            [self.avatar setBackgroundImage:[UIImage imageNamed:@"头像3"] forState:UIControlStateNormal];
             break;
         default:
             break;
     }
     avatarID = self.lastSelectedAvatar.tag;
+    [self bottomBtnCanBeSelectd];
     [_coverLayer removeFromSuperview];
 }
 
@@ -474,14 +490,6 @@ static NSString *identifier = @"collectionCell";
 #pragma mark lazyload
 - (NSMutableArray *)dataArray {
     if (nil == _dataArray) {
-//        NSString *path = [[NSBundle mainBundle] pathForResource:@"member.plist" ofType:nil];
-//        NSArray *tempArray = [NSArray arrayWithContentsOfFile:path];
-//        NSMutableArray *mutable = [NSMutableArray array];
-//        for (NSDictionary *dict in tempArray) {
-//            GroupMemberModel *appModel = [GroupMemberModel memberModelWithDict:dict];
-//            [mutable addObject:appModel];
-//        }
-//        _dataArray = mutable;
         _dataArray = [NSMutableArray array];
     }
     return _dataArray;

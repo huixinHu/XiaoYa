@@ -45,11 +45,13 @@
     tabbar.viewControllers = @[courseNavVC,groupNavVC,userNavVC];
     
     [self.window makeKeyAndVisible];
-    self.isLogin = YES;//赋初值，未登录
+    self.isLogin = NO;//赋初值，未登录
     
     NSDateFormatter * dateFormatter = [[NSDateFormatter alloc] init];
     [dateFormatter setDateFormat:@"yyyyMMdd"];
     self.firstDateOfTerm = [dateFormatter dateFromString:@"20170904"];
+    self.user = @"user(0)";
+    self.phone = @"";
     return YES;
 }
 

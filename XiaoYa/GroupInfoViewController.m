@@ -14,6 +14,8 @@
 #import "Utils.h"
 #import "Masonry.h"
 #import "GroupInfoModel.h"
+#import "GroupListModel.h"
+#import "AppDelegate.h"
 
 @interface GroupInfoViewController ()<UITableViewDelegate ,UITableViewDataSource >
 @property (nonatomic ,weak) UITableView *infoList;
@@ -21,9 +23,22 @@
 
 @property (nonatomic ,copy) NSString *groupName;
 @property (nonatomic ,strong) NSMutableArray *infoModels;
+@property (nonatomic ,strong) GroupListModel *detailmodel;
 @end
 
 @implementation GroupInfoViewController
+- (instancetype)initWithGroupName:(NSString *)groupName groupDetail:(GroupListModel *)model{
+    if (self = [super init]) {
+        if (groupName != nil) {
+            self.groupName = groupName;
+        }else{
+            self.groupName = @"";
+        }
+        self.detailmodel = model;
+    }
+    return self;
+}
+
 - (instancetype)initWithGroupName:(NSString *)groupName{
     if (self = [super init]) {
         if (groupName != nil) {
@@ -46,7 +61,7 @@
 }
 
 - (void)groupDetailData{
-    GroupDetailViewController *groupDetailVC = [[GroupDetailViewController alloc] init];
+    GroupDetailViewController *groupDetailVC = [[GroupDetailViewController alloc] initWithGroupInfo:self.detailmodel];
     [self.navigationController pushViewController:groupDetailVC animated:YES];
 }
 
@@ -62,7 +77,10 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
     __weak typeof(self) ws = self;
     GroupInfoTableViewCell *cell = [GroupInfoTableViewCell GroupInfoCellWithTableView:tableView eventDetailBlock:^(GroupInfoModel *model) {
-        EventDetailViewController *VC = [[EventDetailViewController alloc]initWithInfoModel:ws.infoModels[indexPath.row]];
+        EventDetailViewController *VC = [[EventDetailViewController alloc]initWithInfoModel:ws.infoModels[indexPath.row] editCompBlock:^(GroupInfoModel *edittedModel) {
+            [ws.infoModels replaceObjectAtIndex:indexPath.row withObject:edittedModel];
+            [ws.infoList reloadData];//reloadRowsAtIndexPaths ？
+        }];
         [ws.navigationController pushViewController:VC animated:YES];
     }];
     cell.model = self.infoModels[indexPath.row];
@@ -121,15 +139,21 @@
 }
 
 - (void)publishEvent{
+    __weak typeof(self) ws = self;
     GroupInfoModel *dfm = [GroupInfoModel defaultModel];
-    EventPublishViewController *VC = [[EventPublishViewController alloc]initWithInfoModel:dfm];
+    EventPublishViewController *VC = [[EventPublishViewController alloc]initWithInfoModel:dfm publishCompBlock:^(GroupInfoModel *newEvent) {
+        [ws.infoModels addObject:newEvent];
+        [ws.infoList reloadData];
+    }];
     [self.navigationController pushViewController:VC animated:YES];
 }
 
 - (NSMutableArray *)infoModels{
     if (_infoModels == nil) {
         NSMutableArray *modelArr = [NSMutableArray array];
-        NSDictionary *testDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"201709011200",@"publishTime",@"张3",@"publisher",@"开会",@"event",@"20170910",@"eventTime",@",1,2,",@"eventSection",@"记得准时到",@"comment",@"201709091100",@"deadlineTime",nil];
+//        AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+//        NSString *user = [[appDelegate.user componentsSeparatedByString:@"("]firstObject];
+        NSDictionary *testDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"201709011200",@"publishTime",@"usertest",@"publisher",@"开会",@"event",@"20170910",@"eventTime",@",1,2,",@"eventSection",@"记得准时到",@"comment",@"1",@"dlIndex",nil];
         GroupInfoModel *model = [GroupInfoModel groupInfoWithDict:testDict];
         [modelArr addObject:model];
         _infoModels = modelArr;

@@ -39,30 +39,35 @@
 }
 
 - (void)next{
-    NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"RESET",@"type",self.pwd.text,@"password", nil];
-    __weak typeof (self)weakself = self;
-    dispatch_async(dispatch_get_global_queue(0, 0), ^{
-        [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
-            NSLog(@"dataID:%@",[responseObject objectForKey:@"identity"]);
-            NSLog(@"dataMessage:%@",[responseObject objectForKey:@"message"]);
-            dispatch_async(dispatch_get_main_queue(), ^{
-                if ([[responseObject objectForKey:@"state"]boolValue] == 0){
-                    weakself.prompt.text = @"重置密码失败";
-                }else {
-                    for (UIViewController *tempVC in self.navigationController.viewControllers) {
-                        //定时器释放问题？
-                        if ([tempVC isKindOfClass:NSClassFromString(@"LoginViewController")]) {
-                            dispatch_async(dispatch_get_main_queue(), ^{
-                                [self.navigationController popToViewController:tempVC animated:YES];
-                            });
+    BOOL isValid = [Utils validPwd:self.pwd.text];
+    if (!isValid || self.pwd.text.length < 6 || self.pwd.text.length > 20) {
+        self.prompt.text = @"密码格式错误";
+        return;
+    }else{
+        NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"RESET",@"type",self.pwd.text,@"password", nil];
+        __weak typeof (self)weakself = self;
+        dispatch_async(dispatch_get_global_queue(0, 0), ^{
+            [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
+                NSLog(@"dataID:%@",[responseObject objectForKey:@"identity"]);
+                NSLog(@"dataMessage:%@",[responseObject objectForKey:@"message"]);
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    if ([[responseObject objectForKey:@"state"]boolValue] == 0){
+                        weakself.prompt.text = @"重置密码失败";
+                    }else {
+                        for (UIViewController *tempVC in weakself.navigationController.viewControllers) {
+                            if ([tempVC isKindOfClass:NSClassFromString(@"LoginViewController")]) {
+                                dispatch_async(dispatch_get_main_queue(), ^{
+                                    [weakself.navigationController popToViewController:tempVC animated:YES];
+                                });
+                            }
                         }
                     }
-                }
-            });
-        } failure:^(NSURLSessionDataTask *task, NSError *error) {
-            NSLog(@"Error: %@", error);
-        } refresh:NO];
-    });
+                });
+            } failure:^(NSURLSessionDataTask *task, NSError *error) {
+                NSLog(@"Error: %@", error);
+            } refresh:NO];
+        });
+    }
 }
 
 - (void)textSwitch:(UIButton *)sender{
@@ -96,13 +101,7 @@
         self.nextStep.enabled = NO;
         self.nextStep.backgroundColor = [Utils colorWithHexString:@"78cbf8"];
     }
-    //    ^[A-Za-z0-9]+$
-    BOOL isValid = [Utils validPwd:self.pwd.text];
-    if (!isValid) {
-        self.prompt.text = @"密码格式错误";
-    }else{
-        self.prompt.text = @" ";
-    }
+    self.prompt.text = @" ";
 }
 
 //点击空白处收回键盘

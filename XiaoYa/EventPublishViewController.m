@@ -13,6 +13,7 @@
 #import "Masonry.h"
 #import "DateUtils.h"
 #import "NSDate+Calendar.h"
+#import "UIAlertController+Appearance.h"
 #import "DatePicker.h"
 #import "MonthPicker.h"
 #import "SectionSelect.h"
@@ -21,12 +22,14 @@
 #import "SingleChoiceView.h"
 #import "BgView.h"
 #import "GroupInfoModel.h"
+#import "ProtoMessage.pbobjc.h"
+#import "GCDAsyncSocket.h"
 
 #define scaleToWidth [UIApplication sharedApplication].keyWindow.bounds.size.width/750.0
 #define kScreenWidth [UIApplication sharedApplication].keyWindow.bounds.size.width
 #define kScreenHeight [UIApplication sharedApplication].keyWindow.bounds.size.height
 
-@interface EventPublishViewController () <UITextFieldDelegate ,MonthPickerDelegate ,SectionSelectDelegate>
+@interface EventPublishViewController () <UITextFieldDelegate ,MonthPickerDelegate ,SectionSelectDelegate,GCDAsyncSocketDelegate>
 @property (nonatomic ,weak) HXTextField *eventDescription;
 @property (nonatomic ,weak) businessviewcell *eventTimeView;
 @property (nonatomic ,weak) UIView *coverLayer;
@@ -43,9 +46,12 @@
 @property (nonatomic , strong) NSDate *originDate;//记录一点进来时初始的日期
 @property (nonatomic , strong) NSMutableArray *originArr;//初始节数数组
 @property (nonatomic , copy) NSString *commentInfo;
-@property (nonatomic , strong) NSArray *remainItem;//剩余回复时间内容项
-@property (nonatomic , assign) NSInteger remainIndex;//剩余回复时间 所选项
+@property (nonatomic , strong) NSArray *dlItem;//截止回复时间内容项
+@property (nonatomic , assign) NSInteger dlIndex;//截止回复时间 所选项
 @property (nonatomic , strong) GroupInfoModel *infoModel;
+@property (nonatomic , strong) publishCompBlock compBlock;
+@property (nonatomic , strong)GCDAsyncSocket *socket;
+
 @end
 
 @implementation EventPublishViewController
@@ -55,9 +61,10 @@
     CGFloat datePickerWidth;//日期选择器宽度
 }
 
-- (instancetype)initWithInfoModel:(GroupInfoModel *)model{
+- (instancetype)initWithInfoModel:(GroupInfoModel *)model publishCompBlock:(publishCompBlock)block{
     if (self = [super init]) {
         self.infoModel = model;
+        self.compBlock = [block copy];
     }
     return self;
 }
@@ -65,10 +72,10 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     {
-        //时间时间
+        //事件时间
         NSDateFormatter *df = [[NSDateFormatter alloc]init];
         [df setDateFormat:@"yyyyMMdd"];
-        self.currentDate =  [df dateFromString:self.infoModel.eventTime];
+        self.currentDate =  [df dateFromString:self.infoModel.eventDate];
         //学期第一天
         AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
         self.firstDateOfTerm = appDelegate.firstDateOfTerm;
@@ -77,30 +84,104 @@
         self.originDate = self.currentDate;
         self.originArr = [self.sectionArray mutableCopy];
         self.commentInfo = [self.infoModel.comment copy];
-        self.remainIndex = 0;//暂时测试
+        self.dlIndex = self.infoModel.dlIndex;
     }
+    
+    GCDAsyncSocket *socket = [[GCDAsyncSocket alloc]initWithDelegate:self delegateQueue:dispatch_get_global_queue(0, 0)];
+    NSError *error = nil;
+    [socket connectToHost:@"139.199.170.95" onPort:8989 error:&error];
+    self.socket = socket;
+    
     [self viewsSetting];
+    [self rightBarBtnCanBeSelect];
 }
 
 - (void)cancel{
-    [self.navigationController popViewControllerAnimated:YES];
+    [self.view endEditing:YES];
+    __weak typeof(self) weakself = self;
+    void (^otherBlock)(UIAlertAction *action) = ^(UIAlertAction *action){
+        [weakself.navigationController popViewControllerAnimated:YES];
+    };
+    NSArray *otherBlocks = @[otherBlock];
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"确认退出？" message:@"一旦退出，编辑将不会保存" preferredStyle:UIAlertControllerStyleAlert cancelTitle:@"取消" cancelBlock:nil otherTitles:@[@"确定"] otherBlocks:otherBlocks];
+    [self presentViewController:alert animated:YES completion:nil];
 }
 
 - (void)confirm{
     //网络请求
+    AppDelegate *appdelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+    
+    ProtoMessage* s1 = [[ProtoMessage alloc]init];
+    s1.type = ProtoMessage_Type_Chat;
+    s1.from = appdelegate.user;
+    s1.to = @"38";
+    s1.time = @"2017/9/11";
+    s1.body = self.eventDescription.text;
+    NSData *data = [s1 data];
+    NSLog(@"要发送的数据：%@",data);
+    Byte *byteArr = (Byte *)[data bytes];
+    [self.socket writeData:data withTimeout:-1 tag:100];
+    
     //如果发布成功，就添加到群组消息页
+    NSDateFormatter *df = [[NSDateFormatter alloc]init];
+    [df setDateFormat:@"yyyyMMdd"];
+    NSString *eventTime = [df stringFromDate:self.currentDate];
+    [df setDateFormat:@"yyyMMddHHmm"];
+    NSString *publishTime = [df stringFromDate:[NSDate date]];
+    NSDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:publishTime,@"publishTime",self.infoModel.publisher,@"publisher",self.eventDescription.text,@"event",eventTime,@"eventTime", [self appendStringWithArray:self.sectionArray],@"eventSection",self.commentInfo,@"comment",[NSString stringWithFormat:@"%ld",self.dlIndex],@"dlIndex",nil];
+    GroupInfoModel *newEvent = [GroupInfoModel groupInfoWithDict:dict];
+    for (UIViewController *tempVC in self.navigationController.viewControllers) {
+        if ([tempVC isKindOfClass:NSClassFromString(@"GroupInfoViewController")]) {
+            [self.navigationController popToViewController:tempVC animated:YES];
+        }
+    }
+    self.compBlock(newEvent);
 }
 
-//导航栏右按钮要在描述和时间都有才能点击
+- (NSString *)appendStringWithArray:(NSMutableArray *)array{
+    NSMutableString *str = [[NSMutableString alloc] initWithCapacity:2];
+    [str appendString:@","];
+    for (int i = 0; i < array.count; i++) {
+        [str appendFormat:@"%@,",array[i]];
+    }
+    return str;
+}
+
+//导航栏右按钮能否点击
 - (void)rightBarBtnCanBeSelect{
-//    UIViewController *vc = self.view.superview.viewController;
-//    if (_busDescription.text.length > 0 && self.sectionArray.count > 0) {
-//        vc.navigationItem.rightBarButtonItem.enabled = YES;//设置导航栏右按钮可以点击
-//        self.navigationItem.rightBarButtonItem.enabled = YES;
-//    }else{
-//        vc.navigationItem.rightBarButtonItem.enabled = NO;
-//        self.navigationItem.rightBarButtonItem.enabled = NO;
-//    }
+    if (_eventDescription.text.length > 0 && self.sectionArray.count > 0) {
+        self.navigationItem.rightBarButtonItem.enabled = YES;
+    }else{
+        self.navigationItem.rightBarButtonItem.enabled = NO;
+    }
+}
+
+- (void)socket:(GCDAsyncSocket *)sock didReadData:(NSData *)data withTag:(long)tag{
+    NSLog(@"%@",data);
+    
+    ProtoMessage *s2 = [ProtoMessage parseFromData:data error:NULL];
+    NSLog(@"type:%d,from:%@,to:%@,time:%@,body:%@",s2.type,s2.from,s2.to,s2.time,s2.body);
+    
+    NSString *data2Str = [[NSString alloc]initWithData:data encoding:NSUTF8StringEncoding];
+    NSLog(@"%@",data2Str);
+    
+    
+    [sock readDataWithTimeout:-1 tag:100];
+}
+
+- (void)socket:(GCDAsyncSocket *)sock didWriteDataWithTag:(long)tag{
+    NSLog(@"发送数据成功");
+}
+
+- (void)socket:(GCDAsyncSocket *)sock didConnectToHost:(NSString *)host port:(uint16_t)port{
+    NSLog(@"连接成功");
+    [self.socket readDataWithTimeout:-1 tag:100];
+    //心跳处理
+}
+
+- (void)socketDidDisconnect:(GCDAsyncSocket *)sock withError:(NSError *)err{
+    NSLog(@"连接失败:%@",err);
+    //重连处理
 }
 
 #pragma mark textfield
@@ -198,14 +279,14 @@
     
     __weak typeof(self) ws = self;
     SingleChoiceView *dlRemindView =
-    [[SingleChoiceView alloc] initWithItems:self.remainItem
-                              selectedIndex:self.remainIndex
+    [[SingleChoiceView alloc] initWithItems:self.dlItem
+                              selectedIndex:self.dlIndex
                                   viewWidth:265
                                  cellHeight:40
                      confirmCancelBtnHeight:40
                                confirmBlock:^(NSInteger selectedIndex) {
-                         ws.remainIndex = selectedIndex;
-                         [ws.replyDL setTitle:ws.remainItem[selectedIndex] forState:UIControlStateNormal];
+                         ws.dlIndex = selectedIndex;
+                         [ws.replyDL setTitle:ws.dlItem[selectedIndex] forState:UIControlStateNormal];
                          [ws.coverLayer removeFromSuperview];
                      }
                                 cancelBlock:^{
@@ -219,7 +300,10 @@
 - (void)viewsSetting{
     self.navigationController.navigationBar.titleTextAttributes = @{NSForegroundColorAttributeName:[Utils colorWithHexString:@"#333333"],NSFontAttributeName:[UIFont systemFontOfSize:17]};
     self.navigationItem.title = @"发布信息";
-    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc]initWithImage:[[UIImage imageNamed:@"confirm"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal] style:UIBarButtonItemStyleDone target:self action:@selector(confirm)];
+    UIButton *rightBtn = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 30, 30)];
+    [rightBtn setImage:[UIImage imageNamed:@"confirm"] forState:UIControlStateNormal];
+    [rightBtn addTarget:self action:@selector(confirm) forControlEvents:UIControlEventTouchUpInside];
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc]initWithCustomView:rightBtn];
     self.navigationItem.rightBarButtonItem.enabled = NO;
     self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc]initWithImage:[[UIImage imageNamed:@"cancel"]imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal] style:UIBarButtonItemStyleDone target:self action:@selector(cancel)];
     self.view.backgroundColor = [Utils colorWithHexString:@"#F0F0F6"];
@@ -331,7 +415,7 @@
     _replyDL = replyDL;
     _replyDL.backgroundColor = [UIColor whiteColor];
     _replyDL.titleLabel.font = [UIFont systemFontOfSize:14.0];
-    [_replyDL setTitle:self.remainItem[self.remainIndex] forState:UIControlStateNormal];
+    [_replyDL setTitle:self.dlItem[self.dlIndex] forState:UIControlStateNormal];
     [_replyDL setTitleColor:[Utils colorWithHexString:@"#333333"] forState:UIControlStateNormal];
     [_replyDL addTarget:self action:@selector(remainSetting) forControlEvents:UIControlEventTouchUpInside];
     [bg addSubview:_replyDL];
@@ -417,16 +501,12 @@
         NSString *str = [Utils appendSectionStringWithArray:sectionArray];
         [self.eventTimeView.button2 setTitle:[NSString stringWithFormat:@"第%@节",str] forState:UIControlStateNormal];
         [self.eventTimeView.button2 setTitleColor:[Utils colorWithHexString:@"#333333"] forState:UIControlStateNormal];
-        self.sectionArray = [sectionArray mutableCopy];
-        
-        //分割连续段
-//        [self.sections removeAllObjects];
-//        self.sections = [[Utils subSectionArraysFromArray:sectionArray] mutableCopy];
     }else{
-        self.sectionArray = [sectionArray mutableCopy];
         [self.eventTimeView.button2 setTitle:@"选择时间" forState:UIControlStateNormal];
         [self.eventTimeView.button2 setTitleColor:[Utils colorWithHexString:@"#d9d9d9"] forState:UIControlStateNormal];
     }
+    self.sectionArray = [sectionArray mutableCopy];
+
     [self rightBarBtnCanBeSelect];
 }
 
@@ -435,10 +515,10 @@
 
 }
 #pragma mark lazy
-- (NSArray *)remainItem{
-    if (_remainItem == nil) {
-        _remainItem = @[@"当事件发生时",@"事件开始前12小时",@"事件开始前24小时",@"事件开始前36小时",@"事件开始前48小时",@"事件开始前一周",@"事件开始前一个月"];
+- (NSArray *)dlItem{
+    if (_dlItem == nil) {
+        _dlItem = @[@"当事件发生时",@"事件开始前12小时",@"事件开始前24小时",@"事件开始前36小时",@"事件开始前48小时",@"事件开始前一周",@"事件开始前一个月"];
     }
-    return _remainItem;
+    return _dlItem;
 }
 @end

@@ -182,8 +182,10 @@
     NSLog(@"ResetTextCodeViewController销毁了");
     
     //必须要在vc的dealloc方法中调用btn 的timer销毁方法和runloop的退出方法，保证vc pop的时候btn可以马上销毁
-    CFRunLoopStop(self.timerBtn.runloop);
-    [self.timerBtn.timer invalidate];
+    if ([self.timerBtn.timer isValid]) {
+        [self.timerBtn.timer invalidate];
+        CFRunLoopStop(self.timerBtn.runloop);
+    }
     
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UITextFieldTextDidChangeNotification object:self.textCode];
 }

@@ -14,6 +14,8 @@
 #import "HXNetworking.h"
 #import "GroupSearchModel.h"
 #import "UIAlertController+Appearance.h"
+#import "GroupInfoViewController.h"
+#import "AppDelegate.h"
 
 @interface JoinGroupViewController ()<UITextFieldDelegate ,UITableViewDelegate ,UITableViewDataSource ,GroupSearchCellDelegate>
 @property (nonatomic ,weak) HXTextField *searchTxf;
@@ -52,12 +54,12 @@
             dispatch_async(dispatch_get_main_queue(), ^{
                 if ([[responseObject objectForKey:@"state"]boolValue] == 0){
                     weakself.noResult.hidden = NO;
-                    self.prompt.hidden = YES;
+                    weakself.prompt.hidden = YES;
                 }else {
                     GroupSearchModel *model = [GroupSearchModel groupModelWithDict:responseObject];
                     [weakself.groupModels addObject:model];
                     weakself.noResult.hidden = YES;
-                    self.prompt.hidden = NO;
+                    weakself.prompt.hidden = NO;
                 }
                 [weakself.groupTable reloadData];
             });
@@ -69,8 +71,11 @@
 
 #pragma mark groupSearchDelegate
 - (void)groupSearchCell:(GroupSearchTableViewCell *)cell selectIndex:(NSIndexPath *)indexPath{
+    AppDelegate *apd = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+    NSString *userid = [[[[apd.user componentsSeparatedByString:@"("]lastObject] componentsSeparatedByString:@")"]firstObject];
+    
     GroupSearchModel *selectedModel = self.groupModels[indexPath.row];
-    NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"JOINGROUP",@"type",@17,@"userId", selectedModel.groupId, @"groupId",nil];
+    NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"JOINGROUP",@"type",userid,@"userId", selectedModel.groupId, @"groupId",nil];
     
     __weak typeof(self) weakself = self;
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
@@ -84,6 +89,10 @@
                     [weakself presentViewController:alert animated:YES completion:nil];
                 }else {//成功
                     NSLog(@"%@", [responseObject objectForKey:@"message"]);
+                    [weakself.navigationController popViewControllerAnimated:YES];
+                    GroupInfoViewController *groupInfoVC = [[GroupInfoViewController alloc]initWithGroupName:[weakself.groupModels[0] groupName]];
+                    groupInfoVC.hidesBottomBarWhenPushed = YES;
+                    [weakself.navigationController pushViewController:groupInfoVC animated:YES];
                 }
             });
         } failure:^(NSURLSessionDataTask *task, NSError *error) {

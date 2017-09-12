@@ -42,6 +42,19 @@
     self.groupName.text = group.groupName;
     self.groupMessage.text = group.groupMessage;
     self.time.text = group.time;
+    switch (group.groupAvatarId) {
+        case 0:
+            self.avatar.image = [UIImage imageNamed:@"头像1"];
+            break;
+        case 1:
+            self.avatar.image = [UIImage imageNamed:@"头像2"];
+            break;
+        case 2:
+            self.avatar.image = [UIImage imageNamed:@"头像3"];
+            break;
+        default:
+            break;
+    }
 }
 
 - (void)initSubView{
@@ -49,7 +62,6 @@
     
     UIImageView *avatar = [[UIImageView alloc]init];
     _avatar = avatar;
-    _avatar.backgroundColor = [UIColor yellowColor];
     [self.contentView addSubview:_avatar];
     [_avatar mas_makeConstraints:^(MASConstraintMaker *make) {
         make.size.mas_equalTo(CGSizeMake(50, 50));
@@ -110,7 +122,7 @@
         make.right.equalTo(_time.mas_right);
         make.bottom.equalTo(_groupMessage.mas_bottom);
     }];
-//    _badge.hidden = YES;
+    _badge.hidden = YES;
 }
 
 @end

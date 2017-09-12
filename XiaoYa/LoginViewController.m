@@ -15,6 +15,7 @@
 #import "BgView.h"
 #import "HXNetworking.h"
 #import "LoginManager.h"
+#import "AppDelegate.h"
 #define kScreenWidth [UIApplication sharedApplication].keyWindow.bounds.size.width
 
 @interface LoginViewController ()<UITextFieldDelegate>
@@ -71,11 +72,14 @@
                 if ([[responseObject objectForKey:@"state"]boolValue] == 0) {//后台数据返回的问题。state实际上是一种__NSCFBoolean类型的数据，要转成bool再判断
                     weakself.prompt.text = @"登录失败";
                 }else{
-                    UIViewController *temp = self.presentingViewController;//先取得presentingViewController。不先保存的话，popvc之后可能就为空了
-                    [self.navigationController popToRootViewControllerAnimated:YES];
+                    UIViewController *temp = weakself.presentingViewController;//先取得presentingViewController。不先保存的话，popvc之后可能就为空了
+                    [weakself.navigationController popToRootViewControllerAnimated:YES];
                     [temp dismissViewControllerAnimated:YES completion:^{
                         [[NSNotificationCenter defaultCenter] postNotificationName:HXPushViewControllerNotification object:nil];
                     }];
+                    AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+                    appDelegate.user = [responseObject objectForKey:@"identity"];
+                    appDelegate.phone = weakself.account.text;
                 }
             });
         } failure:^(NSURLSessionDataTask *task, NSError *error) {
@@ -101,6 +105,7 @@
     NSString *toBeString = [textField.text stringByReplacingCharactersInRange:range withString:string];
     if (textField == self.pwd &&textField.isSecureTextEntry) {
         textField.text = toBeString;
+        [self textFiledDidChange:textField];
         return NO;
     }
     return YES;
@@ -112,6 +117,7 @@
 }
 
 - (void)textFiledDidChange:(UITextField *)textField{
+    //密文状态下不会执行这个方法
     [self loginBtnCanBeSelected];
     self.prompt.text = @" ";
     if(self.account.text.length >= 11){
@@ -197,6 +203,7 @@
     }];
     _pwd.keyboardType = UIKeyboardTypeASCIICapable;
     _pwd.delegate = self;
+    self.pwd.secureTextEntry = YES;
     
     UIButton *eye = [[UIButton alloc]init];
     _eye = eye;
@@ -209,6 +216,7 @@
         make.left.equalTo(_pwd.mas_right);
         make.centerY.equalTo(_pwd.mas_centerY);
     }];
+    _eye.selected = YES;
     
     UILabel *prompt = [[UILabel alloc]init];
     _prompt = prompt;

@@ -8,6 +8,11 @@
 //其实可以和GroupListModel合并
 
 #import "GroupInfoModel.h"
+#import "Utils.h"
+#import "AppDelegate.h"
+@interface GroupInfoModel()
+@property (nonatomic ,strong) NSArray *timeSrartArray;
+@end
 
 @implementation GroupInfoModel
 - (instancetype)initWithDict:(NSDictionary *)dict{
@@ -18,18 +23,51 @@
         self.publishTime = [df dateFromString:[dict objectForKey:@"publishTime"]];
         self.publisher = [dict objectForKey:@"publisher"];
         self.event = [dict objectForKey:@"event"];
-        self.eventTime = [dict objectForKey:@"eventTime"];
+        self.eventDate = [dict objectForKey:@"eventTime"];
+        self.comment = [dict objectForKey:@"comment"];
+        self.dlIndex = [[dict objectForKey:@"dlIndex"] integerValue];
         
         NSString *sectionStr = [dict objectForKey:@"eventSection"];
         self.eventSection = [NSMutableArray array];
+        self.deadlineTime = [NSString string];
         if (sectionStr.length != 0) {
             NSString *subTimeStr = [sectionStr substringWithRange:NSMakeRange(1, sectionStr.length - 2)];//截去头尾“,”
             NSArray * tempArray = [subTimeStr componentsSeparatedByString:@","];//以“,”切割
             self.eventSection = [tempArray mutableCopy];
+            [Utils sortArrayFromMinToMax:self.eventSection];
+            
+            int sectionIndex = [self.eventSection[0] intValue];
+            NSString *sectionStartTime = self.timeSrartArray[sectionIndex];
+            NSString *exactTime = [NSString stringWithFormat:@"%@%@",self.eventDate,sectionStartTime];
+            NSDate *exactDate = [df dateFromString:exactTime];
+            NSTimeInterval ti = 0;
+            switch (self.dlIndex) {
+                case 0:
+                    ti = 0;
+                    break;
+                case 1:
+                    ti = -12*3600;
+                    break;
+                case 2:
+                    ti = -24*3600;
+                    break;
+                case 3:
+                    ti = -36*3600;
+                    break;
+                case 4:
+                    ti = -48*3600;
+                    break;
+                case 5:
+                    ti = -7*24*3600;
+                case 6:
+                    ti = -30*24*3600;
+                    break;
+                default:
+                    break;
+            }
+            NSDate *dlDate = [NSDate dateWithTimeInterval:ti sinceDate:exactDate];
+            self.deadlineTime = [df stringFromDate:dlDate];
         }
-
-        self.comment = [dict objectForKey:@"comment"];
-        self.deadlineTime = [dict objectForKey:@"deadlineTime"];
     }
     return self;
 }
@@ -43,9 +81,18 @@
     [dateFormatter setDateFormat:@"yyyyMMdd"];
     NSString *currentDateStr = [dateFormatter stringFromDate:[NSDate date]];
     
-//    NSMutableArray *remindArray = [NSMutableArray arrayWithObject:@"6"];
-    NSMutableDictionary *modelDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"197012120000",@"publishTime",@"",@"publisher",@"",@"event",currentDateStr,@"eventTime",@"",@"eventSection",@"",@"comment",@"201709091100",@"deadlineTime",nil];
+    AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+    NSString *user = [[appDelegate.user componentsSeparatedByString:@"("]firstObject];
+    
+    NSMutableDictionary *modelDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"197012120000",@"publishTime",user,@"publisher",@"",@"event",currentDateStr,@"eventTime",@"",@"eventSection",@"",@"comment",@"0",@"dlIndex",nil];
     GroupInfoModel *defaultModel = [self groupInfoWithDict:modelDict];
     return defaultModel;
+}
+
+- (NSArray *)timeSrartArray{
+    if (_timeSrartArray == nil) {
+        _timeSrartArray = @[@"0600",@"0800",@"0855",@"1000",@"1055",@"1140",@"1430",@"1525",@"1620",@"1715",@"1810",@"1900",@"1955",@"2050",@"2200"];
+    }
+    return _timeSrartArray;
 }
 @end

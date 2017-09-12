@@ -43,7 +43,6 @@
     count = kTimerCount;
 
     [self viewsSetting];
-//    [self timerSetting];
     [[NSNotificationCenter defaultCenter] addObserver: self selector:@selector(textFieldValueChanged) name:UITextFieldTextDidChangeNotification object:self.textCode];
     self.view.userInteractionEnabled = YES;
     UITapGestureRecognizer *singleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(fingerTapped:)];
@@ -54,78 +53,6 @@
 - (void)back{
     [self.navigationController popViewControllerAnimated:YES];
 }
-/*
-- (void)timerSetting{
-    dispatch_async(dispatch_get_global_queue(0, 0), ^{
-        __weak typeof(self) weakself = self;
-        self.timer = [NSTimer scheduledTimerWithTimeInterval:1.0 block:^(NSTimer *timer) {
-            NSLog(@"。。。");
-            __strong typeof(weakself)strongself = weakself;
-            count--;
-            if (count == 0) {
-                [strongself.timer invalidate];
-                count = kTimerCount;
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    strongself.timerBtn.enabled = YES;
-                    [strongself.timerBtn setTitle:@"重发验证码" forState:UIControlStateNormal];
-                    [strongself.timerBtn setTitleColor:[Utils colorWithHexString:@"#00a7fa"] forState:UIControlStateNormal];
-                });
-                CFRunLoopStop(CFRunLoopGetCurrent());
-            }else{
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    strongself.timerBtn.enabled = NO;
-                    [strongself.timerBtn setTitle:[NSString stringWithFormat:@"%ds后重发",count] forState:UIControlStateDisabled];
-                    [strongself.timerBtn setTitleColor:[Utils colorWithHexString:@"#d9d9d9"] forState:UIControlStateDisabled];
-                });
-            }
-        } repeats:YES];
-        [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]];
-    });
-}
-*/
-//无调用 暂时保留
-//- (void)timerFire:(NSTimer *)timer{
-//    count--;
-//    NSLog(@"timer2 run");
-//    if (count == 0) {
-//        [timer invalidate];
-//        count = kTimerCount;
-//        dispatch_async(dispatch_get_main_queue(), ^{
-//            self.timerBtn.enabled = YES;
-//            [self.timerBtn setTitle:@"重发验证码" forState:UIControlStateNormal];
-//            [self.timerBtn setTitleColor:[Utils colorWithHexString:@"#00a7fa"] forState:UIControlStateNormal];
-//        });
-//        CFRunLoopStop(CFRunLoopGetCurrent());
-//    }else{
-//        dispatch_async(dispatch_get_main_queue(), ^{
-//            self.timerBtn.enabled = NO;
-//            [self.timerBtn setTitle:[NSString stringWithFormat:@"%ds后重发",count] forState:UIControlStateDisabled];
-//            [self.timerBtn setTitleColor:[Utils colorWithHexString:@"#d9d9d9"] forState:UIControlStateDisabled];
-//        });
-//    }
-//}
-
-//导航栏右按钮
-//- (void)timerBtnClicked{
-//    NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"GETSME",@"type",self.phoneNum,@"mobile", nil];
-//    __weak typeof (self)weakself = self;
-//    dispatch_async(dispatch_get_global_queue(0, 0), ^{
-//        [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict success:^(NSURLSessionDataTask *task, id responseObject) {
-//        NSDictionary *responseDic = (NSDictionary *)responseObject;
-//        NSLog(@"dataMessage:%@",[responseDic objectForKey:@"message"]);
-//        dispatch_async(dispatch_get_main_queue(), ^{
-//            if ([[responseDic objectForKey:@"state"]boolValue] == 0){
-//                if ([[responseDic objectForKey:@"message"] isEqualToString:@"验证码发送失败！"]){
-//                    weakself.prompt.text = @"验证码获取失败！";
-//                }
-//            }
-//        });
-//    } failure:^(NSURLSessionDataTask *task, NSError *error) {
-//        NSLog(@"Error: %@", error);
-//    } refresh:NO];
-//    });    
-//    [self timerSetting];
-//}
 
 //下一步
 - (void)next{
@@ -142,7 +69,7 @@
                         weakself.prompt.text = @"验证码错误";
                     }
                 }else{
-                    RegiPwdViewController *nextVC = [[RegiPwdViewController alloc]initWithPhoneNum:self.phoneNum];
+                    RegiPwdViewController *nextVC = [[RegiPwdViewController alloc]initWithPhoneNum:weakself.phoneNum];
                     [weakself.navigationController pushViewController:nextVC animated:YES];
                 }
             });
@@ -200,10 +127,7 @@
         });
     }];
     _timerBtn = timerBtn;
-//    _timerBtn.titleLabel.font = [UIFont systemFontOfSize:15];
-//    [_timerBtn addTarget:self action:@selector(timerBtnClicked) forControlEvents:UIControlEventTouchUpInside];
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc]initWithCustomView:_timerBtn];
-//    _timerBtn.enabled = NO;
     
     //界面其他
     HXTextField *textCode = [[HXTextField alloc]init];
@@ -260,12 +184,12 @@
 
 - (void)dealloc{
     NSLog(@"RegiTextCodeViewController销毁了");
-//    [self.timer invalidate];
     
     //必须要在vc的dealloc方法中调用btn 的timer销毁方法和runloop的退出方法，保证vc pop的时候btn可以马上销毁
-    [self.timerBtn.timer invalidate];
-    CFRunLoopStop(self.timerBtn.runloop);
-    //btn这里有点问题，走完注册流程释放不掉
+    if ([self.timerBtn.timer isValid]) {
+        [self.timerBtn.timer invalidate];
+        CFRunLoopStop(self.timerBtn.runloop);
+    }
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UITextFieldTextDidChangeNotification object:self.textCode];
 }
 

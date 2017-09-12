@@ -7,7 +7,8 @@
 //
 
 #import <UIKit/UIKit.h>
-
+@class GroupListModel;
 @interface GroupDetailViewController : UIViewController
 
+- (instancetype)initWithGroupInfo:(GroupListModel *)model;
 @end

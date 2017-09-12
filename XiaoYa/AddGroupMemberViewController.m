@@ -176,7 +176,7 @@
     
     HXTextField *searchTxf = [[HXTextField alloc]init];
     _searchTxf = searchTxf;
-    [_searchTxf appearanceWithTextColor:[Utils colorWithHexString:@"#333333"] textFontSize:15 placeHolderColor:[Utils colorWithHexString:@"#999999"] placeHolderFontSize:15 placeHolderText:@"搜索姓名/手机号码" leftView:nil];
+    [_searchTxf appearanceWithTextColor:[Utils colorWithHexString:@"#333333"] textFontSize:15 placeHolderColor:[Utils colorWithHexString:@"#999999"] placeHolderFontSize:15 placeHolderText:@"搜索手机号码" leftView:nil];
     [bg addSubview:_searchTxf];
     [_searchTxf mas_makeConstraints:^(MASConstraintMaker *make) {
         make.centerY.height.equalTo(bg);
@@ -264,14 +264,6 @@
 - (NSMutableArray *)memberModels{
     if (_memberModels == nil) {
         _memberModels = [NSMutableArray array];
-        
-//        NSArray *testArrs = @[@[@"1",@"Tom1",@"123"],@[@"2",@"Tom2",@"123"],@[@"3",@"Tom3",@"123"],@[@"4",@"Tom4",@"123"],@[@"5",@"Tom5",@"123"],@[@"6",@"Tom6",@"123"],@[@"7",@"Tom7",@"123"],@[@"8",@"Tom8",@"123"],@[@"9",@"Tom9",@"123"],@[@"10",@"Tom10",@"123"],@[@"11",@"Tom11",@"123"],@[@"12",@"Tom12",@"123"],@[@"13",@"Tom13",@"123"],@[@"14",@"Tom14",@"123"],@[@"15",@"Tom15",@"123"]];
-//        NSMutableArray *arrModels = [NSMutableArray array];
-//        for (NSArray *arr in testArrs) {
-//            GroupMemberModel *model = [GroupMemberModel memberModelWithArray:arr];
-//            [arrModels addObject:model];
-//        }
-//        _memberModels = arrModels;
     }
     return _memberModels;
 }

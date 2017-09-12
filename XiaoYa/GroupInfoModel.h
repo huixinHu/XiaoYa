@@ -12,9 +12,10 @@
 @property (nonatomic ,strong) NSDate *publishTime;//发布时间
 @property (nonatomic ,copy) NSString *publisher;//发布者
 @property (nonatomic ,copy) NSString *event;//事件
-@property (nonatomic ,copy) NSString *eventTime;//事件时间
+@property (nonatomic ,copy) NSString *eventDate;//事件时间
 @property (nonatomic ,strong) NSMutableArray *eventSection;//时间节数
 @property (nonatomic ,copy) NSString *comment;//备注
+@property (nonatomic ,assign) NSInteger dlIndex;//截止选项
 @property (nonatomic ,copy) NSString *deadlineTime;//截止回复时间
 
 + (instancetype)groupInfoWithDict:(NSDictionary *)dict;

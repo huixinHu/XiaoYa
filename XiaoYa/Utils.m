@@ -225,9 +225,23 @@
 //判断登录注册 密码格式是否正确
 + (BOOL)validPwd:(NSString *)textString
 {
-    NSString* number=@"^[A-Za-z0-9]+$";
-    NSPredicate *numberPre = [NSPredicate predicateWithFormat:@"SELF MATCHES %@",number];
-    return [numberPre evaluateWithObject:textString];
+    
+    NSString *all = @"^[A-Za-z0-9]+$";
+    NSPredicate *allPre = [NSPredicate predicateWithFormat:@"SELF MATCHES %@",all];
+    
+    NSString *charP=@"^[A-Za-z]+$";
+    NSPredicate *charPre = [NSPredicate predicateWithFormat:@"SELF MATCHES %@",charP];
+    NSString *number2=@"[0-9]+";
+    NSPredicate *numberPre = [NSPredicate predicateWithFormat:@"SELF MATCHES %@",number2];
+    
+    BOOL a = [allPre evaluateWithObject:textString];
+    BOOL b = [charPre evaluateWithObject:textString];
+    BOOL c = [numberPre evaluateWithObject:textString];
+    if (a == YES && b == NO && c == NO) {
+        return YES;
+    }else{
+        return NO;
+    }
 }
 
 //字符串的字符长度

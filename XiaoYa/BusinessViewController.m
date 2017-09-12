@@ -14,7 +14,6 @@
 #import "MonthPicker.h"
 #import "DateUtils.h"
 #import "NSDate+Calendar.h"
-#import "AppDelegate.h"
 #import "SectionSelect.h"
 #import "MutipleChoiceView.h"
 #import "SingleChoiceView.h"

@@ -27,6 +27,8 @@
 		571DB1AE1F5FD97300D319EF /* GroupInfoModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 571DB1AD1F5FD97300D319EF /* GroupInfoModel.m */; };
 		571DB1B11F6126C200D319EF /* SingleChoiceCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 571DB1B01F6126C200D319EF /* SingleChoiceCell.m */; };
 		571DB1B41F6127E500D319EF /* SingleChoiceView.m in Sources */ = {isa = PBXBuildFile; fileRef = 571DB1B31F6127E500D319EF /* SingleChoiceView.m */; };
+		571DB1B71F64279200D319EF /* MemberDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 571DB1B61F64279200D319EF /* MemberDetailViewController.m */; };
+		571DB1BA1F656DB000D319EF /* MemberListViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 571DB1B91F656DB000D319EF /* MemberListViewController.m */; };
 		572B6D121F166A520069D1D2 /* AddGroupMemberViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 572B6D111F166A520069D1D2 /* AddGroupMemberViewController.m */; };
 		572B6D151F1748590069D1D2 /* JoinGroupViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 572B6D141F1748590069D1D2 /* JoinGroupViewController.m */; };
 		572EA9181F2F2E760052907C /* EventDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 572EA9171F2F2E760052907C /* EventDetailViewController.m */; };
@@ -167,6 +169,10 @@
 		571DB1B01F6126C200D319EF /* SingleChoiceCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SingleChoiceCell.m; sourceTree = "<group>"; };
 		571DB1B21F6127E500D319EF /* SingleChoiceView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SingleChoiceView.h; sourceTree = "<group>"; };
 		571DB1B31F6127E500D319EF /* SingleChoiceView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SingleChoiceView.m; sourceTree = "<group>"; };
+		571DB1B51F64279200D319EF /* MemberDetailViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MemberDetailViewController.h; sourceTree = "<group>"; };
+		571DB1B61F64279200D319EF /* MemberDetailViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MemberDetailViewController.m; sourceTree = "<group>"; };
+		571DB1B81F656DB000D319EF /* MemberListViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MemberListViewController.h; sourceTree = "<group>"; };
+		571DB1B91F656DB000D319EF /* MemberListViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MemberListViewController.m; sourceTree = "<group>"; };
 		572B6D101F166A520069D1D2 /* AddGroupMemberViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AddGroupMemberViewController.h; sourceTree = "<group>"; };
 		572B6D111F166A520069D1D2 /* AddGroupMemberViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AddGroupMemberViewController.m; sourceTree = "<group>"; };
 		572B6D131F1748590069D1D2 /* JoinGroupViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JoinGroupViewController.h; sourceTree = "<group>"; };
@@ -680,6 +686,10 @@
 				572EA9171F2F2E760052907C /* EventDetailViewController.m */,
 				572EA9221F3077560052907C /* GroupDetailViewController.h */,
 				572EA9231F3077560052907C /* GroupDetailViewController.m */,
+				571DB1B51F64279200D319EF /* MemberDetailViewController.h */,
+				571DB1B61F64279200D319EF /* MemberDetailViewController.m */,
+				571DB1B81F656DB000D319EF /* MemberListViewController.h */,
+				571DB1B91F656DB000D319EF /* MemberListViewController.m */,
 			);
 			name = "聊天";
 			sourceTree = "<group>";
@@ -1049,6 +1059,7 @@
 				572EA91E1F301CF50052907C /* ReasonView.m in Sources */,
 				57BDFA181E326E0500C0E254 /* UILabel+AlertActionFont.m in Sources */,
 				577C67101EE974060006E783 /* ResetPhoneViewController.m in Sources */,
+				571DB1BA1F656DB000D319EF /* MemberListViewController.m in Sources */,
 				574C2C051E9F9C4800960399 /* TFHpple.m in Sources */,
 				572EA92D1F31F45F0052907C /* ProtoMessage.pbobjc.m in Sources */,
 				577C67161EE976A10006E783 /* ResetPwdViewController.m in Sources */,
@@ -1060,6 +1071,7 @@
 				571DB1B11F6126C200D319EF /* SingleChoiceCell.m in Sources */,
 				572B6D151F1748590069D1D2 /* JoinGroupViewController.m in Sources */,
 				E2647DF71DD05CAD0034BE4D /* businessviewcell.m in Sources */,
+				571DB1B71F64279200D319EF /* MemberDetailViewController.m in Sources */,
 				577FA5D11DEDD5EB00A0AEF7 /* PublicTemplateCell.m in Sources */,
 				57D49D2C1F14BFDD0063C861 /* GroupCreateViewController.m in Sources */,
 				572EA9181F2F2E760052907C /* EventDetailViewController.m in Sources */,

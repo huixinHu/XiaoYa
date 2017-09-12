@@ -9,8 +9,9 @@
 #import <UIKit/UIKit.h>
 @class GroupInfoModel;
 
+typedef void(^publishCompBlock)(GroupInfoModel *newEvent);
 @interface EventPublishViewController : UIViewController
 
-- (nonnull instancetype)initWithInfoModel:(nonnull GroupInfoModel *)model;
+- (nonnull instancetype)initWithInfoModel:(nonnull GroupInfoModel *)model publishCompBlock:(publishCompBlock)block;
 //- (instancetype)init NS_UNAVAILABLE;
 @end

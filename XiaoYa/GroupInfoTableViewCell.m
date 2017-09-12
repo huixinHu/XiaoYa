@@ -32,7 +32,7 @@
     self.publishTime.text = [self publishTimeToFormatStr:model.publishTime];
     self.publisher.text = [NSString stringWithFormat:@"发布者：%@", model.publisher];
     self.event.text = [NSString stringWithFormat:@"事件：%@", model.event];
-    self.eventTime.text = [NSString stringWithFormat:@"时间：%@", [self eventTimeToFormatStr:model.eventTime eventSection:model.eventSection]];
+    self.eventTime.text = [NSString stringWithFormat:@"时间：%@", [self eventTimeToFormatStr:model.eventDate eventSection:model.eventSection]];
     self.remainTime.text = [NSString stringWithFormat:@"剩余回复时间：%@", [self dlTimeToFormatStr:model.deadlineTime]];
     //应有计时器刷新剩余回复时间界面的显示？
 }

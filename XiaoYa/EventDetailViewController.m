@@ -42,13 +42,14 @@ typedef NS_ENUM(NSInteger, HXReplyStatus) {
 @property (nonatomic ,copy) NSString *notPartiReason;//不参加的理由
 @property (nonatomic ,assign) HXReplyStatus state;
 @property (nonatomic ,strong) GroupInfoModel *infoModel;
-
+@property (nonatomic ,strong) editCompBlock editCompBlock;
 @end
 
 @implementation EventDetailViewController
-- (instancetype)initWithInfoModel:(GroupInfoModel *)model{
+- (instancetype)initWithInfoModel:(GroupInfoModel *)model editCompBlock:(editCompBlock)block{
     if (self = [super init]) {
         self.infoModel = model;
+        self.editCompBlock = [block copy];
     }
     return self;
 }
@@ -69,7 +70,10 @@ typedef NS_ENUM(NSInteger, HXReplyStatus) {
 #pragma mark ui相关
 //重新编辑事务,只有时间发布者能看到这个按钮
 - (void)editEvent{
-    EventPublishViewController *vc = [[EventPublishViewController alloc]initWithInfoModel:self.infoModel];
+    __weak typeof(self) ws = self;
+    EventPublishViewController *vc = [[EventPublishViewController alloc]initWithInfoModel:self.infoModel publishCompBlock:^(GroupInfoModel *newEvent) {
+        ws.editCompBlock(newEvent);
+    }];
     [self.navigationController pushViewController:vc animated:YES];
 }
 
@@ -237,7 +241,7 @@ typedef NS_ENUM(NSInteger, HXReplyStatus) {
     
     UILabel *eventTime = [[UILabel alloc]init];
     _eventTime = eventTime;
-    _eventTime.text = [NSString stringWithFormat:@"时间：%@", [self eventTimeToFormatStr:self.infoModel.eventTime eventSection:self.infoModel.eventSection]];
+    _eventTime.text = [NSString stringWithFormat:@"时间：%@", [self eventTimeToFormatStr:self.infoModel.eventDate eventSection:self.infoModel.eventSection]];
     _eventTime.textColor = [Utils colorWithHexString:@"#333333"];
     _eventTime.font = [UIFont systemFontOfSize:13];
     [bg addSubview:_eventTime];

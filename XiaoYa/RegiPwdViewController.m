@@ -47,8 +47,16 @@
 //下一步
 - (void)next{
     [self.view endEditing:YES];
-    RegiNameViewController *nextVC = [[RegiNameViewController alloc]initWithPwd:self.pwd.text phoneNum:self.phoneNum];
-    [self.navigationController pushViewController:nextVC animated:YES];
+    
+    BOOL isValid = [Utils validPwd:self.pwd.text];
+    if (!isValid || self.pwd.text.length < 6 || self.pwd.text.length > 20) {
+        self.prompt.text = @"密码格式错误";
+        return;
+    }else{
+        self.prompt.text = @" ";
+        RegiNameViewController *nextVC = [[RegiNameViewController alloc]initWithPwd:self.pwd.text phoneNum:self.phoneNum];
+        [self.navigationController pushViewController:nextVC animated:YES];
+    }
 }
 
 - (void)textSwitch:(UIButton *)sender{
@@ -82,13 +90,7 @@
         self.nextStep.enabled = NO;
         self.nextStep.backgroundColor = [Utils colorWithHexString:@"78cbf8"];
     }
-    //    ^[A-Za-z0-9]+$
-    BOOL isValid = [Utils validPwd:self.pwd.text];
-    if (!isValid) {
-        self.prompt.text = @"密码格式错误";
-    }else{
-        self.prompt.text = @" ";
-    }
+    self.prompt.text = @" ";
 }
 
 //点击空白处收回键盘
