@@ -9,6 +9,11 @@
 			<key>isShown</key>
 			<false/>
 		</dict>
+		<key>FMDB.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
 		<key>Masonry.xcscheme</key>
 		<dict>
 			<key>isShown</key>
@@ -27,12 +32,12 @@
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
-		<key>2C5F207D8850EB74ADFDD7253779BABB</key>
+		<key>6B0C717709EEBFB3C82CDA984F5C865F</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>85A82E29976FA47C3BD295CC55347ABE</key>
+		<key>8642CC820CE8C5B88C113D7F47AF4BC3</key>
 		<dict>
 			<key>primary</key>
 			<true/>
@@ -43,6 +48,11 @@
 			<true/>
 		</dict>
 		<key>9E033EDB5EC0819481B0546434FA577B</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>DF220527ADE361D13C238595D8F4BD23</key>
 		<dict>
 			<key>primary</key>
 			<true/>

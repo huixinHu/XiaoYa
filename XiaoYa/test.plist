@@ -4,23 +4,31 @@
 <array>
 	<dict>
 		<key>groupName</key>
-		<string>欢乐逗比501欢乐逗比501欢乐逗比501欢乐逗比501</string>
+		<string>欢乐逗比501</string>
+		<key>groupId</key>
+		<string>200</string>
 		<key>groupMessage</key>
 		<string>请同学们搞好实验室值日卫生，注意实验室用电防火安全</string>
 		<key>time</key>
 		<string>23:59</string>
 		<key>groupAvatarId</key>
 		<string>0</string>
+		<key>numberOfMember</key>
+		<string>10</string>
 	</dict>
 	<dict>
 		<key>groupName</key>
 		<string>硕士3班</string>
+		<key>groupId</key>
+		<string>201</string>
 		<key>groupMessage</key>
 		<string>测试测试</string>
 		<key>time</key>
 		<string>12月24日</string>
 		<key>groupAvatarId</key>
-		<string>0</string>
+		<string>1</string>
+		<key>numberOfMember</key>
+		<string>12</string>
 	</dict>
 </array>
 </plist>

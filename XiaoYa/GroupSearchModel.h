@@ -13,7 +13,7 @@
 @property (nonatomic ,copy)NSString *groupName;
 @property (nonatomic ,copy)NSString *managerId;
 @property (nonatomic ,copy)NSString *managerName;
-@property (nonatomic ,copy)NSString *avatarId;
+@property (nonatomic ,assign)NSInteger avatarId;
 
 + (instancetype)groupModelWithDict:(NSDictionary *)dict;
 @end

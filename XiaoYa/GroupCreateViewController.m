@@ -7,16 +7,17 @@
 //创建群组
 
 #import "GroupCreateViewController.h"
+#import "GroupInfoViewController.h"
+#import "AddGroupMemberViewController.h"
 #import "HXTextField.h"
 #import "MemberCollectionViewCell.h"
 #import "GroupMemberModel.h"
 #import "GroupListModel.h"
-#import "AddGroupMemberViewController.h"
 #import "Utils.h"
 #import "Masonry.h"
 #import "HXNetworking.h"
 #import "UIAlertController+Appearance.h"
-#import "GroupInfoViewController.h"
+
 
 #define kScreenWidth [UIApplication sharedApplication].keyWindow.bounds.size.width
 #define kScreenHeight [UIApplication sharedApplication].keyWindow.bounds.size.height
@@ -30,39 +31,41 @@
 @property (nonatomic ,weak) UILabel *hint;
 @property (nonatomic ,weak) UICollectionView *collectionView;
 
-@property (nonatomic, strong) NSMutableArray <GroupMemberModel *> *dataArray;//存储数据(模型)
+@property (nonatomic, strong) NSMutableArray <GroupMemberModel *> *dataArray;//存储数据(模型) 第一个一定是群主
 @property (nonatomic ,strong) NSMutableArray *indexArray;//存储index
-//@property (nonatomic ,strong) GroupMemberModel *groupManagerModel;
+@property (nonatomic ,strong) GroupListModel *groupModel;
 @property (nonatomic ,copy) gCreateSucBlock sucBlock;
+@property (nonatomic ,assign) NSInteger avatarID; //存储选择的群头像id
 @end
 
 static NSString *identifier = @"collectionCell";
 @implementation GroupCreateViewController
 {
     BOOL isDeleteBtnClicked;
-    NSInteger avatarID;//群头像ID
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    [self viewsSetting];
     self.lastSelectedAvatar = nil;
     isDeleteBtnClicked = NO;
-    avatarID = -1;
+    self.avatarID = -1;
+    [self viewsSetting];
 }
 
-- (instancetype)initWithGroupManager:(GroupMemberModel *)model successBlock:(gCreateSucBlock)block{
+- (instancetype)initWithGroupModel:(GroupListModel *)model successBlock:(gCreateSucBlock)block{
     if (self = [super init]) {
-        [self.dataArray addObject:model];
-        self.sucBlock = [block copy];
+        self.groupModel = [model copy];
+        [self.dataArray removeAllObjects];
+        [self.dataArray addObjectsFromArray:self.groupModel.groupMembers];
+        self.sucBlock = block;
     }
     return self;
 }
 
 - (void)back{
     __weak typeof(self) weakself = self;
-    if (avatarID >= 0 || self.groupName.text.length > 0 || self.dataArray.count > 1) {
+    if (self.avatarID >= 0 || self.groupName.text.length > 0 || self.dataArray.count > 1) {
         void (^otherBlock)(UIAlertAction *action) = ^(UIAlertAction *action){
             [weakself.navigationController popViewControllerAnimated:YES];
         };
@@ -74,7 +77,7 @@ static NSString *identifier = @"collectionCell";
     }
 }
 
-- (void)groupCreate{
+- (void)finish{
     [self.view endEditing:YES];
     
     GroupMemberModel *manager = self.dataArray.firstObject;
@@ -84,31 +87,34 @@ static NSString *identifier = @"collectionCell";
         member = self.dataArray[i];
         [usersStr appendString:[NSString stringWithFormat:@",%@",member.memberId]];
     }
-    NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"INITGROUP", @"type", self.groupName.text,@"groupName", manager.memberId, @"managerId", [NSNumber numberWithInteger:avatarID-101], @"picId", usersStr, @"users",nil];
-    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+    NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"INITGROUP", @"type", self.groupName.text,@"groupName", manager.memberId, @"managerId", [NSNumber numberWithInteger:self.avatarID-101], @"picId", usersStr, @"users",nil];
+//    dispatch_async(dispatch_get_global_queue(0, 0), ^{
         __weak typeof(self) ws = self;
-        [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
-            NSDictionary *responseDic = (NSDictionary *)responseObject;
-            NSLog(@"dataID:%@",[responseDic objectForKey:@"identity"]);
-            NSLog(@"dataMessage:%@",[responseDic objectForKey:@"message"]);
-            NSLog(@"dataState:%@",[responseDic objectForKey:@"state"]);
+//        [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
+//            NSDictionary *responseDic = (NSDictionary *)responseObject;
+//            NSLog(@"dataID:%@",[responseDic objectForKey:@"identity"]);
+//            NSLog(@"dataMessage:%@",[responseDic objectForKey:@"message"]);
+//            NSLog(@"dataState:%@",[responseDic objectForKey:@"state"]);
 
             
             GroupListModel *model = [[GroupListModel alloc]init];
-            model.groupMembers = ws.dataArray;
-            model.groupAvatarId = avatarID;
-            model.groupId = [[[[[responseDic objectForKey:@"identity"] componentsSeparatedByString:@"("] lastObject] componentsSeparatedByString:@")"] firstObject];
+            model.groupMembers = [ws.dataArray mutableCopy];
+            model.groupAvatarId = [NSString stringWithFormat:@"%ld",ws.avatarID-101];
+//            model.groupId = [[[[[responseDic objectForKey:@"identity"] componentsSeparatedByString:@"("] lastObject] componentsSeparatedByString:@")"] firstObject];
+            model.groupId = [NSString stringWithFormat:@"%d",100 +  (arc4random() % 101)];//100-200的随机整数
             model.groupName = ws.groupName.text;
-            ws.sucBlock(model);
-            GroupInfoViewController *groupInfoVC = [[GroupInfoViewController alloc]initWithGroupName:model.groupName groupDetail:model];
+            model.numberOfMember = ws.dataArray.count;
+            if(ws.sucBlock){
+                ws.sucBlock(model);
+            }
+            GroupInfoViewController *groupInfoVC = [[GroupInfoViewController alloc]initWithGroupModel:model];
             groupInfoVC.hidesBottomBarWhenPushed = YES;
-            [ws.navigationController popViewControllerAnimated:YES];
-            [ws.navigationController pushViewController:groupInfoVC animated:YES];
+            [ws.navigationController pushViewController:groupInfoVC animated:YES];//这里要放主线程
             
-        } failure:^(NSURLSessionDataTask *task, NSError *error) {
-            NSLog(@"Error: %@", error);
-        } refresh:NO];
-    });
+//        } failure:^(NSURLSessionDataTask *task, NSError *error) {
+//            NSLog(@"Error: %@", error);
+//        } refresh:NO];
+//    });
 }
 
 #pragma mark AddGroupMemberViewControllerDelegate
@@ -278,10 +284,15 @@ static NSString *identifier = @"collectionCell";
         make.centerX.equalTo(bg);
         make.top.equalTo(_avatar.mas_centerY).offset(25);
     }];
-    
+    if (self.groupModel.groupAvatarId){
+        [self avatarSetting:[self.groupModel.groupAvatarId integerValue]];
+        self.avatarID = [self.groupModel.groupAvatarId integerValue] +101;
+    }
+
     HXTextField *groupName = [[HXTextField alloc]init];
     _groupName = groupName;
     [_groupName appearanceWithTextColor:[Utils colorWithHexString:@"#333333"] textFontSize:15 placeHolderColor:[Utils colorWithHexString:@"#cccccc"] placeHolderFontSize:15 placeHolderText:@"设置群组名称" leftView:nil];
+    _groupName.text = self.groupModel.groupName;
     _groupName.textAlignment = NSTextAlignmentCenter;
     [bg addSubview:_groupName];
     [_groupName mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -303,16 +314,12 @@ static NSString *identifier = @"collectionCell";
 - (void)addAvatar{
     [self.view endEditing:YES];
     
-    UIView *coverLayer = [[UIView alloc]initWithFrame:CGRectMake(0, 0, kScreenWidth, kScreenHeight)];
-    coverLayer.backgroundColor = [UIColor colorWithRed:88/255.0 green:88/255.0  blue:88/255.0  alpha:0.5];
-    _coverLayer = coverLayer;
+    self.coverLayer = [Utils coverLayerAddToWindow];
     //添加手势
     _coverLayer.userInteractionEnabled = YES;
     UITapGestureRecognizer *singleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(coverFingerTapped:)];
     singleTap.delegate = self;
     [_coverLayer addGestureRecognizer:singleTap];
-    UIWindow *theWindow = [[UIApplication sharedApplication] delegate].window;
-    [theWindow addSubview:_coverLayer];
     [self coverViewsSetting];
 }
 
@@ -321,9 +328,8 @@ static NSString *identifier = @"collectionCell";
     bg2.backgroundColor = [UIColor whiteColor];
     [self.view addSubview:bg2];
     [bg2 mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.width.centerX.equalTo(self.view);
+        make.width.centerX.bottom.equalTo(self.view);
         make.top.equalTo(self.view).offset(190);
-        make.bottom.equalTo(self.view).offset(-40);
     }];
     
     UILabel *lab = [[UILabel alloc]init];
@@ -342,7 +348,7 @@ static NSString *identifier = @"collectionCell";
     [createGroup setTitle:@"创建群组" forState:UIControlStateNormal];
     [createGroup setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     createGroup.titleLabel.font = [UIFont systemFontOfSize:17];
-    [createGroup addTarget:self action:@selector(groupCreate) forControlEvents:UIControlEventTouchUpInside];
+    [createGroup addTarget:self action:@selector(finish) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:createGroup];
     [createGroup mas_makeConstraints:^(MASConstraintMaker *make) {
         make.width.centerX.bottom.equalTo(self.view);
@@ -365,7 +371,7 @@ static NSString *identifier = @"collectionCell";
         make.width.mas_equalTo(275);
         make.centerX.equalTo(bg2);
         make.top.equalTo(lab.mas_bottom).offset(20);
-        make.bottom.equalTo(bg2).offset(-5);
+        make.bottom.equalTo(createGroup).offset(-5);
     }];
     _collectionView = collectionView;
 }
@@ -396,8 +402,6 @@ static NSString *identifier = @"collectionCell";
         make.size.mas_equalTo(CGSizeMake(100, 100));
         make.right.equalTo(avatar2.mas_left).offset(-20);
     }];
-    avatar1.selected = YES;
-    self.lastSelectedAvatar = avatar1;
     
     UIButton *avatar3 = [self groupAvatarBtnWithBgImage:[UIImage imageNamed:@"头像3"]];
     avatar3.tag = 103;
@@ -407,6 +411,28 @@ static NSString *identifier = @"collectionCell";
         make.size.mas_equalTo(CGSizeMake(100, 100));
         make.left.equalTo(avatar2.mas_right).offset(20);
     }];
+    
+    if (self.avatarID < 0) {
+        avatar1.selected = YES;
+        self.lastSelectedAvatar = avatar1;
+    } else {
+        switch (self.avatarID) {
+            case 101:{
+                avatar1.selected = YES;
+                self.lastSelectedAvatar = avatar1;
+            }break;
+            case 102:{
+                avatar2.selected = YES;
+                self.lastSelectedAvatar = avatar2;
+            }break;
+            case 103:{
+                avatar3.selected = YES;
+                self.lastSelectedAvatar = avatar3;
+            }break;
+            default:
+                break;
+        }
+    }
 }
 
 - (UIButton *)groupAvatarBtnWithBgImage:(UIImage *)bgImage{
@@ -420,25 +446,29 @@ static NSString *identifier = @"collectionCell";
     return btn;
 }
 
-//选择群头像时收起蒙层
+//设置群头像时收起蒙层
 -(void)coverFingerTapped:(UITapGestureRecognizer *)gestureRecognizer{
+    [self avatarSetting:self.lastSelectedAvatar.tag - 101];
+    self.avatarID = self.lastSelectedAvatar.tag;
+    [self bottomBtnCanBeSelectd];
+    [_coverLayer removeFromSuperview];
+}
+
+- (void)avatarSetting:(NSInteger)avatar_Id{
     self.hint.hidden = YES;
-    switch (self.lastSelectedAvatar.tag) {
-        case 101:
+    switch (avatar_Id) {
+        case 0:
             [self.avatar setBackgroundImage:[UIImage imageNamed:@"头像1"] forState:UIControlStateNormal];
             break;
-        case 102:
+        case 1:
             [self.avatar setBackgroundImage:[UIImage imageNamed:@"头像2"] forState:UIControlStateNormal];
             break;
-        case 103:
+        case 2:
             [self.avatar setBackgroundImage:[UIImage imageNamed:@"头像3"] forState:UIControlStateNormal];
             break;
         default:
             break;
     }
-    avatarID = self.lastSelectedAvatar.tag;
-    [self bottomBtnCanBeSelectd];
-    [_coverLayer removeFromSuperview];
 }
 
 //收起键盘
@@ -457,7 +487,7 @@ static NSString *identifier = @"collectionCell";
 
 //底部的 创建 按钮是否可以被选
 - (void)bottomBtnCanBeSelectd{
-    if (self.groupName.text.length > 0 && avatarID >= 0) {
+    if (self.groupName.text.length > 0 && self.avatarID >= 0) {
         self.createGroup.enabled = YES;
         self.createGroup.backgroundColor = [Utils colorWithHexString:@"#00a7fa"];
     }else{

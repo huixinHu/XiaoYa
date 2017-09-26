@@ -12,6 +12,13 @@
 typedef void(^gCreateSucBlock)(GroupListModel *model);
 
 @interface GroupCreateViewController : UIViewController
-- (instancetype)initWithGroupManager:(GroupMemberModel *)model successBlock:(gCreateSucBlock)block;
+@property (nonatomic ,weak ,readonly) UITextField *groupName;
+@property (nonatomic ,weak ,readonly) UIButton *createGroup;
+
+@property (nonatomic ,strong ,readonly) NSMutableArray <GroupMemberModel *> *dataArray;//存储数据(模型) 第一个一定是群主
+@property (nonatomic ,strong ,readonly) GroupListModel *groupModel;
+@property (nonatomic ,assign ,readonly) NSInteger avatarID;
+
+- (instancetype)initWithGroupModel:(GroupListModel *)model successBlock:(gCreateSucBlock)block;
 - (instancetype)init NS_UNAVAILABLE;
 @end

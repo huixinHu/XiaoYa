@@ -8,6 +8,7 @@
 
 #import "GroupMemberModel.h"
 #import "TxAvatar.h"
+#import <objc/runtime.h>
 @implementation GroupMemberModel
 
 - (instancetype)initWithDict:(NSDictionary *)dict {
@@ -64,5 +65,31 @@
 
 + (instancetype)memberModelWithArray:(NSArray *)arr{
     return [[self alloc]initWithArray:arr];
+}
+
+- (void)encodeWithCoder:(NSCoder *)aCoder{
+    unsigned int count = 0;
+    objc_property_t *properties = class_copyPropertyList([self class], &count);
+    for (int i = 0; i < count; i++) {
+        const char *propertyName = property_getName(properties[i]);
+        NSString *name = [NSString stringWithUTF8String:propertyName];
+        id value = [self valueForKey:name];
+        [aCoder encodeObject:value forKey:name];
+    }
+}
+
+- (instancetype)initWithCoder:(NSCoder *)aDecoder{
+    if (self = [super init]) {
+        unsigned int count = 0;
+        objc_property_t *properties = class_copyPropertyList([self class], &count);
+        for (int i = 0; i < count; i++) {
+            const char *propertyName = property_getName(properties[i]);
+            NSString *name = [NSString stringWithUTF8String:propertyName];
+            id value = [aDecoder decodeObjectForKey:name];
+            [self setValue:value forKey:name];
+        }
+    }
+    return self;
+    
 }
 @end

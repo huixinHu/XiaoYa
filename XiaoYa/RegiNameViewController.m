@@ -12,7 +12,7 @@
 #import "Utils.h"
 #import "Masonry.h"
 #import "HXNetworking.h"
-#import "LoginManager.h"
+#import "HXNotifyConfig.h"
 #define kScreenWidth [UIApplication sharedApplication].keyWindow.bounds.size.width
 
 @interface RegiNameViewController ()<UITextFieldDelegate>
@@ -65,7 +65,7 @@
     __weak typeof (self)weakself = self;
     dispatch_group_t group = dispatch_group_create();
     dispatch_group_enter(group);
-    [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
+    [HXNetworking postWithUrl:httpUrl params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
         NSDictionary *responseDict = (NSDictionary *)responseObject;
         NSLog(@"dataMessage:%@",[responseDict objectForKey:@"message"]);
         if ([[responseDict objectForKey:@"state"]boolValue] == 0){
@@ -87,7 +87,7 @@
 - (void)login{
     NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"LOGIN",@"type",self.phoneNum,@"mobile",self.pwd,@"password", nil];
     __weak typeof (self)ws = self;
-    [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
+    [HXNetworking postWithUrl:httpUrl params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
         NSLog(@"登录dataID:%@",[responseObject objectForKey:@"identity"]);
         dispatch_async(dispatch_get_main_queue(), ^{
             if ([[responseObject objectForKey:@"state"]boolValue] == 0) {

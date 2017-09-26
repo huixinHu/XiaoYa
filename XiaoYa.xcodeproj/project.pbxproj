@@ -29,6 +29,9 @@
 		571DB1B41F6127E500D319EF /* SingleChoiceView.m in Sources */ = {isa = PBXBuildFile; fileRef = 571DB1B31F6127E500D319EF /* SingleChoiceView.m */; };
 		571DB1B71F64279200D319EF /* MemberDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 571DB1B61F64279200D319EF /* MemberDetailViewController.m */; };
 		571DB1BA1F656DB000D319EF /* MemberListViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 571DB1B91F656DB000D319EF /* MemberListViewController.m */; };
+		571DB1DB1F68383200D319EF /* EditGroupDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 571DB1DA1F68383200D319EF /* EditGroupDetailViewController.m */; };
+		571DB1DF1F78974F00D319EF /* HXDBManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 571DB1DE1F78974F00D319EF /* HXDBManager.m */; };
+		571DB1E21F7A37CD00D319EF /* MessageProtoBuf.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 571DB1E11F7A37CC00D319EF /* MessageProtoBuf.pbobjc.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		572B6D121F166A520069D1D2 /* AddGroupMemberViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 572B6D111F166A520069D1D2 /* AddGroupMemberViewController.m */; };
 		572B6D151F1748590069D1D2 /* JoinGroupViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 572B6D141F1748590069D1D2 /* JoinGroupViewController.m */; };
 		572EA9181F2F2E760052907C /* EventDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 572EA9171F2F2E760052907C /* EventDetailViewController.m */; };
@@ -173,6 +176,13 @@
 		571DB1B61F64279200D319EF /* MemberDetailViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MemberDetailViewController.m; sourceTree = "<group>"; };
 		571DB1B81F656DB000D319EF /* MemberListViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MemberListViewController.h; sourceTree = "<group>"; };
 		571DB1B91F656DB000D319EF /* MemberListViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MemberListViewController.m; sourceTree = "<group>"; };
+		571DB1D91F68383200D319EF /* EditGroupDetailViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EditGroupDetailViewController.h; sourceTree = "<group>"; };
+		571DB1DA1F68383200D319EF /* EditGroupDetailViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EditGroupDetailViewController.m; sourceTree = "<group>"; };
+		571DB1DC1F6AA30100D319EF /* HXNotifyConfig.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HXNotifyConfig.h; sourceTree = "<group>"; };
+		571DB1DD1F78974F00D319EF /* HXDBManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HXDBManager.h; sourceTree = "<group>"; };
+		571DB1DE1F78974F00D319EF /* HXDBManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HXDBManager.m; sourceTree = "<group>"; };
+		571DB1E01F7A37CC00D319EF /* MessageProtoBuf.pbobjc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MessageProtoBuf.pbobjc.h; sourceTree = "<group>"; };
+		571DB1E11F7A37CC00D319EF /* MessageProtoBuf.pbobjc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MessageProtoBuf.pbobjc.m; sourceTree = "<group>"; };
 		572B6D101F166A520069D1D2 /* AddGroupMemberViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AddGroupMemberViewController.h; sourceTree = "<group>"; };
 		572B6D111F166A520069D1D2 /* AddGroupMemberViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AddGroupMemberViewController.m; sourceTree = "<group>"; };
 		572B6D131F1748590069D1D2 /* JoinGroupViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JoinGroupViewController.h; sourceTree = "<group>"; };
@@ -390,6 +400,9 @@
 				57EA0A211F20E9490003BE87 /* LoginManager.m */,
 				577C67181EED676B0006E783 /* HXNetworking.h */,
 				577C67191EED676B0006E783 /* HXNetworking.m */,
+				571DB1DC1F6AA30100D319EF /* HXNotifyConfig.h */,
+				571DB1DD1F78974F00D319EF /* HXDBManager.h */,
+				571DB1DE1F78974F00D319EF /* HXDBManager.m */,
 			);
 			name = Util;
 			sourceTree = "<group>";
@@ -582,6 +595,8 @@
 		579C2FBC1DAD000E00E4EE54 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				571DB1E01F7A37CC00D319EF /* MessageProtoBuf.pbobjc.h */,
+				571DB1E11F7A37CC00D319EF /* MessageProtoBuf.pbobjc.m */,
 				572EA92B1F31F45F0052907C /* ProtoMessage.pbobjc.h */,
 				572EA92C1F31F45F0052907C /* ProtoMessage.pbobjc.m */,
 				579C2FBD1DAD000E00E4EE54 /* main.m */,
@@ -686,6 +701,8 @@
 				572EA9171F2F2E760052907C /* EventDetailViewController.m */,
 				572EA9221F3077560052907C /* GroupDetailViewController.h */,
 				572EA9231F3077560052907C /* GroupDetailViewController.m */,
+				571DB1D91F68383200D319EF /* EditGroupDetailViewController.h */,
+				571DB1DA1F68383200D319EF /* EditGroupDetailViewController.m */,
 				571DB1B51F64279200D319EF /* MemberDetailViewController.h */,
 				571DB1B61F64279200D319EF /* MemberDetailViewController.m */,
 				571DB1B81F656DB000D319EF /* MemberListViewController.h */,
@@ -882,6 +899,11 @@
 						CreatedOnToolsVersion = 7.2;
 						DevelopmentTeam = AV69H3MJH2;
 						ProvisioningStyle = Automatic;
+						SystemCapabilities = {
+							com.apple.BackgroundModes = {
+								enabled = 0;
+							};
+						};
 					};
 					579C2FD11DAD000E00E4EE54 = {
 						CreatedOnToolsVersion = 7.2;
@@ -1014,9 +1036,11 @@
 				572EA9301F32C5870052907C /* GCDAsyncSocket.m in Sources */,
 				57BDFA1E1E4CCB5E00C0E254 /* UIView+Extend.m in Sources */,
 				5711C8781EAB08D700D19AE2 /* MBProgressHUD.m in Sources */,
+				571DB1DB1F68383200D319EF /* EditGroupDetailViewController.m in Sources */,
 				57EA0A1F1F2086F50003BE87 /* NeedLoginViewController.m in Sources */,
 				573F110B1EE6DE4200E9F99E /* LoginViewController.m in Sources */,
 				571DB1A51F5D000400D319EF /* MutipleChoiceView.m in Sources */,
+				571DB1E21F7A37CD00D319EF /* MessageProtoBuf.pbobjc.m in Sources */,
 				571DB1A21F5CFF4B00D319EF /* MutipleChoiceCell.m in Sources */,
 				57D49D231F121AD90063C861 /* GroupHomePageCell.m in Sources */,
 				57C761271E7E57320002FA77 /* CollectionViewCell.m in Sources */,
@@ -1057,6 +1081,7 @@
 				E2F0B70B1DD3653F00AEE343 /* DayViewCell.m in Sources */,
 				577C66FD1EE828D30006E783 /* RegiTextCodeViewController.m in Sources */,
 				572EA91E1F301CF50052907C /* ReasonView.m in Sources */,
+				571DB1DF1F78974F00D319EF /* HXDBManager.m in Sources */,
 				57BDFA181E326E0500C0E254 /* UILabel+AlertActionFont.m in Sources */,
 				577C67101EE974060006E783 /* ResetPhoneViewController.m in Sources */,
 				571DB1BA1F656DB000D319EF /* MemberListViewController.m in Sources */,
@@ -1222,6 +1247,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				DEVELOPMENT_TEAM = AV69H3MJH2;
+				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = XiaoYa/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -1238,6 +1264,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				DEVELOPMENT_TEAM = AV69H3MJH2;
+				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = XiaoYa/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";

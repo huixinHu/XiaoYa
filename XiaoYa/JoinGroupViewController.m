@@ -7,14 +7,15 @@
 //加入群组页
 
 #import "JoinGroupViewController.h"
+#import "GroupInfoViewController.h"
 #import "GroupSearchTableViewCell.h"
 #import "Utils.h"
 #import "Masonry.h"
 #import "HXTextField.h"
 #import "HXNetworking.h"
 #import "GroupSearchModel.h"
+#import "GroupListModel.h"
 #import "UIAlertController+Appearance.h"
-#import "GroupInfoViewController.h"
 #import "AppDelegate.h"
 
 @interface JoinGroupViewController ()<UITextFieldDelegate ,UITableViewDelegate ,UITableViewDataSource ,GroupSearchCellDelegate>
@@ -24,11 +25,17 @@
 @property (nonatomic ,weak) UILabel *prompt;
 @property (nonatomic ,weak) UILabel *noResult;
 
-@property (nonatomic ,strong)NSMutableArray *groupModels;
-
+@property (nonatomic ,strong)NSMutableArray <GroupSearchModel *> *groupModels;
+@property (nonatomic ,copy)gJoinSuccessBlock sucBlock;
 @end
 
 @implementation JoinGroupViewController
+- (instancetype)initWithJoinSuccessBlock:(gJoinSuccessBlock)block{
+    if (self = [super init]) {
+        self.sucBlock = block;
+    }
+    return self;
+}
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -78,28 +85,35 @@
     NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"JOINGROUP",@"type",userid,@"userId", selectedModel.groupId, @"groupId",nil];
     
     __weak typeof(self) weakself = self;
-    dispatch_async(dispatch_get_global_queue(0, 0), ^{
-        [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                if ([[responseObject objectForKey:@"state"]boolValue] == 0){
-                    //加入失败的交互待完善
-                    void (^otherBlock)(UIAlertAction *action) = ^(UIAlertAction *action){
-                    };
-                    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"加入群组失败" message:@"请确定用户、群组信息无误" preferredStyle:UIAlertControllerStyleAlert cancelTitle:nil cancelBlock:nil otherTitles:@[@"确定"] otherBlocks:@[otherBlock]];
-                    [weakself presentViewController:alert animated:YES completion:nil];
-                }else {//成功
-                    NSLog(@"%@", [responseObject objectForKey:@"message"]);
-                    [weakself.navigationController popViewControllerAnimated:YES];
-                    GroupInfoViewController *groupInfoVC = [[GroupInfoViewController alloc]initWithGroupName:[weakself.groupModels[0] groupName]];
+//    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+//        [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
+//            dispatch_async(dispatch_get_main_queue(), ^{
+//                if ([[responseObject objectForKey:@"state"]boolValue] == 0){
+//                    //加入失败的交互待完善
+//                    void (^otherBlock)(UIAlertAction *action) = ^(UIAlertAction *action){
+//                    };
+//                    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"加入群组失败" message:@"请确定用户、群组信息无误" preferredStyle:UIAlertControllerStyleAlert cancelTitle:nil cancelBlock:nil otherTitles:@[@"确定"] otherBlocks:@[otherBlock]];
+//                    [weakself presentViewController:alert animated:YES completion:nil];
+//                }else {//成功
+//                    NSLog(@"%@", [responseObject objectForKey:@"message"]);
+                    GroupListModel *groupModel = [[GroupListModel alloc]init];
+                    groupModel.groupId = weakself.groupModels[0].groupId;
+                    groupModel.groupAvatarId = [NSString stringWithFormat:@"%ld",weakself.groupModels[0].avatarId];
+                    groupModel.groupName = weakself.groupModels[0].groupName;
+                    if (weakself.sucBlock) {
+                        weakself.sucBlock(groupModel);
+                    }
+                    
+                    GroupInfoViewController *groupInfoVC = [[GroupInfoViewController alloc]initWithGroupModel:groupModel];
                     groupInfoVC.hidesBottomBarWhenPushed = YES;
                     [weakself.navigationController pushViewController:groupInfoVC animated:YES];
-                }
-            });
-        } failure:^(NSURLSessionDataTask *task, NSError *error) {
-            //这里后台是不是有点问题？加入已经加入的群组直接来到这里
-            NSLog(@"Error: %@", error);
-        } refresh:NO];
-    });
+//                }
+//            });
+//        } failure:^(NSURLSessionDataTask *task, NSError *error) {
+//            //这里后台是不是有点问题？加入已经加入的群组直接来到这里
+//            NSLog(@"Error: %@", error);
+//        } refresh:NO];
+//    });
 }
 
 #pragma mark tableview datasource &delegate

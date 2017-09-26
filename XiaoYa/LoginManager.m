@@ -8,6 +8,7 @@
 
 #import "LoginManager.h"
 #import "AppDelegate.h"
+#import "HXNotifyConfig.h"
 #import "NeedLoginViewController.h"
 
 @interface LoginManager()

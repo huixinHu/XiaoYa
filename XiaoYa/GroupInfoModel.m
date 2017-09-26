@@ -10,6 +10,7 @@
 #import "GroupInfoModel.h"
 #import "Utils.h"
 #import "AppDelegate.h"
+#import <objc/runtime.h>
 @interface GroupInfoModel()
 @property (nonatomic ,strong) NSArray *timeSrartArray;
 @end
@@ -94,5 +95,31 @@
         _timeSrartArray = @[@"0600",@"0800",@"0855",@"1000",@"1055",@"1140",@"1430",@"1525",@"1620",@"1715",@"1810",@"1900",@"1955",@"2050",@"2200"];
     }
     return _timeSrartArray;
+}
+
+- (void)encodeWithCoder:(NSCoder *)aCoder{
+    unsigned int count = 0;
+    objc_property_t *properties = class_copyPropertyList([self class], &count);
+    for (int i = 0; i < count; i++) {
+        const char *propertyName = property_getName(properties[i]);
+        NSString *name = [NSString stringWithUTF8String:propertyName];
+        id value = [self valueForKey:name];
+        [aCoder encodeObject:value forKey:name];
+    }
+}
+
+- (instancetype)initWithCoder:(NSCoder *)aDecoder{
+    if (self = [super init]) {
+        unsigned int count = 0;
+        objc_property_t *properties = class_copyPropertyList([self class], &count);
+        for (int i = 0; i < count; i++) {
+            const char *propertyName = property_getName(properties[i]);
+            NSString *name = [NSString stringWithUTF8String:propertyName];
+            id value = [aDecoder decodeObjectForKey:name];
+            [self setValue:value forKey:name];
+        }
+    }
+    return self;
+    
 }
 @end

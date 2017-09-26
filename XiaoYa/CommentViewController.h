@@ -13,5 +13,5 @@ typedef void(^completeBlock)( NSString * _Nonnull text);
 @interface CommentViewController : UIViewController
 
 - (instancetype _Nonnull )initWithTextStr:(NSString * _Nullable)str successBlock:(nonnull completeBlock)block;
-- (instancetype)init NS_UNAVAILABLE;
+- (instancetype _Nonnull)init NS_UNAVAILABLE;
 @end

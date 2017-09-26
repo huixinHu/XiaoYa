@@ -17,25 +17,26 @@
 #import "MemberCollectionViewCell.h"
 #import "MemberDetailViewController.h"
 #import "MemberListViewController.h"
+#import "EditGroupDetailViewController.h"
 
 static NSString *identifier = @"groupDetailCollectionCell";
 
 @interface GroupDetailViewController () <UICollectionViewDataSource ,UICollectionViewDelegate>
 //@property (nonatomic)GCDAsyncSocket *socket;
-@property (nonatomic ,strong) GroupListModel *info;
 @property (nonatomic ,weak) UIImageView *avatarImage;
 @property (nonatomic ,weak) UILabel *groupName;
 @property (nonatomic ,weak) UICollectionView *collectionView;
+@property (nonatomic ,weak) UIButton *editBtn;
+@property (nonatomic ,weak) UIButton *moreBtn;
 
-@property (nonatomic, strong) NSArray <GroupMemberModel *> *dataArray;//存储数据(模型)
+@property (nonatomic ,strong) GroupListModel *groupModel;
 
 @end
 
 @implementation GroupDetailViewController
 - (instancetype)initWithGroupInfo:(GroupListModel *)model{
     if (self = [super init]) {
-        self.info = model;
-        self.dataArray = model.groupMembers;
+        self.groupModel = [model copy];
     }
     return self;
 }
@@ -59,29 +60,45 @@ static NSString *identifier = @"groupDetailCollectionCell";
     [self.navigationController popViewControllerAnimated:YES];
 }
 
+- (void)edit{
+    __weak typeof(self) ws = self;
+    EditGroupDetailViewController *vc = [[EditGroupDetailViewController alloc] initWithGroupModel:self.groupModel successBlock:^(GroupListModel *model) {
+        ws.groupModel = model;
+        [ws settingImage:[model.groupAvatarId integerValue]];
+        ws.groupName.text = model.groupName;
+        [ws.collectionView reloadData];
+        if (model.groupMembers.count > 4) {
+            ws.moreBtn.hidden = NO;
+        } else{
+            ws.moreBtn.hidden = YES;
+        }
+    }];
+    [self.navigationController pushViewController:vc animated:YES];
+}
+
 - (void)allMembers{
-    MemberListViewController *memberListVC = [[MemberListViewController alloc] initWithAllMembersModel:self.dataArray];
+    MemberListViewController *memberListVC = [[MemberListViewController alloc] initWithAllMembersModel:self.groupModel.groupMembers];
     [self.navigationController pushViewController:memberListVC animated:YES];
 }
 
 #pragma mark collectionViewDelegate
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath{
-    MemberDetailViewController *vc = [[MemberDetailViewController alloc] initWithMemberModel:self.dataArray[indexPath.row]];
+    MemberDetailViewController *vc = [[MemberDetailViewController alloc] initWithMemberModel:self.groupModel.groupMembers[indexPath.row]];
     [self.navigationController pushViewController:vc animated:YES];
 }
 
 #pragma mark collectionViewDataSource
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
-    if (self.dataArray.count >= 4) {
+    if (self.groupModel.groupMembers.count >= 4) {
         return 4;
     }else{
-        return self.dataArray.count;
+        return self.groupModel.groupMembers.count;
     }
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     MemberCollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:identifier forIndexPath:indexPath];
-    GroupMemberModel *memberModel = self.dataArray[indexPath.item];
+    GroupMemberModel *memberModel = self.groupModel.groupMembers[indexPath.item];
     cell.model = memberModel;
     return cell;
 }
@@ -92,6 +109,15 @@ static NSString *identifier = @"groupDetailCollectionCell";
     self.navigationController.navigationBar.titleTextAttributes = @{NSForegroundColorAttributeName:[Utils colorWithHexString:@"#333333"],NSFontAttributeName:[UIFont systemFontOfSize:17]};
     self.navigationItem.title = @"群资料";
     self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc]initWithImage:[[UIImage imageNamed:@"导航栏返回图标"]imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal] style:UIBarButtonItemStyleDone target:self action:@selector(back)];
+    
+    UIButton *editBtn = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 40, 40)];
+    [editBtn setTitle:@"编辑" forState:UIControlStateNormal];
+    [editBtn setTitleColor:[Utils colorWithHexString:@"#00a7fa"] forState:UIControlStateNormal];
+    editBtn.titleLabel.font = [UIFont systemFontOfSize:15];
+    _editBtn = editBtn;//要判断是否群主
+    [editBtn addTarget:self action:@selector(edit) forControlEvents:UIControlEventTouchUpInside];
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc]initWithCustomView:editBtn];
+    
     self.view.backgroundColor = [Utils colorWithHexString:@"#F0F0F6"];
     self.edgesForExtendedLayout = UIRectEdgeNone;
     self.view.userInteractionEnabled = YES;
@@ -111,19 +137,7 @@ static NSString *identifier = @"groupDetailCollectionCell";
     
     UIImageView *avatar = [[UIImageView alloc]init];
     _avatarImage = avatar;
-    switch (self.info.groupAvatarId) {
-        case 101:
-            _avatarImage.image = [UIImage imageNamed:@"头像1"];
-            break;
-        case 102:
-            _avatarImage.image = [UIImage imageNamed:@"头像2"];
-            break;
-        case 103:
-            _avatarImage.image = [UIImage imageNamed:@"头像3"];
-            break;
-        default:
-            break;
-    }
+    [self settingImage:[self.groupModel.groupAvatarId integerValue]];
     [bg addSubview:_avatarImage];
     [_avatarImage mas_makeConstraints:^(MASConstraintMaker *make) {
         make.size.mas_equalTo(CGSizeMake(100, 100));
@@ -133,7 +147,7 @@ static NSString *identifier = @"groupDetailCollectionCell";
     
     UILabel *groupName = [[UILabel alloc]init];
     _groupName = groupName;
-    _groupName.text = self.info.groupName;
+    _groupName.text = self.groupModel.groupName;
     _groupName.textColor = [Utils colorWithHexString:@"#333333"];
     _groupName.font = [UIFont systemFontOfSize:15];
     [bg addSubview:_groupName];
@@ -191,10 +205,27 @@ static NSString *identifier = @"groupDetailCollectionCell";
         make.top.equalTo(collectionView.mas_bottom).offset(10);
         make.size.mas_equalTo(CGSizeMake(100, 30));
     }];
-    if (self.dataArray.count > 4) {
+    if (self.groupModel.groupMembers.count > 4) {
         moreBtn.hidden = NO;
     } else{
         moreBtn.hidden = YES;
+    }
+    _moreBtn = moreBtn;
+}
+
+- (void)settingImage:(NSInteger)imageId{
+    switch (imageId) {
+        case 0:
+            _avatarImage.image = [UIImage imageNamed:@"头像1"];
+            break;
+        case 1:
+            _avatarImage.image = [UIImage imageNamed:@"头像2"];
+            break;
+        case 2:
+            _avatarImage.image = [UIImage imageNamed:@"头像3"];
+            break;
+        default:
+            break;
     }
 }
 

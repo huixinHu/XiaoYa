@@ -41,7 +41,7 @@
     _model = model;
     self.groupName.text = model.groupName;
     self.groupManager.text = [NSString stringWithFormat:@"群主：%@",model.managerName];
-    switch ([model.avatarId intValue]) {
+    switch (model.avatarId) {
         case 0:
             self.avatar.image = [UIImage imageNamed:@"头像1"];
            break;

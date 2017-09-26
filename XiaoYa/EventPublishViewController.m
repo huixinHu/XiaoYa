@@ -11,6 +11,7 @@
 #import "AppDelegate.h"
 #import "Utils.h"
 #import "Masonry.h"
+#import "HXNotifyConfig.h"
 #import "DateUtils.h"
 #import "NSDate+Calendar.h"
 #import "UIAlertController+Appearance.h"
@@ -51,7 +52,7 @@
 @property (nonatomic , strong) GroupInfoModel *infoModel;
 @property (nonatomic , strong) publishCompBlock compBlock;
 @property (nonatomic , strong)GCDAsyncSocket *socket;
-
+@property (nonatomic , copy) NSString *groupid;
 @end
 
 @implementation EventPublishViewController
@@ -61,10 +62,11 @@
     CGFloat datePickerWidth;//日期选择器宽度
 }
 
-- (instancetype)initWithInfoModel:(GroupInfoModel *)model publishCompBlock:(publishCompBlock)block{
+- (instancetype)initWithInfoModel:(GroupInfoModel *)model groupId:(nonnull NSString *)gId publishCompBlock:(publishCompBlock)block{
     if (self = [super init]) {
         self.infoModel = model;
-        self.compBlock = [block copy];
+        self.compBlock = block;
+        self.groupid = gId;
     }
     return self;
 }
@@ -118,9 +120,8 @@
     s1.time = @"2017/9/11";
     s1.body = self.eventDescription.text;
     NSData *data = [s1 data];
-    NSLog(@"要发送的数据：%@",data);
     Byte *byteArr = (Byte *)[data bytes];
-    [self.socket writeData:data withTimeout:-1 tag:100];
+//    [self.socket writeData:data withTimeout:-1 tag:100];
     
     //如果发布成功，就添加到群组消息页
     NSDateFormatter *df = [[NSDateFormatter alloc]init];
@@ -136,6 +137,9 @@
         }
     }
     self.compBlock(newEvent);
+    
+    NSDictionary *dataDict = [NSDictionary dictionaryWithObjectsAndKeys:newEvent, HXNewGroupInfo, self.groupid, HXGroupID, nil];
+    [[NSNotificationCenter defaultCenter] postNotificationName:HXPublishGroupInfoNotification object:nil userInfo:dataDict];
 }
 
 - (NSString *)appendStringWithArray:(NSMutableArray *)array{

@@ -14,8 +14,8 @@
 #import "HXTextField.h"
 #import "BgView.h"
 #import "HXNetworking.h"
-#import "LoginManager.h"
 #import "AppDelegate.h"
+#import "HXNotifyConfig.h"
 #define kScreenWidth [UIApplication sharedApplication].keyWindow.bounds.size.width
 
 @interface LoginViewController ()<UITextFieldDelegate>
@@ -65,12 +65,16 @@
     NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"LOGIN",@"type",self.account.text,@"mobile",self.pwd.text,@"password", nil];
     __weak typeof (self)weakself = self;
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
-        [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
+        [HXNetworking postWithUrl:httpUrl params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
             NSLog(@"dataID:%@",[responseObject objectForKey:@"identity"]);
             NSLog(@"dataMessage:%@",[responseObject objectForKey:@"message"]);
             dispatch_async(dispatch_get_main_queue(), ^{
                 if ([[responseObject objectForKey:@"state"]boolValue] == 0) {//后台数据返回的问题。state实际上是一种__NSCFBoolean类型的数据，要转成bool再判断
-                    weakself.prompt.text = @"登录失败";
+                    if([[responseObject objectForKey:@"message"] isEqualToString:@"密码错误！"]){
+                        weakself.prompt.text = @"密码错误(这里的文案有点问题";
+                    }else if ([[responseObject objectForKey:@"message"] isEqualToString:@"手机号未注册！"]){
+                        weakself.prompt.text = @"该号码未注册";
+                    }
                 }else{
                     UIViewController *temp = weakself.presentingViewController;//先取得presentingViewController。不先保存的话，popvc之后可能就为空了
                     [weakself.navigationController popToRootViewControllerAnimated:YES];

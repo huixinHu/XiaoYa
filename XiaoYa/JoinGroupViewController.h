@@ -7,7 +7,11 @@
 //
 
 #import <UIKit/UIKit.h>
+@class GroupListModel;
+
+typedef void(^gJoinSuccessBlock)(GroupListModel *model);
 
 @interface JoinGroupViewController : UIViewController
-
+- (instancetype)initWithJoinSuccessBlock:(gJoinSuccessBlock)block;
+- (instancetype)init NS_UNAVAILABLE;
 @end

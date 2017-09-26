@@ -22,7 +22,7 @@
 @property (nonatomic ,weak) UIButton *searchBtn;
 
 @property (nonatomic ,strong) NSMutableArray *memberModels;
-@property (nonatomic ,strong) NSMutableArray *selectIndexs;
+@property (nonatomic ,strong) NSMutableArray <NSNumber *> *selectIndexs;
 @property (nonatomic ,strong) NSMutableArray *addedMembers;
 @end
 
@@ -91,13 +91,14 @@
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+    __weak typeof(self) ws = self;
     MemberSearchTableViewCell *cell = [MemberSearchTableViewCell MemberSearchCellWithTableView:tableView selectBlock:^(NSIndexPath *indexPath) {
-        [self.selectIndexs addObject:[NSNumber numberWithInteger:indexPath.row]];
-        self.navigationItem.rightBarButtonItem.enabled = YES;
+        [ws.selectIndexs addObject:[NSNumber numberWithInteger:indexPath.row]];
+        ws.navigationItem.rightBarButtonItem.enabled = YES;
     } deselectBlock:^(NSIndexPath *indexPath) {
-        [self.selectIndexs removeObject:[NSNumber numberWithInteger:indexPath.row]];
-        if (self.selectIndexs.count == 0) {
-            self.navigationItem.rightBarButtonItem.enabled = NO;
+        [ws.selectIndexs removeObject:[NSNumber numberWithInteger:indexPath.row]];
+        if (ws.selectIndexs.count == 0) {
+            ws.navigationItem.rightBarButtonItem.enabled = NO;
         }
     } addedMembers:self.addedMembers];
     cell.member = self.memberModels[indexPath.row];;

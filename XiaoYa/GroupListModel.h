@@ -8,13 +8,17 @@
 
 #import <Foundation/Foundation.h>
 @class GroupMemberModel;
-@interface GroupListModel : NSObject
-@property (nonatomic ,copy) NSString *groupName;
-@property (nonatomic ,copy) NSString *groupId;
-@property (nonatomic ,copy) NSString *groupMessage;
-@property (nonatomic ,copy) NSString *time;
-@property (nonatomic ,assign) NSInteger groupAvatarId;
-@property (nonatomic ,strong) NSArray<GroupMemberModel *> *groupMembers;
+@class GroupInfoModel;
+
+@interface GroupListModel : NSObject<NSCopying ,NSCoding>
+@property (nonatomic ,copy) NSString *groupName;                            //群名
+@property (nonatomic ,copy) NSString *groupId;                              //群id
+@property (nonatomic ,copy) NSString *groupAvatarId;                      //群头像id
+@property (nonatomic ,strong) NSMutableArray<GroupMemberModel *> *groupMembers;    //群成员集
+@property (nonatomic ,assign) NSInteger numberOfMember;                     //群人数
+
+@property (nonatomic ,strong) NSMutableArray<GroupInfoModel *> *groupEvents;       //群消息集
+//@property (nonatomic ,strong) NSMutableArray *groupEvents;       //群消息集
 
 + (instancetype)groupWithDict:(NSDictionary *)dict;
 @end

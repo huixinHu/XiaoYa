@@ -10,7 +10,6 @@
 @class GroupListModel;
 
 @interface GroupInfoViewController : UIViewController
-- (instancetype)initWithGroupName:(NSString *)groupName;
-- (instancetype)initWithGroupName:(NSString *)groupName groupDetail:(GroupListModel *)model;
+- (instancetype)initWithGroupModel:(GroupListModel *)model;
 - (instancetype)init NS_UNAVAILABLE;
 @end

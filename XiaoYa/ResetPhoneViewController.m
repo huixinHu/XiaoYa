@@ -12,6 +12,8 @@
 #import "Utils.h"
 #import "Masonry.h"
 #import "HXNetworking.h"
+#import "HXNotifyConfig.h"
+
 #define kScreenWidth [UIApplication sharedApplication].keyWindow.bounds.size.width
 
 @interface ResetPhoneViewController ()<UITextFieldDelegate>
@@ -43,13 +45,13 @@
     NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"RESETSME",@"type",self.phoneNumber.text,@"mobile", nil];
     __weak typeof (self)weakself = self;
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
-        [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
+        [HXNetworking postWithUrl:httpUrl params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
             NSLog(@"dataID:%@",[responseObject objectForKey:@"identity"]);
             NSLog(@"dataMessage:%@",[responseObject objectForKey:@"message"]);
             dispatch_async(dispatch_get_main_queue(), ^{
                 if ([[responseObject objectForKey:@"state"]boolValue] == 0){
-                    if([[responseObject objectForKey:@"message"] isEqualToString:@"手机号已注册！"]){
-                        weakself.phonePrompt.text = @"该手机号已被注册";
+                    if([[responseObject objectForKey:@"message"] isEqualToString:@"手机号未注册！"]){
+                        weakself.phonePrompt.text = @"该号码未注册";
                     }else if ([[responseObject objectForKey:@"message"] isEqualToString:@"验证码发送失败！"]){
                         weakself.phonePrompt.text = @"验证码获取失败！";
                     }

@@ -11,6 +11,7 @@
 #import "Utils.h"
 #import "Masonry.h"
 #import "HXNetworking.h"
+#import "HXNotifyConfig.h"
 
 #define kScreenWidth [UIApplication sharedApplication].keyWindow.bounds.size.width
 @class ResetTextCodeViewController;
@@ -47,7 +48,7 @@
         NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"RESET",@"type",self.pwd.text,@"password", nil];
         __weak typeof (self)weakself = self;
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
-            [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
+            [HXNetworking postWithUrl:httpUrl params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
                 NSLog(@"dataID:%@",[responseObject objectForKey:@"identity"]);
                 NSLog(@"dataMessage:%@",[responseObject objectForKey:@"message"]);
                 dispatch_async(dispatch_get_main_queue(), ^{

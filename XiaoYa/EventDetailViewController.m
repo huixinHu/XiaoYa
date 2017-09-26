@@ -43,13 +43,15 @@ typedef NS_ENUM(NSInteger, HXReplyStatus) {
 @property (nonatomic ,assign) HXReplyStatus state;
 @property (nonatomic ,strong) GroupInfoModel *infoModel;
 @property (nonatomic ,strong) editCompBlock editCompBlock;
+@property (nonatomic ,copy) NSString *groupId;
 @end
 
 @implementation EventDetailViewController
-- (instancetype)initWithInfoModel:(GroupInfoModel *)model editCompBlock:(editCompBlock)block{
+- (instancetype)initWithInfoModel:(GroupInfoModel *)model groupId:(NSString *)gid editCompBlock:(editCompBlock)block{
     if (self = [super init]) {
         self.infoModel = model;
         self.editCompBlock = [block copy];
+        self.groupId = gid;
     }
     return self;
 }
@@ -71,7 +73,7 @@ typedef NS_ENUM(NSInteger, HXReplyStatus) {
 //重新编辑事务,只有时间发布者能看到这个按钮
 - (void)editEvent{
     __weak typeof(self) ws = self;
-    EventPublishViewController *vc = [[EventPublishViewController alloc]initWithInfoModel:self.infoModel publishCompBlock:^(GroupInfoModel *newEvent) {
+    EventPublishViewController *vc = [[EventPublishViewController alloc]initWithInfoModel:self.infoModel groupId:self.groupId publishCompBlock:^(GroupInfoModel *newEvent) {
         ws.editCompBlock(newEvent);
     }];
     [self.navigationController pushViewController:vc animated:YES];

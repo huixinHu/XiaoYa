@@ -14,6 +14,7 @@
 #import "Masonry.h"
 #import "NSTimer+Addition.h"
 #import "HXNetworking.h"
+#import "HXNotifyConfig.h"
 
 #define kScreenWidth [UIApplication sharedApplication].keyWindow.bounds.size.width
 @interface ResetTextCodeViewController ()<UITextFieldDelegate>
@@ -55,16 +56,14 @@
     NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"MATCH",@"type",self.textCode.text,@"textCode", nil];
     __weak typeof (self)weakself = self;
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
-        [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
+        [HXNetworking postWithUrl:httpUrl params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
             NSDictionary *responseDict = (NSDictionary *)responseObject;
             NSLog(@"dataID:%@",[responseDict objectForKey:@"identity"]);
             NSLog(@"dataMessage:%@",[responseDict objectForKey:@"message"]);
             NSLog(@"dataState:%@",[responseDict objectForKey:@"state"]);
             dispatch_async(dispatch_get_main_queue(), ^{
                 if ([[responseDict objectForKey:@"state"]boolValue] == 0){
-                    if([[responseDict objectForKey:@"message"]  isEqual: @"验证失败！请核对您输入的验证码是否正确。"]){
-                        weakself.prompt.text = @"验证码错误";
-                    }
+                    weakself.prompt.text = @"验证码错误";
                 }else {
                     ResetPwdViewController *nextVC = [[ResetPwdViewController alloc]init];
                     [weakself.navigationController pushViewController:nextVC animated:YES];
@@ -108,7 +107,7 @@
     HXButton *timerBtn = [[HXButton alloc]initWithFrame:CGRectMake(0, 0, 80, 30) timerCount:60 timerInerval:1.0 networkRequest:^{
         NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"RESETSME",@"type",weakself.phoneNum,@"mobile", nil];
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
-            [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
+            [HXNetworking postWithUrl:httpUrl params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
                 NSLog(@"dataMessage:%@",[responseObject objectForKey:@"message"]);
                 dispatch_async(dispatch_get_main_queue(), ^{
                     if ([[responseObject objectForKey:@"state"]boolValue] == 0){

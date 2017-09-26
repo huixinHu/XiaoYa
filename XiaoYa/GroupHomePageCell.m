@@ -8,6 +8,7 @@
 
 #import "GroupHomePageCell.h"
 #import "GroupListModel.h"
+#import "GroupInfoModel.h"
 #import "Masonry.h"
 #import "Utils.h"
 @interface GroupHomePageCell()
@@ -39,10 +40,10 @@
 
 - (void)setGroup:(GroupListModel *)group{
     _group = group;
-    self.groupName.text = group.groupName;
-    self.groupMessage.text = group.groupMessage;
-    self.time.text = group.time;
-    switch (group.groupAvatarId) {
+    self.groupName.text = [NSString stringWithFormat:@"%@(%ld人)",group.groupName,group.numberOfMember];
+//    self.groupMessage.text = group.groupMessage;
+//    self.time.text = group.time;
+    switch ([group.groupAvatarId intValue]) {
         case 0:
             self.avatar.image = [UIImage imageNamed:@"头像1"];
             break;
@@ -55,6 +56,10 @@
         default:
             break;
     }
+    self.groupMessage.text = group.groupEvents[0].event;
+    NSDateFormatter *df = [[NSDateFormatter alloc] init];
+    [df setDateFormat:@"MM月dd日"];
+    self.time.text = [df stringFromDate:group.groupEvents[0].publishTime];
 }
 
 - (void)initSubView{

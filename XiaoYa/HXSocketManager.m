@@ -53,8 +53,10 @@ static HXSocketManager *manager = nil;
     //连接状态-正在连接
     self.connectStatus = HXSocketConnectStatusConnecting;
     
+    dispatch_queue_t concurrentQueue = dispatch_queue_create("concurrent", DISPATCH_QUEUE_CONCURRENT);
+    GCDAsyncSocket *socket = [[GCDAsyncSocket alloc]initWithDelegate:delegate delegateQueue:concurrentQueue];
     //回调线程-globalQueue除了处理socket可能还有其他类的事件？
-    GCDAsyncSocket *socket = [[GCDAsyncSocket alloc]initWithDelegate:delegate delegateQueue:dispatch_get_global_queue(0, 0)];
+//    GCDAsyncSocket *socket = [[GCDAsyncSocket alloc]initWithDelegate:delegate delegateQueue:dispatch_get_global_queue(0, 0)];
     NSError *error = nil;
     if (![socket connectToHost:HOST onPort:PORT withTimeout:CONNECT_TIMEOUT error:&error]) {
         self.connectStatus = HXSocketConnectStatusDisconnect;//连接状态-未连接

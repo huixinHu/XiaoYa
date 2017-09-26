@@ -34,6 +34,7 @@
     return self;
 }
 
+//这里的本意是想实现完全深复制，但是似乎并没有写好，不过不影响功能
 - (id)copyWithZone:(NSZone *)zone{
     CourseModel *model = [[CourseModel alloc]init];
     model.weeks = self.weeks;
@@ -41,8 +42,8 @@
     model.time = self.time;
     model.courseName = self.courseName;
     model.place = self.place;
-    model.weekArray = self.weekArray;
-    model.timeArray = self.timeArray;
+    model.weekArray = [self.weekArray mutableCopy];//这里加了copy
+    model.timeArray = [self.timeArray mutableCopy];
     return model;
 }
 

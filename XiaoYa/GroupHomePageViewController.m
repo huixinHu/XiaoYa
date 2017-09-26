@@ -7,22 +7,23 @@
 //群组首页
 
 #import "GroupHomePageViewController.h"
-#import "GroupHomePageCell.h"
 #import "GroupCreateViewController.h"
+#import "JoinGroupViewController.h"
+#import "GroupInfoViewController.h"
 #import "GroupListModel.h"
+#import "GroupMemberModel.h"
+#import "GroupHomePageCell.h"
 #import "Utils.h"
 #import "Masonry.h"
-#import "JoinGroupViewController.h"
-#import "GroupMemberModel.h"
 #import "TxAvatar.h"
-#import "GroupInfoViewController.h"
 #import "AppDelegate.h"
+#import "HXNotifyConfig.h"
 
 @interface GroupHomePageViewController ()<UITableViewDelegate,UITableViewDataSource>
 @property (nonatomic ,weak)UIImageView *menu;
 @property (nonatomic ,weak)UITableView *groupTable;
 @property (nonatomic ,weak)UIButton *menuBtn;
-@property (nonatomic ,strong)NSMutableArray *groupModels;//群组模型数组
+@property (nonatomic ,strong)NSMutableArray <GroupListModel *> *groupModels;//群组模型数组
 
 @end
 
@@ -32,11 +33,50 @@
     [super viewDidLoad];
 
     [self viewsSetting];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(refreshGroupDetail:) name:HXEditGroupDetailNotification object:nil];//刷新群资料
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(refreshGroupInfo:) name:HXPublishGroupInfoNotification object:nil];//刷新群消息
 }
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
+}
+
+- (void)viewWillAppear:(BOOL)animated{
+    [super viewWillAppear:animated];
+    if (self.groupTable) {
+        [self.groupTable reloadData];
+    }
+}
+
+//刷新群资料相关信息 自己是群主自己编辑了信息 刷新走viewWillAppear
+- (void)refreshGroupDetail:(NSNotification *)notification{
+    NSDictionary *refreshData = [notification userInfo];
+    GroupListModel *refreshModel = [refreshData objectForKey:HXRefreshGroupDetail];
+    [self.groupModels enumerateObjectsUsingBlock:^(GroupListModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        if (obj.groupId == refreshModel.groupId) {
+            obj.groupMembers = [refreshModel.groupMembers mutableCopy];
+            obj.groupName = refreshModel.groupName;
+            obj.groupAvatarId = refreshModel.groupAvatarId;
+            obj.numberOfMember = refreshModel.numberOfMember;
+            *stop = YES;
+        }
+    }];
+}
+
+//自己发布了群消息
+- (void)refreshGroupInfo:(NSNotification *)notification{
+    NSDictionary *refreshInfo = [notification userInfo];
+    GroupInfoModel *refreshModel = [refreshInfo objectForKey:HXNewGroupInfo];
+    NSString *gid = [refreshInfo objectForKey:HXGroupID];
+    [self.groupModels enumerateObjectsUsingBlock:^(GroupListModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        if (obj.groupId == gid) {
+            if (obj.groupEvents) {//不为空
+                [obj.groupEvents insertObject:refreshModel atIndex:0];
+            } else{
+                obj.groupEvents = [NSMutableArray arrayWithObject:refreshModel];
+            }
+        }
+    }];
 }
 
 - (void)groupCreate{
@@ -45,12 +85,12 @@
     NSString *user = [[apd.user componentsSeparatedByString:@"("]firstObject];
     
     GroupMemberModel *managerModel = [GroupMemberModel memberModelWithDict:@{@"identity":[NSString stringWithFormat:@"%@,%@,%@",userid,user,apd.phone]}];
-    GroupCreateViewController *createVC = [[GroupCreateViewController alloc]initWithGroupManager:managerModel successBlock:^(GroupListModel *model) {
-        [self.groupModels insertObject:model atIndex:0];
-        
-//        GroupInfoViewController *groupInfoVC = [[GroupInfoViewController alloc]initWithGroupName:model.groupName groupDetail:model];
-//        groupInfoVC.hidesBottomBarWhenPushed = YES;
-//        [self.navigationController pushViewController:groupInfoVC animated:YES];
+    NSMutableArray *membersArr = [NSMutableArray arrayWithObject:managerModel];
+    GroupListModel *groupModel = [[GroupListModel alloc]init];
+    groupModel.groupMembers = membersArr;//只有成员集（群主）
+    __weak typeof(self) ws = self;
+    GroupCreateViewController *createVC = [[GroupCreateViewController alloc]initWithGroupModel:groupModel successBlock:^(GroupListModel *model) {
+        [ws.groupModels insertObject:model atIndex:0];
     }];
     createVC.hidesBottomBarWhenPushed = YES;//从下级vc开始，tabbar都隐藏掉
     [self.navigationController pushViewController:createVC animated:YES];
@@ -59,7 +99,10 @@
 }
 
 - (void)join{
-    JoinGroupViewController *joinVC = [[JoinGroupViewController alloc]init];
+    __weak typeof(self) ws = self;
+    JoinGroupViewController *joinVC = [[JoinGroupViewController alloc] initWithJoinSuccessBlock:^(GroupListModel *model) {
+        [ws.groupModels insertObject:model atIndex:0];
+    }];
     joinVC.hidesBottomBarWhenPushed = YES;
     [self.navigationController pushViewController:joinVC animated:YES];
     _menuBtn.selected = NO;
@@ -85,7 +128,7 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
     GroupListModel *model = self.groupModels[indexPath.row];
-    GroupInfoViewController *groupInfoVC = [[GroupInfoViewController alloc]initWithGroupName:model.groupName groupDetail:model];
+    GroupInfoViewController *groupInfoVC = [[GroupInfoViewController alloc]initWithGroupModel:model];
     groupInfoVC.hidesBottomBarWhenPushed = YES;
     [self.navigationController pushViewController:groupInfoVC animated:YES];
 }
@@ -232,5 +275,11 @@
         _groupModels = arrModels;
     }
     return _groupModels;
+}
+
+- (void)dealloc{
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:HXEditGroupDetailNotification object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:HXPublishGroupInfoNotification object:nil];
+
 }
 @end

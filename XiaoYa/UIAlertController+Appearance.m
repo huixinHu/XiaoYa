@@ -32,7 +32,13 @@
     [self setValue:alertControllerStr forKey:@"attributedMessage"];
 }
 
-+ (UIAlertController *)alertControllerWithTitle:(nullable NSString *)title message:(nullable NSString *)message preferredStyle:(UIAlertControllerStyle)preferredStyle cancelTitle:(NSString *)cancelTitle cancelBlock:(void (^ __nullable)(UIAlertAction *action))cancelHandler otherTitles:(NSArray *)otherTitles otherBlocks:(NSArray *)otherBlocks{
++ (UIAlertController *)alertControllerWithTitle:(nullable NSString *)title
+                                        message:(nullable NSString *)message
+                                 preferredStyle:(UIAlertControllerStyle)preferredStyle
+                                    cancelTitle:(NSString *)cancelTitle
+                                    cancelBlock:(void (^ __nullable)(UIAlertAction *action))cancelHandler
+                                    otherTitles:(NSArray *)otherTitles
+                                    otherBlocks:(NSArray *)otherBlocks{
 
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:preferredStyle];
     [alert alertTitleAppearance_title:title hexColor:@"#333333"];

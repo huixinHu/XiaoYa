@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-@interface GroupMemberModel : NSObject
+@interface GroupMemberModel : NSObject<NSCoding>
 @property(nonatomic ,copy) NSString *memberName;
 @property(nonatomic ,copy) NSString *memberId;
 @property(nonatomic ,copy) NSString *memberPhone;

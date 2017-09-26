@@ -31,6 +31,7 @@ typedef NS_ENUM(NSInteger ,HXResponseType) {
     responseTypeXML = 3
 };
 
+//static NSString * const httpUrl = @"http://139.199.170.95:80/moyuzaiServer/Controller";
 
 @interface HXNetworking : NSObject
 + (HXURLSessionTask *)postWithUrl:(NSString *)url

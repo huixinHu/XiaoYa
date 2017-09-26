@@ -8,7 +8,6 @@
 
 #import "AppDelegate.h"
 #import "CourseTableViewController.h"
-#import "LoginViewController.h"
 #import "GroupHomePageViewController.h"
 #import "GroupDetailViewController.h"
 #import "Utils.h"

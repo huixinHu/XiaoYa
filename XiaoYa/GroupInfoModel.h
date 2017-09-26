@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-@interface GroupInfoModel : NSObject
+@interface GroupInfoModel : NSObject<NSCoding>
 @property (nonatomic ,strong) NSDate *publishTime;//发布时间
 @property (nonatomic ,copy) NSString *publisher;//发布者
 @property (nonatomic ,copy) NSString *event;//事件
