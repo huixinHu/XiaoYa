@@ -71,7 +71,7 @@
             dispatch_async(dispatch_get_main_queue(), ^{
                 if ([[responseObject objectForKey:@"state"]boolValue] == 0) {//后台数据返回的问题。state实际上是一种__NSCFBoolean类型的数据，要转成bool再判断
                     if([[responseObject objectForKey:@"message"] isEqualToString:@"密码错误！"]){
-                        weakself.prompt.text = @"密码错误(这里的文案有点问题";
+                        weakself.prompt.text = @"密码错误(这里的文案有安全性问题";
                     }else if ([[responseObject objectForKey:@"message"] isEqualToString:@"手机号未注册！"]){
                         weakself.prompt.text = @"该号码未注册";
                     }
@@ -82,7 +82,9 @@
                         [[NSNotificationCenter defaultCenter] postNotificationName:HXPushViewControllerNotification object:nil];
                     }];
                     AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
-                    appDelegate.user = [responseObject objectForKey:@"identity"];
+                    NSString *result = [responseObject objectForKey:@"identity"];
+                    appDelegate.userName = [[result componentsSeparatedByString:@"("] firstObject];
+                    appDelegate.userid = [[[[result componentsSeparatedByString:@"("] lastObject] componentsSeparatedByString:@")"]firstObject];
                     appDelegate.phone = weakself.account.text;
                 }
             });

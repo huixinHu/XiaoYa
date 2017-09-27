@@ -49,7 +49,8 @@
     NSDateFormatter * dateFormatter = [[NSDateFormatter alloc] init];
     [dateFormatter setDateFormat:@"yyyyMMdd"];
     self.firstDateOfTerm = [dateFormatter dateFromString:@"20170904"];
-    self.user = @"user(0)";
+    self.userName = @"user";
+    self.userid = @"0";
     self.phone = @"";
     return YES;
 }

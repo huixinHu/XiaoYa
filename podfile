@@ -3,5 +3,6 @@ target ‘XiaoYa’ do
 pod 'Masonry'
 pod 'AFNetworking', '~> 3.0'
 pod 'Protobuf', ‘~> 3.3.0'
+pod 'FMDB'
 end
 

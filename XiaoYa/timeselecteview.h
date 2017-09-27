@@ -7,7 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "CourseModel.h"
+@class CourseModel;
 @class timeselecteview;
 @protocol timeselectViewDelegate <NSObject>
 - (void)timeSelectComfirm:(timeselecteview*)timeselect courseTimeArray:(NSMutableArray *)courseTimeArray inSection:(NSInteger)section;

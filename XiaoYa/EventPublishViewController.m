@@ -23,7 +23,7 @@
 #import "SingleChoiceView.h"
 #import "BgView.h"
 #import "GroupInfoModel.h"
-#import "ProtoMessage.pbobjc.h"
+//#import "ProtoMessage.pbobjc.h"
 #import "GCDAsyncSocket.h"
 
 #define scaleToWidth [UIApplication sharedApplication].keyWindow.bounds.size.width/750.0
@@ -113,14 +113,14 @@
     //网络请求
     AppDelegate *appdelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
     
-    ProtoMessage* s1 = [[ProtoMessage alloc]init];
-    s1.type = ProtoMessage_Type_Chat;
-    s1.from = appdelegate.user;
-    s1.to = @"38";
-    s1.time = @"2017/9/11";
-    s1.body = self.eventDescription.text;
-    NSData *data = [s1 data];
-    Byte *byteArr = (Byte *)[data bytes];
+//    ProtoMessage* s1 = [[ProtoMessage alloc]init];
+//    s1.type = ProtoMessage_Type_Chat;
+//    s1.from = appdelegate.user;
+//    s1.to = @"38";
+//    s1.time = @"2017/9/11";
+//    s1.body = self.eventDescription.text;
+//    NSData *data = [s1 data];
+//    Byte *byteArr = (Byte *)[data bytes];
 //    [self.socket writeData:data withTimeout:-1 tag:100];
     
     //如果发布成功，就添加到群组消息页
@@ -163,11 +163,11 @@
 - (void)socket:(GCDAsyncSocket *)sock didReadData:(NSData *)data withTag:(long)tag{
     NSLog(@"%@",data);
     
-    ProtoMessage *s2 = [ProtoMessage parseFromData:data error:NULL];
-    NSLog(@"type:%d,from:%@,to:%@,time:%@,body:%@",s2.type,s2.from,s2.to,s2.time,s2.body);
-    
-    NSString *data2Str = [[NSString alloc]initWithData:data encoding:NSUTF8StringEncoding];
-    NSLog(@"%@",data2Str);
+//    ProtoMessage *s2 = [ProtoMessage parseFromData:data error:NULL];
+//    NSLog(@"type:%d,from:%@,to:%@,time:%@,body:%@",s2.type,s2.from,s2.to,s2.time,s2.body);
+//    
+//    NSString *data2Str = [[NSString alloc]initWithData:data encoding:NSUTF8StringEncoding];
+//    NSLog(@"%@",data2Str);
     
     
     [sock readDataWithTimeout:-1 tag:100];

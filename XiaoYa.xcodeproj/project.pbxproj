@@ -30,15 +30,14 @@
 		571DB1B71F64279200D319EF /* MemberDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 571DB1B61F64279200D319EF /* MemberDetailViewController.m */; };
 		571DB1BA1F656DB000D319EF /* MemberListViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 571DB1B91F656DB000D319EF /* MemberListViewController.m */; };
 		571DB1DB1F68383200D319EF /* EditGroupDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 571DB1DA1F68383200D319EF /* EditGroupDetailViewController.m */; };
-		571DB1DF1F78974F00D319EF /* HXDBManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 571DB1DE1F78974F00D319EF /* HXDBManager.m */; };
-		571DB1E21F7A37CD00D319EF /* MessageProtoBuf.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 571DB1E11F7A37CC00D319EF /* MessageProtoBuf.pbobjc.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		571DB1E51F7A6A7E00D319EF /* HXDBManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 571DB1E41F7A6A7E00D319EF /* HXDBManager.m */; };
+		571DB1E81F7A6D6D00D319EF /* MessageProtoBuf.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 571DB1E71F7A6D6D00D319EF /* MessageProtoBuf.pbobjc.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		572B6D121F166A520069D1D2 /* AddGroupMemberViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 572B6D111F166A520069D1D2 /* AddGroupMemberViewController.m */; };
 		572B6D151F1748590069D1D2 /* JoinGroupViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 572B6D141F1748590069D1D2 /* JoinGroupViewController.m */; };
 		572EA9181F2F2E760052907C /* EventDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 572EA9171F2F2E760052907C /* EventDetailViewController.m */; };
 		572EA91E1F301CF50052907C /* ReasonView.m in Sources */ = {isa = PBXBuildFile; fileRef = 572EA91D1F301CF50052907C /* ReasonView.m */; };
 		572EA9211F305CE30052907C /* EventPublishViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 572EA9201F305CE30052907C /* EventPublishViewController.m */; };
 		572EA9241F3077560052907C /* GroupDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 572EA9231F3077560052907C /* GroupDetailViewController.m */; };
-		572EA92D1F31F45F0052907C /* ProtoMessage.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 572EA92C1F31F45F0052907C /* ProtoMessage.pbobjc.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		572EA9301F32C5870052907C /* GCDAsyncSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 572EA92F1F32C5870052907C /* GCDAsyncSocket.m */; };
 		573F110B1EE6DE4200E9F99E /* LoginViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 573F110A1EE6DE4200E9F99E /* LoginViewController.m */; };
 		573F110F1EE7157000E9F99E /* HXTextField.m in Sources */ = {isa = PBXBuildFile; fileRef = 573F110E1EE7157000E9F99E /* HXTextField.m */; };
@@ -179,10 +178,10 @@
 		571DB1D91F68383200D319EF /* EditGroupDetailViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EditGroupDetailViewController.h; sourceTree = "<group>"; };
 		571DB1DA1F68383200D319EF /* EditGroupDetailViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EditGroupDetailViewController.m; sourceTree = "<group>"; };
 		571DB1DC1F6AA30100D319EF /* HXNotifyConfig.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HXNotifyConfig.h; sourceTree = "<group>"; };
-		571DB1DD1F78974F00D319EF /* HXDBManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HXDBManager.h; sourceTree = "<group>"; };
-		571DB1DE1F78974F00D319EF /* HXDBManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HXDBManager.m; sourceTree = "<group>"; };
-		571DB1E01F7A37CC00D319EF /* MessageProtoBuf.pbobjc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MessageProtoBuf.pbobjc.h; sourceTree = "<group>"; };
-		571DB1E11F7A37CC00D319EF /* MessageProtoBuf.pbobjc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MessageProtoBuf.pbobjc.m; sourceTree = "<group>"; };
+		571DB1E31F7A6A7E00D319EF /* HXDBManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HXDBManager.h; sourceTree = "<group>"; };
+		571DB1E41F7A6A7E00D319EF /* HXDBManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HXDBManager.m; sourceTree = "<group>"; };
+		571DB1E61F7A6D6D00D319EF /* MessageProtoBuf.pbobjc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MessageProtoBuf.pbobjc.h; sourceTree = "<group>"; };
+		571DB1E71F7A6D6D00D319EF /* MessageProtoBuf.pbobjc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MessageProtoBuf.pbobjc.m; sourceTree = "<group>"; };
 		572B6D101F166A520069D1D2 /* AddGroupMemberViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AddGroupMemberViewController.h; sourceTree = "<group>"; };
 		572B6D111F166A520069D1D2 /* AddGroupMemberViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AddGroupMemberViewController.m; sourceTree = "<group>"; };
 		572B6D131F1748590069D1D2 /* JoinGroupViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JoinGroupViewController.h; sourceTree = "<group>"; };
@@ -195,8 +194,6 @@
 		572EA9201F305CE30052907C /* EventPublishViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EventPublishViewController.m; sourceTree = "<group>"; };
 		572EA9221F3077560052907C /* GroupDetailViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GroupDetailViewController.h; sourceTree = "<group>"; };
 		572EA9231F3077560052907C /* GroupDetailViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GroupDetailViewController.m; sourceTree = "<group>"; };
-		572EA92B1F31F45F0052907C /* ProtoMessage.pbobjc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProtoMessage.pbobjc.h; sourceTree = "<group>"; };
-		572EA92C1F31F45F0052907C /* ProtoMessage.pbobjc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ProtoMessage.pbobjc.m; sourceTree = "<group>"; };
 		572EA92E1F32C5870052907C /* GCDAsyncSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDAsyncSocket.h; sourceTree = "<group>"; };
 		572EA92F1F32C5870052907C /* GCDAsyncSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDAsyncSocket.m; sourceTree = "<group>"; };
 		573F11091EE6DE4200E9F99E /* LoginViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LoginViewController.h; sourceTree = "<group>"; };
@@ -401,8 +398,8 @@
 				577C67181EED676B0006E783 /* HXNetworking.h */,
 				577C67191EED676B0006E783 /* HXNetworking.m */,
 				571DB1DC1F6AA30100D319EF /* HXNotifyConfig.h */,
-				571DB1DD1F78974F00D319EF /* HXDBManager.h */,
-				571DB1DE1F78974F00D319EF /* HXDBManager.m */,
+				571DB1E31F7A6A7E00D319EF /* HXDBManager.h */,
+				571DB1E41F7A6A7E00D319EF /* HXDBManager.m */,
 			);
 			name = Util;
 			sourceTree = "<group>";
@@ -595,10 +592,8 @@
 		579C2FBC1DAD000E00E4EE54 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				571DB1E01F7A37CC00D319EF /* MessageProtoBuf.pbobjc.h */,
-				571DB1E11F7A37CC00D319EF /* MessageProtoBuf.pbobjc.m */,
-				572EA92B1F31F45F0052907C /* ProtoMessage.pbobjc.h */,
-				572EA92C1F31F45F0052907C /* ProtoMessage.pbobjc.m */,
+				571DB1E61F7A6D6D00D319EF /* MessageProtoBuf.pbobjc.h */,
+				571DB1E71F7A6D6D00D319EF /* MessageProtoBuf.pbobjc.m */,
 				579C2FBD1DAD000E00E4EE54 /* main.m */,
 			);
 			name = "Supporting Files";
@@ -1040,7 +1035,7 @@
 				57EA0A1F1F2086F50003BE87 /* NeedLoginViewController.m in Sources */,
 				573F110B1EE6DE4200E9F99E /* LoginViewController.m in Sources */,
 				571DB1A51F5D000400D319EF /* MutipleChoiceView.m in Sources */,
-				571DB1E21F7A37CD00D319EF /* MessageProtoBuf.pbobjc.m in Sources */,
+				571DB1E81F7A6D6D00D319EF /* MessageProtoBuf.pbobjc.m in Sources */,
 				571DB1A21F5CFF4B00D319EF /* MutipleChoiceCell.m in Sources */,
 				57D49D231F121AD90063C861 /* GroupHomePageCell.m in Sources */,
 				57C761271E7E57320002FA77 /* CollectionViewCell.m in Sources */,
@@ -1081,12 +1076,11 @@
 				E2F0B70B1DD3653F00AEE343 /* DayViewCell.m in Sources */,
 				577C66FD1EE828D30006E783 /* RegiTextCodeViewController.m in Sources */,
 				572EA91E1F301CF50052907C /* ReasonView.m in Sources */,
-				571DB1DF1F78974F00D319EF /* HXDBManager.m in Sources */,
+				571DB1E51F7A6A7E00D319EF /* HXDBManager.m in Sources */,
 				57BDFA181E326E0500C0E254 /* UILabel+AlertActionFont.m in Sources */,
 				577C67101EE974060006E783 /* ResetPhoneViewController.m in Sources */,
 				571DB1BA1F656DB000D319EF /* MemberListViewController.m in Sources */,
 				574C2C051E9F9C4800960399 /* TFHpple.m in Sources */,
-				572EA92D1F31F45F0052907C /* ProtoMessage.pbobjc.m in Sources */,
 				577C67161EE976A10006E783 /* ResetPwdViewController.m in Sources */,
 				574C2BFE1E9F71ED00960399 /* ImpoerCourseViewController.m in Sources */,
 				57DC777D1F4ECB9600F5FF94 /* HXErrorManager.m in Sources */,
@@ -1249,7 +1243,7 @@
 				DEVELOPMENT_TEAM = AV69H3MJH2;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = XiaoYa/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.commet.XiaoYa;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1266,7 +1260,7 @@
 				DEVELOPMENT_TEAM = AV69H3MJH2;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = XiaoYa/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.commet.XiaoYa;
 				PRODUCT_NAME = "$(TARGET_NAME)";

@@ -12,7 +12,6 @@
 #import "Masonry.h"
 #import "RegiTextCodeViewController.h"
 #import "HXNetworking.h"
-#import "HXNotifyConfig.h"
 
 #define kScreenWidth [UIApplication sharedApplication].keyWindow.bounds.size.width
 @interface RegisterViewController ()<UITextFieldDelegate>

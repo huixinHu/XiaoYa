@@ -9,7 +9,7 @@
 #import "HXSocketManager.h"
 #import "HXSocketConfig.h"
 #import "GCDAsyncSocket.h"
-#import "ProtoMessage.pbobjc.h"
+//#import "ProtoMessage.pbobjc.h"
 #import "NSTimer+Addition.h"
 
 

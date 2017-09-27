@@ -27,6 +27,7 @@
 - (void)commonInit{
     UIImageView *memberAvatar = [[UIImageView alloc]init];
     _memberAvatar = memberAvatar;
+    _memberAvatar.image = [UIImage imageNamed:@"未登录头像"];
     [self.contentView addSubview:_memberAvatar];
     [_memberAvatar mas_makeConstraints:^(MASConstraintMaker *make) {
         make.size.mas_equalTo(CGSizeMake(50, 50));

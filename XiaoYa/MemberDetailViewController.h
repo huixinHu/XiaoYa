@@ -10,5 +10,5 @@
 @class GroupMemberModel;
 
 @interface MemberDetailViewController : UIViewController
-- (instancetype)initWithMemberModel:(GroupMemberModel *)model;
+- (instancetype)initWithMemberModel:(GroupMemberModel *)model indexInGroup:(NSInteger)index;
 @end

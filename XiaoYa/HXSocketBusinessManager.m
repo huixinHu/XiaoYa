@@ -9,7 +9,7 @@
 #import "HXSocketBusinessManager.h"
 #import "HXSocketManager.h"
 #import "GCDAsyncSocket.h"
-#import "ProtoMessage.pbobjc.h"
+//#import "ProtoMessage.pbobjc.h"
 
 @interface HXSocketBusinessManager()<GCDAsyncSocketDelegate>
 @property (nonatomic ,strong) HXSocketManager *socketManager;
@@ -63,13 +63,13 @@ static HXSocketBusinessManager *manager = nil;
 
     //连接成功后，首先进行登录鉴权（token？或其他，目前是直接账号登录），向服务器发送一条信息。
     //数据需要封包，但目前协议没定。
-    ProtoMessage* s1 = [[ProtoMessage alloc]init];
-    s1.type = ProtoMessage_Type_Chat;
-    s1.from = @"胡卉馨(17)";
-    s1.to = @"";
-    s1.time = @"2017/7/27";
-    s1.body = @"";
-    [self.socketManager socketWriteData:[s1 data]];
+//    ProtoMessage* s1 = [[ProtoMessage alloc]init];
+//    s1.type = ProtoMessage_Type_Chat;
+//    s1.from = @"胡卉馨(17)";
+//    s1.to = @"";
+//    s1.time = @"2017/7/27";
+//    s1.body = @"";
+//    [self.socketManager socketWriteData:[s1 data]];
 
 }
 
@@ -86,7 +86,7 @@ static HXSocketBusinessManager *manager = nil;
     //这里需要做拆包、数据的处理
     
     NSError *error = nil;
-    ProtoMessage *receiveData = [[ProtoMessage alloc]initWithData:data error:&error];
+//    ProtoMessage *receiveData = [[ProtoMessage alloc]initWithData:data error:&error];
     if (error) {
         NSLog(@"数据解析错误：%@",error);
         [self.socketManager socketReadData];
@@ -98,26 +98,26 @@ static HXSocketBusinessManager *manager = nil;
     //其他错误
     
     //判断请求类型
-    switch (receiveData.type) {
-        case ProtoMessage_Type_Login:{
-            //开启心跳
-            NSData *heartBeatData = [NSData data];
-            [self.socketManager socketHeartBeatBegin:heartBeatData];
-        }
-            break;
-        case 10://随便写个值，heartBeatReply心跳响应
-            //收到心跳响应，就把心跳计数置0
-            [self.socketManager resetHeartBeatCount];
-            break;
-            
-        case ProtoMessage_Type_Chat:
-            //解析数据
-            //调用block
-            break;
-            
-        default:
-            break;
-    }
+//    switch (receiveData.type) {
+//        case ProtoMessage_Type_Login:{
+//            //开启心跳
+//            NSData *heartBeatData = [NSData data];
+//            [self.socketManager socketHeartBeatBegin:heartBeatData];
+//        }
+//            break;
+//        case 10://随便写个值，heartBeatReply心跳响应
+//            //收到心跳响应，就把心跳计数置0
+//            [self.socketManager resetHeartBeatCount];
+//            break;
+//            
+//        case ProtoMessage_Type_Chat:
+//            //解析数据
+//            //调用block
+//            break;
+//            
+//        default:
+//            break;
+//    }
 }
 
 #pragma mark 私有方法

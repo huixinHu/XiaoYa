@@ -7,22 +7,23 @@
 //查看群资料
 
 #import "GroupDetailViewController.h"
-//#import "ProtoMessage.pbobjc.h"
-//#import "GCDAsyncSocket.h"
+#import "MemberCollectionViewCell.h"
+#import "MemberDetailViewController.h"
+#import "MemberListViewController.h"
+#import "EditGroupDetailViewController.h"
 #import "GroupListModel.h"
 #import "GroupMemberModel.h"
 #import "Utils.h"
 #import "Masonry.h"
 #import "BgView.h"
-#import "MemberCollectionViewCell.h"
-#import "MemberDetailViewController.h"
-#import "MemberListViewController.h"
-#import "EditGroupDetailViewController.h"
+#import "AppDelegate.h"
+#import "UIAlertController+Appearance.h"
+#import "HXNetworking.h"
+#import "HXNotifyConfig.h"
 
 static NSString *identifier = @"groupDetailCollectionCell";
 
 @interface GroupDetailViewController () <UICollectionViewDataSource ,UICollectionViewDelegate>
-//@property (nonatomic)GCDAsyncSocket *socket;
 @property (nonatomic ,weak) UIImageView *avatarImage;
 @property (nonatomic ,weak) UILabel *groupName;
 @property (nonatomic ,weak) UICollectionView *collectionView;
@@ -37,23 +38,46 @@ static NSString *identifier = @"groupDetailCollectionCell";
 - (instancetype)initWithGroupInfo:(GroupListModel *)model{
     if (self = [super init]) {
         self.groupModel = [model copy];
+        NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"GETUSERS",@"type",model.groupId,@"groupId",nil];
+        __weak typeof(self) ws = self;
+        dispatch_async(dispatch_get_global_queue(0, 0), ^{
+            [HXNetworking postWithUrl:httpUrl params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id response) {
+                __strong typeof(ws) ss = ws;
+                if ([[response objectForKey:@"state"]boolValue] == 0) {
+                    NSLog(@"获取群组用户信息失败");
+                } else{
+                    NSArray *users = [response objectForKey:@"identity"];
+                    NSMutableArray <GroupMemberModel *>*groupMembers = [NSMutableArray array];
+                    [users enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                        NSDictionary *userDict = (NSDictionary *)obj;
+                        GroupMemberModel *model = [GroupMemberModel memberModelWithOneOfAllUserDict:userDict];
+                        [groupMembers addObject:model];
+                        ss.groupModel.groupMembers = groupMembers;
+                    }];
+                    [NSThread sleepForTimeInterval:1];//模拟网络延时
+                    NSDictionary *dataDict = [NSDictionary dictionaryWithObject:groupMembers forKey:HXRefreshUserDetailKey];
+                    [[NSNotificationCenter defaultCenter] postNotificationName:HXRefreshUserDetailNotification object:nil userInfo:dataDict];
+                }
+            } failure:^(NSURLSessionDataTask *task, NSError *error) {
+                NSLog(@"Error: %@", error);
+            } refresh:NO];
+        });
+        
     }
     return self;
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
-//    UIButton *btn = [[UIButton alloc]initWithFrame:CGRectMake(100, 100, 50, 50)];
-//    btn.backgroundColor = [UIColor redColor];
-//    [self.view addSubview:btn];
-//    [btn addTarget:self action:@selector(click) forControlEvents:UIControlEventTouchUpInside];
-//
-//    GCDAsyncSocket *socket = [[GCDAsyncSocket alloc]initWithDelegate:self delegateQueue:dispatch_get_global_queue(0, 0)];
-//    NSError *error = nil;
-//    [socket connectToHost:@"139.199.170.95" onPort:8989 error:&error];
-//    self.socket = socket;
     [self viewsSetting];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(refreshUserDetail:) name:HXRefreshUserDetailNotification object:nil];//刷新用户信息
+}
+
+//调用这个通知方法时，有可能控制器还没加载出来（没调viewDidLoad）
+- (void)refreshUserDetail:(NSNotification *)notification{
+    if (self.collectionView) {
+        [self.collectionView reloadData];
+    }
 }
 
 - (void)back{
@@ -77,29 +101,94 @@ static NSString *identifier = @"groupDetailCollectionCell";
 }
 
 - (void)allMembers{
-    MemberListViewController *memberListVC = [[MemberListViewController alloc] initWithAllMembersModel:self.groupModel.groupMembers];
+    MemberListViewController *memberListVC = [[MemberListViewController alloc] initWithAllMembersModel:self.groupModel.groupMembers totalMember:self.groupModel.numberOfMember];
     [self.navigationController pushViewController:memberListVC animated:YES];
+}
+
+- (void)exit{
+    AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+    __weak typeof(self) ws = self;
+    if (appDelegate.userid.intValue == self.groupModel.managerId.intValue) {//解散群
+        void (^otherBlock)(UIAlertAction *action) = ^(UIAlertAction *action){
+            __strong typeof(ws) ss = ws;
+            NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"DISMISSGROUP",@"type",ss.groupModel.groupId,@"groupId",appDelegate.userid,@"managerId",nil];
+            dispatch_async(dispatch_get_global_queue(0, 0), ^{
+//                __strong typeof(ws) ss = ws;
+                [HXNetworking postWithUrl:httpUrl params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id response) {
+                    if ([[response objectForKey:@"state"]boolValue] == 0){
+                        NSLog(@"解散群组失败");
+                    }else {
+                        NSDictionary *dataDict = [NSDictionary dictionaryWithObject:ss.groupModel.groupId forKey:HXDismissExitGroupKey];
+                        [[NSNotificationCenter defaultCenter] postNotificationName:HXDismissExitGroupNotification object:nil userInfo:dataDict];
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            for (UIViewController *tempVC in ss.navigationController.viewControllers) {
+                                if ([tempVC isKindOfClass:NSClassFromString(@"GroupHomePageViewController")]) {
+                                    [ss.navigationController popToViewController:tempVC animated:YES];
+                                }
+                            }
+                        });
+                    }
+                } failure:^(NSURLSessionDataTask *task, NSError *error) {
+                    NSLog(@"Error: %@", error);
+                } refresh:NO];
+            });
+        };
+        NSArray *otherBlocks = @[otherBlock];
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"解散群组" message:@"是否确定解散？" preferredStyle:UIAlertControllerStyleAlert cancelTitle:@"取消" cancelBlock:nil otherTitles:@[@"确定"] otherBlocks:otherBlocks];
+        [self presentViewController:alert animated:YES completion:nil];
+        return;
+    } else {//退出群
+        void (^otherBlock)(UIAlertAction *action) = ^(UIAlertAction *action){
+            __strong typeof(ws) ss = ws;
+            NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"SIGNOUTGROUP",@"type",appDelegate.userid,@"userId",ss.groupModel.groupId,@"groupId",nil];
+            dispatch_async(dispatch_get_global_queue(0, 0), ^{
+                [HXNetworking postWithUrl:httpUrl params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id response) {
+                    if ([[response objectForKey:@"state"]boolValue] == 0){
+                        NSLog(@"退出群组失败");
+                    }else {
+                        NSDictionary *dataDict = [NSDictionary dictionaryWithObject:ss.groupModel.groupId forKey:HXDismissExitGroupKey];
+                        [[NSNotificationCenter defaultCenter] postNotificationName:HXDismissExitGroupNotification object:nil userInfo:dataDict];
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            for (UIViewController *tempVC in ws.navigationController.viewControllers) {
+                                if ([tempVC isKindOfClass:NSClassFromString(@"GroupHomePageViewController")]) {
+                                    [ws.navigationController popToViewController:tempVC animated:YES];
+                                }
+                            }
+                        });
+                    }
+                } failure:^(NSURLSessionDataTask *task, NSError *error) {
+                    NSLog(@"Error: %@", error);
+                } refresh:NO];
+            });
+        };
+        NSArray *otherBlocks = @[otherBlock];
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"退出群组" message:@"是否确定退出？" preferredStyle:UIAlertControllerStyleAlert cancelTitle:@"取消" cancelBlock:nil otherTitles:@[@"确定"] otherBlocks:otherBlocks];
+        [self presentViewController:alert animated:YES completion:nil];
+        return;
+    }
 }
 
 #pragma mark collectionViewDelegate
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath{
-    MemberDetailViewController *vc = [[MemberDetailViewController alloc] initWithMemberModel:self.groupModel.groupMembers[indexPath.row]];
+    MemberDetailViewController *vc = [[MemberDetailViewController alloc] initWithMemberModel:self.groupModel.groupMembers[indexPath.row] indexInGroup:indexPath.item];
     [self.navigationController pushViewController:vc animated:YES];
 }
 
 #pragma mark collectionViewDataSource
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
-    if (self.groupModel.groupMembers.count >= 4) {
+    if (self.groupModel.numberOfMember >= 4) {
         return 4;
     }else{
-        return self.groupModel.groupMembers.count;
+        return self.groupModel.numberOfMember;
     }
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     MemberCollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:identifier forIndexPath:indexPath];
     GroupMemberModel *memberModel = self.groupModel.groupMembers[indexPath.item];
-    cell.model = memberModel;
+    if (memberModel) {
+        cell.model = memberModel;
+    }
     return cell;
 }
 
@@ -205,12 +294,33 @@ static NSString *identifier = @"groupDetailCollectionCell";
         make.top.equalTo(collectionView.mas_bottom).offset(10);
         make.size.mas_equalTo(CGSizeMake(100, 30));
     }];
-    if (self.groupModel.groupMembers.count > 4) {
+    if (self.groupModel.numberOfMember > 4) {
         moreBtn.hidden = NO;
     } else{
         moreBtn.hidden = YES;
     }
     _moreBtn = moreBtn;
+    
+    UIButton *exit = [[UIButton alloc]init];
+    exit.titleLabel.font = [UIFont systemFontOfSize:15];
+    exit.backgroundColor = [Utils colorWithHexString:@"#00a7fa"];
+    exit.layer.cornerRadius = 5;
+    [exit addTarget:self action:@selector(exit) forControlEvents:UIControlEventTouchUpInside];
+    [bg2 addSubview:exit];
+    [exit mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.size.mas_equalTo(CGSizeMake(125, 40));
+        make.top.equalTo(collectionView.mas_bottom).offset(50);
+        make.centerX.equalTo(self.view);
+    }];
+    
+    AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+    if (appDelegate.userid.intValue == self.groupModel.managerId.intValue) {
+        self.editBtn.hidden = NO;
+        [exit setTitle:@"解散该群" forState:UIControlStateNormal];
+    } else{
+        self.editBtn.hidden = YES;
+        [exit setTitle:@"退出群组" forState:UIControlStateNormal];
+    }
 }
 
 - (void)settingImage:(NSInteger)imageId{
@@ -229,52 +339,13 @@ static NSString *identifier = @"groupDetailCollectionCell";
     }
 }
 
-//- (void)click{
-//    ProtoMessage* s1 = [[ProtoMessage alloc]init];
-//    s1.type = ProtoMessage_Type_Chat;
-//    s1.from = @"胡卉馨(17)";
-//    s1.to = @"13";
-//    s1.time = @"2017/7/27";
-//    s1.body = @"hello";
-//    NSData *data = [s1 data];
-//    NSLog(@"要发送的数据：%@",data);
-//    Byte *byteArr = (Byte *)[data bytes];
-//    [self.socket writeData:data withTimeout:-1 tag:100];
-//}
-//
-//- (void)socket:(GCDAsyncSocket *)sock didReadData:(NSData *)data withTag:(long)tag{
-//    NSLog(@"%@",data);
-//    
-//    ProtoMessage *s2 = [ProtoMessage parseFromData:data error:NULL];
-//    NSLog(@"type:%d,from:%@,to:%@,time:%@,body:%@",s2.type,s2.from,s2.to,s2.time,s2.body);
-//    
-//    NSString *data2Str = [[NSString alloc]initWithData:data encoding:NSUTF8StringEncoding];
-//    NSLog(@"%@",data2Str);
-//    
-//
-//    [sock readDataWithTimeout:-1 tag:100];
-//}
-//
-//- (void)socket:(GCDAsyncSocket *)sock didWriteDataWithTag:(long)tag{
-//    NSLog(@"发送数据成功");
-//}
-//
-//- (void)socket:(GCDAsyncSocket *)sock didConnectToHost:(NSString *)host port:(uint16_t)port{
-//    NSLog(@"连接成功");
-//    [self.socket readDataWithTimeout:-1 tag:100];
-//    //心跳处理
-//}
-//
-//- (void)socketDidDisconnect:(GCDAsyncSocket *)sock withError:(NSError *)err{
-//    NSLog(@"连接失败:%@",err);
-//    //重连处理
-//}
-
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
 
-
+- (void)dealloc{
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:HXRefreshUserDetailNotification object:nil];
+}
 
 @end

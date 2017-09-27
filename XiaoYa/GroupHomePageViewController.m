@@ -35,6 +35,7 @@
     [self viewsSetting];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(refreshGroupDetail:) name:HXEditGroupDetailNotification object:nil];//刷新群资料
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(refreshGroupInfo:) name:HXPublishGroupInfoNotification object:nil];//刷新群消息
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(refreshGroupList:) name:HXDismissExitGroupNotification object:nil];//刷新群消息
 }
 
 - (void)didReceiveMemoryWarning {
@@ -51,7 +52,7 @@
 //刷新群资料相关信息 自己是群主自己编辑了信息 刷新走viewWillAppear
 - (void)refreshGroupDetail:(NSNotification *)notification{
     NSDictionary *refreshData = [notification userInfo];
-    GroupListModel *refreshModel = [refreshData objectForKey:HXRefreshGroupDetail];
+    GroupListModel *refreshModel = [refreshData objectForKey:HXEditGroupDetailKey];
     [self.groupModels enumerateObjectsUsingBlock:^(GroupListModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         if (obj.groupId == refreshModel.groupId) {
             obj.groupMembers = [refreshModel.groupMembers mutableCopy];
@@ -79,12 +80,25 @@
     }];
 }
 
+//解散群或者退出群
+- (void)refreshGroupList:(NSNotification *)notification{
+    NSString *groupId = [[notification userInfo] objectForKey:HXDismissExitGroupKey];
+    __block NSInteger deleteIndex = 0;
+    [self.groupModels enumerateObjectsUsingBlock:^(GroupListModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        if (obj.groupId == groupId) {
+            deleteIndex = idx;
+            *stop = YES;
+        }
+    }];
+    [self.groupModels removeObjectAtIndex:deleteIndex];
+}
+
 - (void)groupCreate{
     AppDelegate *apd = (AppDelegate *)[[UIApplication sharedApplication] delegate];
-    NSString *userid = [[[[apd.user componentsSeparatedByString:@"("]lastObject] componentsSeparatedByString:@")"]firstObject];
-    NSString *user = [[apd.user componentsSeparatedByString:@"("]firstObject];
+    NSString *userid = apd.userid;
+    NSString *user = apd.userName;
     
-    GroupMemberModel *managerModel = [GroupMemberModel memberModelWithDict:@{@"identity":[NSString stringWithFormat:@"%@,%@,%@",userid,user,apd.phone]}];
+    GroupMemberModel *managerModel = [GroupMemberModel memberModelWithMemberSearchDict:@{@"identity":[NSString stringWithFormat:@"%@,%@,%@",userid,user,apd.phone]}];
     NSMutableArray *membersArr = [NSMutableArray arrayWithObject:managerModel];
     GroupListModel *groupModel = [[GroupListModel alloc]init];
     groupModel.groupMembers = membersArr;//只有成员集（群主）
@@ -280,6 +294,6 @@
 - (void)dealloc{
     [[NSNotificationCenter defaultCenter] removeObserver:self name:HXEditGroupDetailNotification object:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:HXPublishGroupInfoNotification object:nil];
-
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:HXDismissExitGroupNotification object:nil];
 }
 @end

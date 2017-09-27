@@ -14,6 +14,7 @@
 @property (nonatomic ,copy)NSString *managerId;
 @property (nonatomic ,copy)NSString *managerName;
 @property (nonatomic ,assign)NSInteger avatarId;
+@property (nonatomic ,assign)NSInteger numberOfMember;
 
 + (instancetype)groupModelWithDict:(NSDictionary *)dict;
 @end

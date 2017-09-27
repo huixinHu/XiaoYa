@@ -11,7 +11,7 @@
 #import <objc/runtime.h>
 @implementation GroupMemberModel
 
-- (instancetype)initWithDict:(NSDictionary *)dict {
+- (instancetype)initWithMemberSearchDict:(NSDictionary *)dict {
     if (self = [super init]) {
         NSString *infoStr = [dict objectForKey:@"identity"];
         NSArray *infoArr = [infoStr componentsSeparatedByString:@","];
@@ -36,8 +36,9 @@
     return self;
 }
 
-+ (instancetype)memberModelWithDict:(NSDictionary *)dict {
-    return [[self alloc] initWithDict:dict];
+//根据手机号搜索某个群成员，结果转模型
++ (instancetype)memberModelWithMemberSearchDict:(NSDictionary *)dict {
+    return [[self alloc] initWithMemberSearchDict:dict];
 }
 
 - (instancetype)initOrdinaryModelWithDict:(NSDictionary *)dict{
@@ -54,17 +55,47 @@
     return [[self alloc] initOrdinaryModelWithDict:dict];
 }
 
-- (instancetype)initWithArray:(NSArray *)arr{
+//- (instancetype)initWithArr:(NSArray *)arr{
+//    if (self = [super init]) {
+//        [arr enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+//            NSDictionary *userDict = (NSDictionary *)obj;
+//            self.memberId = userDict[@"id"];
+//        }];
+//    }
+//    return  self;
+//}
+//
+////根据群组id查询群组中所有用户信息，结果转模型
+//+ (instancetype)memberModelWithAllUsersArr:(NSArray *)arr{
+//    return [[self alloc]initWithArr:arr];
+//}
+
+//根据群组id查询群组中所有用户信息，结果(用户信息字典)转模型
+- (instancetype)initWithOneOfAllUserDict:(NSDictionary *)dict{
     if (self = [super init]) {
-        self.memberId = arr[0];
-        self.memberName = arr[1];
-        self.memberPhone = arr[2];
+        self.memberId = dict[@"id"];
+        self.memberName = dict[@"userName"];
+        self.memberPhone = dict[@"mobile"];
+        
+        NSString *avaText = [NSString string];
+        if (self.memberName.length > 2) {
+            avaText = [self.memberName substringWithRange:NSMakeRange(self.memberName.length - 2, 2)];
+        }else{
+            avaText = self.memberName;
+        }
+        CGFloat avaFontSize = 0;
+        if (avaText.length == 2) {
+            avaFontSize = 18;
+        }else{
+            avaFontSize = 24.0;
+        }
+        self.memberAvatar = [TxAvatar avatarWithText:avaText fontSize:avaFontSize longside:50];
     }
-    return  self;
+    return self;
 }
 
-+ (instancetype)memberModelWithArray:(NSArray *)arr{
-    return [[self alloc]initWithArray:arr];
++ (instancetype)memberModelWithOneOfAllUserDict:(NSDictionary *)dict{
+    return [[self alloc]initWithOneOfAllUserDict:dict];
 }
 
 - (void)encodeWithCoder:(NSCoder *)aCoder{

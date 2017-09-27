@@ -14,7 +14,6 @@
 #import "Masonry.h"
 #import "NSTimer+Addition.h"
 #import "HXNetworking.h"
-#import "HXNotifyConfig.h"
 
 #define kScreenWidth [UIApplication sharedApplication].keyWindow.bounds.size.width
 #define kTimerCount 60

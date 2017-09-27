@@ -13,7 +13,8 @@
 @property (strong, nonatomic) UIWindow *window;
 @property (nonatomic ,assign) BOOL isLogin;
 @property (nonatomic ,strong) NSDate *firstDateOfTerm;
-@property (nonatomic ,copy) NSString *user;
+@property (nonatomic ,copy) NSString *userName;
 @property (nonatomic ,copy) NSString *phone;
+@property (nonatomic ,copy) NSString *userid;
 @end
 

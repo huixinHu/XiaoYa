@@ -14,7 +14,6 @@
 #import "Masonry.h"
 #import "NSTimer+Addition.h"
 #import "HXNetworking.h"
-#import "HXNotifyConfig.h"
 
 #define kScreenWidth [UIApplication sharedApplication].keyWindow.bounds.size.width
 @interface ResetTextCodeViewController ()<UITextFieldDelegate>
@@ -107,7 +106,7 @@
     HXButton *timerBtn = [[HXButton alloc]initWithFrame:CGRectMake(0, 0, 80, 30) timerCount:60 timerInerval:1.0 networkRequest:^{
         NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"RESETSME",@"type",weakself.phoneNum,@"mobile", nil];
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
-            [HXNetworking postWithUrl:httpUrl params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
+            [HXNetworking postWithUrl:@"http://139.199.170.95:80/moyuzaiServer/Controller" params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
                 NSLog(@"dataMessage:%@",[responseObject objectForKey:@"message"]);
                 dispatch_async(dispatch_get_main_queue(), ^{
                     if ([[responseObject objectForKey:@"state"]boolValue] == 0){

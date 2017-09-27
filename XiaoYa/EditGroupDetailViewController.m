@@ -12,9 +12,11 @@
 #import "GroupListModel.h"
 #import "GroupMemberModel.h"
 #import "UIAlertController+Appearance.h"
+#import "HXNetworking.h"
 
 @interface EditGroupDetailViewController ()
 @property (nonatomic ,copy) gCreateSucBlock completeBlock;
+@property (nonatomic ,strong) NSMutableSet <NSString *>*originMemberIds;
 @end
 
 @implementation EditGroupDetailViewController
@@ -22,6 +24,10 @@
 - (instancetype)initWithGroupModel:(GroupListModel *)model successBlock:(gCreateSucBlock)block{
     if (self = [super initWithGroupModel:model successBlock:nil]) {
         self.completeBlock = block;
+        NSMutableSet *originMemberIds = [NSMutableSet set];
+        [model.groupMembers enumerateObjectsUsingBlock:^(GroupMemberModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            [originMemberIds addObject:obj.memberId];
+        }];
     }
     return self;
 }
@@ -61,12 +67,54 @@
     refreshModel.groupName = self.groupName.text;
     refreshModel.numberOfMember = self.dataArray.count;
     refreshModel.groupId = self.groupModel.groupId;
-
-    self.completeBlock(refreshModel);
-    [self.navigationController popViewControllerAnimated:YES];
+    refreshModel.managerId = self.groupModel.managerId;
     
-    NSDictionary *dataDict = [NSDictionary dictionaryWithObject:refreshModel forKey:HXRefreshGroupDetail];
-    [[NSNotificationCenter defaultCenter] postNotificationName:HXEditGroupDetailNotification object:nil userInfo:dataDict];
+    NSMutableSet <NSString *>*curMemberIds = [NSMutableSet set];
+    [self.dataArray enumerateObjectsUsingBlock:^(GroupMemberModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        [curMemberIds addObject:obj.memberId];
+    }];
+    NSMutableSet <NSString *> *originSetCopy1 = [self.originMemberIds mutableCopy];
+    [originSetCopy1 minusSet:curMemberIds];//减
+    [curMemberIds minusSet:self.originMemberIds];//增
+    NSString *minusUsers = [NSString string];
+    if (originSetCopy1.count > 0) {//有删减
+        NSMutableString *minus = [NSMutableString string];
+        [originSetCopy1 enumerateObjectsUsingBlock:^(NSString * _Nonnull obj, BOOL * _Nonnull stop) {
+            [minus appendString:[NSString stringWithFormat:@"%@,",obj]];
+        }];
+        minusUsers = [minus substringToIndex:minus.length - 1];
+    }
+    NSString *addUsers = [NSMutableString string];
+    if (curMemberIds.count > 0){//有增加
+        NSMutableString *add = [NSMutableString string];
+        [curMemberIds enumerateObjectsUsingBlock:^(NSString * _Nonnull obj, BOOL * _Nonnull stop) {
+            [add appendString:[NSString stringWithFormat:@"%@,",obj]];
+        }];
+        addUsers = [add substringToIndex:add.length - 1];
+    }
+    
+    NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"CHGROUPDATA", @"type", refreshModel.groupId,@"groupId", refreshModel.managerId, @"managerId", refreshModel.groupAvatarId, @"picId",refreshModel.groupName,@"groupName",addUsers,@"addUsers",minusUsers,@"minusUsers",nil];
+    __weak typeof(self) ws = self;
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        __strong typeof(ws) ss = ws;
+        [HXNetworking postWithUrl:httpUrl params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id response) {
+            if ([[response objectForKey:@"state"]boolValue] == 0){
+                NSLog(@"修改群资料失败");
+            } else{
+                NSLog(@"%@",[response objectForKey:@"message"]);
+                if (ss.completeBlock) {
+                    ss.completeBlock(refreshModel);
+                }
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [ss.navigationController popViewControllerAnimated:YES];
+                });
+                NSDictionary *dataDict = [NSDictionary dictionaryWithObject:refreshModel forKey:HXEditGroupDetailKey];
+                [[NSNotificationCenter defaultCenter] postNotificationName:HXEditGroupDetailNotification object:nil userInfo:dataDict];
+            }
+        } failure:^(NSURLSessionDataTask *task, NSError *error) {
+            NSLog(@"Error: %@", error);
+        } refresh:NO];
+    });
 }
 
 - (void)didReceiveMemoryWarning {

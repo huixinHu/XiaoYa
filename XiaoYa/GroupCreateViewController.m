@@ -88,33 +88,39 @@ static NSString *identifier = @"collectionCell";
         [usersStr appendString:[NSString stringWithFormat:@",%@",member.memberId]];
     }
     NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"INITGROUP", @"type", self.groupName.text,@"groupName", manager.memberId, @"managerId", [NSNumber numberWithInteger:self.avatarID-101], @"picId", usersStr, @"users",nil];
-//    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
         __weak typeof(self) ws = self;
-//        [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
-//            NSDictionary *responseDic = (NSDictionary *)responseObject;
-//            NSLog(@"dataID:%@",[responseDic objectForKey:@"identity"]);
-//            NSLog(@"dataMessage:%@",[responseDic objectForKey:@"message"]);
-//            NSLog(@"dataState:%@",[responseDic objectForKey:@"state"]);
+        [HXNetworking postWithUrl:httpUrl params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
+            NSDictionary *responseDic = (NSDictionary *)responseObject;
+            NSLog(@"dataID:%@",[responseDic objectForKey:@"identity"]);
+            NSLog(@"dataMessage:%@",[responseDic objectForKey:@"message"]);
+            NSLog(@"dataState:%@",[responseDic objectForKey:@"state"]);
 
-            
-            GroupListModel *model = [[GroupListModel alloc]init];
-            model.groupMembers = [ws.dataArray mutableCopy];
-            model.groupAvatarId = [NSString stringWithFormat:@"%ld",ws.avatarID-101];
-//            model.groupId = [[[[[responseDic objectForKey:@"identity"] componentsSeparatedByString:@"("] lastObject] componentsSeparatedByString:@")"] firstObject];
-            model.groupId = [NSString stringWithFormat:@"%d",100 +  (arc4random() % 101)];//100-200的随机整数
-            model.groupName = ws.groupName.text;
-            model.numberOfMember = ws.dataArray.count;
-            if(ws.sucBlock){
-                ws.sucBlock(model);
+            if ([[responseObject objectForKey:@"state"]boolValue] == 0){
+                NSLog(@"群组创建失败");
+                //此处应有提示
+            } else{
+                GroupListModel *model = [[GroupListModel alloc]init];
+                model.groupMembers = [ws.dataArray mutableCopy];
+                model.groupAvatarId = [NSString stringWithFormat:@"%ld",ws.avatarID-101];
+                model.groupId = [[[[[responseDic objectForKey:@"identity"] componentsSeparatedByString:@"("] lastObject] componentsSeparatedByString:@")"] firstObject];
+    //            model.groupId = [NSString stringWithFormat:@"%d",100 +  (arc4random() % 101)];//100-200的随机整数
+                model.groupName = ws.groupName.text;
+                model.numberOfMember = ws.dataArray.count;
+                model.managerId = manager.memberId;
+                if(ws.sucBlock){
+                    ws.sucBlock(model);
+                }
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    GroupInfoViewController *groupInfoVC = [[GroupInfoViewController alloc]initWithGroupModel:model];
+                    groupInfoVC.hidesBottomBarWhenPushed = YES;
+                    [ws.navigationController pushViewController:groupInfoVC animated:YES];//这里要放主线程
+                });
             }
-            GroupInfoViewController *groupInfoVC = [[GroupInfoViewController alloc]initWithGroupModel:model];
-            groupInfoVC.hidesBottomBarWhenPushed = YES;
-            [ws.navigationController pushViewController:groupInfoVC animated:YES];//这里要放主线程
-            
-//        } failure:^(NSURLSessionDataTask *task, NSError *error) {
-//            NSLog(@"Error: %@", error);
-//        } refresh:NO];
-//    });
+        } failure:^(NSURLSessionDataTask *task, NSError *error) {
+            NSLog(@"Error: %@", error);
+        } refresh:NO];
+    });
 }
 
 #pragma mark AddGroupMemberViewControllerDelegate

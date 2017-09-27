@@ -14,8 +14,10 @@
 @property(nonatomic ,copy) NSString *memberPhone;
 @property(nonatomic ,strong) UIImage *memberAvatar;
 
-+ (instancetype)memberModelWithDict:(NSDictionary *)dict;
++ (instancetype)memberModelWithMemberSearchDict:(NSDictionary *)dict;
 + (instancetype)ordinaryModelWithDict:(NSDictionary *)dict;
 
-+ (instancetype)memberModelWithArray:(NSArray *)arr;
+//+ (instancetype)memberModelWithAllUsersArr:(NSArray *)arr;
+//根据群组id查询群组中所有用户信息，结果(用户信息字典)转模型
++ (instancetype)memberModelWithOneOfAllUserDict:(NSDictionary *)dict;
 @end

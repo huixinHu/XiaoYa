@@ -12,7 +12,6 @@
 #import "Utils.h"
 #import "Masonry.h"
 #import "HXNetworking.h"
-#import "HXNotifyConfig.h"
 
 #define kScreenWidth [UIApplication sharedApplication].keyWindow.bounds.size.width
 

@@ -59,7 +59,7 @@
     __weak typeof(self) weakself = self;
     NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"GETUSER",@"type",self.searchTxf.text,@"mobile", nil];
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
-        [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
+        [HXNetworking postWithUrl:httpUrl params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
             NSLog(@"dataID:%@",[responseObject objectForKey:@"identity"]);
             [weakself.memberModels removeAllObjects];
             [weakself.selectIndexs removeAllObjects];
@@ -68,12 +68,14 @@
                     weakself.noResult.hidden = NO;
                     self.prompt.hidden = YES;
                 }else {
-                    GroupMemberModel *model = [GroupMemberModel memberModelWithDict:responseObject];
+                    GroupMemberModel *model = [GroupMemberModel memberModelWithMemberSearchDict:responseObject];
                     [weakself.memberModels addObject:model];
                     weakself.noResult.hidden = YES;
                     self.prompt.hidden = NO;
                 }
-                [weakself.memberList reloadData];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [weakself.memberList reloadData];
+                });
             });
         } failure:^(NSURLSessionDataTask *task, NSError *error) {
             NSLog(@"Error: %@", error);

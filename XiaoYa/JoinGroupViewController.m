@@ -56,14 +56,14 @@
     __weak typeof(self) weakself = self;
     NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"GETGROUP",@"type", self.searchTxf.text ,@"groupId", nil];
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
-        [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
+        [HXNetworking postWithUrl:httpUrl params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
             [weakself.groupModels removeAllObjects];
             dispatch_async(dispatch_get_main_queue(), ^{
                 if ([[responseObject objectForKey:@"state"]boolValue] == 0){
                     weakself.noResult.hidden = NO;
                     weakself.prompt.hidden = YES;
                 }else {
-                    GroupSearchModel *model = [GroupSearchModel groupModelWithDict:responseObject];
+                    GroupSearchModel *model = [GroupSearchModel groupModelWithDict:[responseObject objectForKey:@"group"]];
                     [weakself.groupModels addObject:model];
                     weakself.noResult.hidden = YES;
                     weakself.prompt.hidden = NO;
@@ -79,27 +79,28 @@
 #pragma mark groupSearchDelegate
 - (void)groupSearchCell:(GroupSearchTableViewCell *)cell selectIndex:(NSIndexPath *)indexPath{
     AppDelegate *apd = (AppDelegate *)[[UIApplication sharedApplication] delegate];
-    NSString *userid = [[[[apd.user componentsSeparatedByString:@"("]lastObject] componentsSeparatedByString:@")"]firstObject];
+    NSString *userid = apd.userid;
     
     GroupSearchModel *selectedModel = self.groupModels[indexPath.row];
     NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"JOINGROUP",@"type",userid,@"userId", selectedModel.groupId, @"groupId",nil];
     
     __weak typeof(self) weakself = self;
-//    dispatch_async(dispatch_get_global_queue(0, 0), ^{
-//        [HXNetworking postWithUrl:@"http://139.199.170.95:8080/moyuzaiServer/Controller" params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
-//            dispatch_async(dispatch_get_main_queue(), ^{
-//                if ([[responseObject objectForKey:@"state"]boolValue] == 0){
-//                    //加入失败的交互待完善
-//                    void (^otherBlock)(UIAlertAction *action) = ^(UIAlertAction *action){
-//                    };
-//                    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"加入群组失败" message:@"请确定用户、群组信息无误" preferredStyle:UIAlertControllerStyleAlert cancelTitle:nil cancelBlock:nil otherTitles:@[@"确定"] otherBlocks:@[otherBlock]];
-//                    [weakself presentViewController:alert animated:YES completion:nil];
-//                }else {//成功
-//                    NSLog(@"%@", [responseObject objectForKey:@"message"]);
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        [HXNetworking postWithUrl:httpUrl params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if ([[responseObject objectForKey:@"state"]boolValue] == 0){
+                    //加入失败的交互待完善
+                    void (^otherBlock)(UIAlertAction *action) = ^(UIAlertAction *action){
+                    };
+                    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"加入群组失败" message:@"请确定用户、群组信息无误" preferredStyle:UIAlertControllerStyleAlert cancelTitle:nil cancelBlock:nil otherTitles:@[@"确定"] otherBlocks:@[otherBlock]];
+                    [weakself presentViewController:alert animated:YES completion:nil];
+                }else {//成功
+                    NSLog(@"%@", [responseObject objectForKey:@"message"]);
                     GroupListModel *groupModel = [[GroupListModel alloc]init];
                     groupModel.groupId = weakself.groupModels[0].groupId;
                     groupModel.groupAvatarId = [NSString stringWithFormat:@"%ld",weakself.groupModels[0].avatarId];
                     groupModel.groupName = weakself.groupModels[0].groupName;
+                    groupModel.numberOfMember = weakself.groupModels[0].numberOfMember;
                     if (weakself.sucBlock) {
                         weakself.sucBlock(groupModel);
                     }
@@ -107,13 +108,12 @@
                     GroupInfoViewController *groupInfoVC = [[GroupInfoViewController alloc]initWithGroupModel:groupModel];
                     groupInfoVC.hidesBottomBarWhenPushed = YES;
                     [weakself.navigationController pushViewController:groupInfoVC animated:YES];
-//                }
-//            });
-//        } failure:^(NSURLSessionDataTask *task, NSError *error) {
-//            //这里后台是不是有点问题？加入已经加入的群组直接来到这里
-//            NSLog(@"Error: %@", error);
-//        } refresh:NO];
-//    });
+                }
+            });
+        } failure:^(NSURLSessionDataTask *task, NSError *error) {
+            NSLog(@"Error: %@", error);
+        } refresh:NO];
+    });
 }
 
 #pragma mark tableview datasource &delegate

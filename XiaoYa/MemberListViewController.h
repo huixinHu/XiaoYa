@@ -11,5 +11,5 @@
 
 @interface MemberListViewController : UIViewController
 
-- (instancetype)initWithAllMembersModel:(NSArray <GroupMemberModel *>*)members;
+- (instancetype)initWithAllMembersModel:(NSArray <GroupMemberModel *>*)members totalMember:(NSInteger)memberCount;
 @end

@@ -99,7 +99,9 @@
                     [[NSNotificationCenter defaultCenter] postNotificationName:HXPushViewControllerNotification object:nil];
                 }];
                 AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
-                appDelegate.user = [responseObject objectForKey:@"identity"];
+                NSString *result = [responseObject objectForKey:@"identity"];
+                appDelegate.userName = [[result componentsSeparatedByString:@"("] firstObject];
+                appDelegate.userid = [[[[result componentsSeparatedByString:@"("] lastObject] componentsSeparatedByString:@")"]firstObject];
                 appDelegate.phone = ws.phoneNum;
             }
         });

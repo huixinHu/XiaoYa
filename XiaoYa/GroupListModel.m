@@ -18,6 +18,7 @@
         self.groupAvatarId = dict[@"groupAvatarId"];
         self.groupMembers = dict[@"groupMembers"];
         self.numberOfMember = [dict[@"numberOfMember"] integerValue];
+        self.managerId = dict[@"managerId"];
     }
     return self;
 }

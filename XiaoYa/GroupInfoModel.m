@@ -83,7 +83,7 @@
     NSString *currentDateStr = [dateFormatter stringFromDate:[NSDate date]];
     
     AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
-    NSString *user = [[appDelegate.user componentsSeparatedByString:@"("]firstObject];
+    NSString *user = appDelegate.userName;
     
     NSMutableDictionary *modelDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"197012120000",@"publishTime",user,@"publisher",@"",@"event",currentDateStr,@"eventTime",@"",@"eventSection",@"",@"comment",@"0",@"dlIndex",nil];
     GroupInfoModel *defaultModel = [self groupInfoWithDict:modelDict];

@@ -7,24 +7,26 @@
 //成员列表页
 
 #import "MemberListViewController.h"
+#import "MemberCollectionViewCell.h"
+#import "MemberDetailViewController.h"
 #import "Utils.h"
 #import "Masonry.h"
 #import "GroupMemberModel.h"
-#import "MemberCollectionViewCell.h"
-#import "MemberDetailViewController.h"
+#import "HXNotifyConfig.h"
 
 static NSString *identifier = @"MemberListCollectionCell";
 @interface MemberListViewController ()<UICollectionViewDelegate ,UICollectionViewDataSource>
 @property (nonatomic ,weak) UICollectionView *collectionView;
 @property (nonatomic ,strong) NSArray<GroupMemberModel *> *groupMembers;
-
+@property (nonatomic ,assign) NSInteger totalCount;
 @end
 
 @implementation MemberListViewController
 
-- (instancetype)initWithAllMembersModel:(NSArray <GroupMemberModel *>*)members{
+- (instancetype)initWithAllMembersModel:(NSArray <GroupMemberModel *>*)members totalMember:(NSInteger)memberCount{
     if (self = [super init]) {
         self.groupMembers = members;
+        self.totalCount = memberCount;
     }
     return self;
 }
@@ -33,32 +35,36 @@ static NSString *identifier = @"MemberListCollectionCell";
     [super viewDidLoad];
 
     [self viewsSetting];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(refreshUserDetail:) name:HXRefreshUserDetailNotification object:nil];//刷新用户信息
+}
+
+- (void)refreshUserDetail:(NSNotification *)notification{
+    if (self.collectionView) {
+        [self.collectionView reloadData];
+    }
 }
 
 - (void)back{
     [self.navigationController popViewControllerAnimated:YES];
 }
 
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
-}
-
 #pragma mark collectionViewDelegate
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath{
-    MemberDetailViewController *vc = [[MemberDetailViewController alloc] initWithMemberModel:self.groupMembers[indexPath.row]];
+    MemberDetailViewController *vc = [[MemberDetailViewController alloc] initWithMemberModel:self.groupMembers[indexPath.row] indexInGroup:indexPath.item];
     [self.navigationController pushViewController:vc animated:YES];
 }
 
 #pragma mark collectionViewDataSource
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
-    return self.groupMembers.count;
+    return self.totalCount;
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     MemberCollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:identifier forIndexPath:indexPath];
     GroupMemberModel *memberModel = self.groupMembers[indexPath.item];
-    cell.model = memberModel;
+    if (memberModel) {
+        cell.model = memberModel;
+    }
     return cell;
 }
 
@@ -90,5 +96,14 @@ static NSString *identifier = @"MemberListCollectionCell";
         make.bottom.equalTo(self.view).offset(-10);
     }];
     _collectionView = collectionView;
+}
+
+- (void)dealloc{
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:HXRefreshUserDetailNotification object:nil];
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
 }
 @end

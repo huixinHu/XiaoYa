@@ -7,6 +7,7 @@
 //
 
 #import "timeselecteview.h"
+#import "CourseModel.h"
 #import "Utils.h"
 #import "Masonry.h"
 #import "DbManager.h"

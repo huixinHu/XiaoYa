@@ -13,12 +13,11 @@
 - (instancetype)initWithDict:(NSDictionary *)dict {
     if (self = [super init]) {
         self.managerName = dict[@"managerName"];
-        
-        NSDictionary *tempDict = dict[@"group"];
-        self.groupId = tempDict[@"id"];
-        self.groupName = tempDict[@"groupName"];
-        self.managerId = tempDict[@"managerId"];
-        self.avatarId = [tempDict[@"picId"] integerValue];
+        self.groupId = dict[@"id"];
+        self.groupName = dict[@"groupName"];
+        self.managerId = dict[@"managerId"];
+        self.avatarId = [dict[@"picId"] integerValue];
+        self.numberOfMember = [dict[@"amount"] integerValue];
     }
     return self;
 }

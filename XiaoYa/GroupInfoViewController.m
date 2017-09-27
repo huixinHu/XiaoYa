@@ -50,7 +50,7 @@
 //刷新群资料相关信息 自己是群主自己编辑了信息 刷新走viewWillAppear
 - (void)refreshGroupDetail:(NSNotification *)notification{
     NSDictionary *refreshData = [notification userInfo];
-    GroupListModel *refreshModel = [refreshData objectForKey:HXRefreshGroupDetail];
+    GroupListModel *refreshModel = [refreshData objectForKey:HXEditGroupDetailKey];
     self.detailmodel.groupMembers = [refreshModel.groupMembers mutableCopy];
     self.detailmodel.groupName = refreshModel.groupName;
     self.detailmodel.groupAvatarId = refreshModel.groupAvatarId;

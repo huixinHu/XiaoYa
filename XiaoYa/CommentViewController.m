@@ -57,21 +57,12 @@
     if ([_commentTv.text isEqualToString:@""]) {
         [self.navigationController popViewControllerAnimated:YES];//返回主界面
     }else{
-        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"确认退出？" message:@"一旦退出，编辑将不会保存" preferredStyle:UIAlertControllerStyleAlert];
-        [alert alertTitleAppearance_title:@"确认退出？" hexColor:@"#333333"];
-        [alert alertMessageAppearance_message:@"一旦退出，编辑将不会保存" hexColor:@"#333333"];
-        UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"取消" style:UIAlertActionStyleCancel handler:nil];
-        UIAlertAction *confirmlAction = [UIAlertAction actionWithTitle:@"确定" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
-            [self.navigationController popViewControllerAnimated:YES];
-        }];
-
-        [alert addActionTarget:cancelAction hexColor:@"#00A7FA"];
-        [alert addActionTarget:confirmlAction hexColor:@"#00A7FA"];
-        // 会更改UIAlertController中所有字体的内容（此方法有个缺点，会修改所有字体的样式）
-        UILabel *appearanceLabel = [UILabel appearanceWhenContainedIn:UIAlertController.class, nil];
-        UIFont *font = [UIFont systemFontOfSize:13];
-        [appearanceLabel setAppearanceFont:font];
-        
+        __weak typeof(self) ws = self;
+        void (^otherBlock)(UIAlertAction *action) = ^(UIAlertAction *action){
+            [ws.navigationController popViewControllerAnimated:YES];
+        };
+        NSArray *otherBlocks = @[otherBlock];
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"确认退出？" message:@"一旦退出，编辑将不会保存" preferredStyle:UIAlertControllerStyleAlert cancelTitle:@"取消" cancelBlock:nil otherTitles:@[@"确定"] otherBlocks:otherBlocks];
         [self presentViewController:alert animated:YES completion:nil];
     }
 }

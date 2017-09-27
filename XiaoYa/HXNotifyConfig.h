@@ -15,12 +15,19 @@ static NSString * const HXDismissViewControllerNotification = @"hxDismissViewCon
 
 //编辑群资料 自己是群主，自己编辑后在本机的刷新，不是通过后台发消息过来通知要刷新
 static NSString * const HXEditGroupDetailNotification = @"hxEditGroupDetail";
-static NSString * const HXRefreshGroupDetail = @"hxRefreshGroupDetail";
+static NSString * const HXEditGroupDetailKey = @"hxEditGroupDetailKey";
 
 //发布信息
 static NSString * const HXPublishGroupInfoNotification = @"hxPublishGroupInfo";
 static NSString * const HXNewGroupInfo = @"hxNewGroupInfo";
 static NSString * const HXGroupID = @"hxGroupID";
 
-static NSString * const httpUrl = @"http://139.199.170.95:80/moyuzaiServer/Controller";
+//解散群或者退出群
+static NSString * const HXDismissExitGroupNotification = @"hxDismissExitGroup";
+static NSString * const HXDismissExitGroupKey = @"hxDismissExitGroupKey";
+
+//获取到后台返回的用户信息，通知刷新
+static NSString * const HXRefreshUserDetailNotification = @"hxRefreshUserDetail";
+static NSString * const HXRefreshUserDetailKey = @"hxRefreshUserDetailKey";
+
 #endif /* HXNotifyConfig_h */

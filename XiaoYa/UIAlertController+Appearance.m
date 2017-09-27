@@ -53,7 +53,16 @@
             [alert addActionTarget:otherAction hexColor:@"#00A7FA"];
         }
     }
-    UILabel *appearanceLabel = [UILabel appearanceWhenContainedIn:UIAlertController.class, nil];
+    UILabel *appearanceLabel;
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_9_0
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] < 9.0) {
+        appearanceLabel = [UILabel appearanceWhenContainedIn:UIAlertController.class, nil];
+    }else
+#endif
+    {
+        appearanceLabel = [UILabel appearanceWhenContainedInInstancesOfClasses:@[UIAlertController.class]];
+    }
+
     UIFont *font = [UIFont systemFontOfSize:13];
     [appearanceLabel setAppearanceFont:font];
     return alert;
