@@ -16,6 +16,9 @@
 #import "HXNetworking.h"
 #import "AppDelegate.h"
 #import "HXNotifyConfig.h"
+#import "HXSocketBusinessManager.h"
+#import "MBProgressHUD.h"
+#import "LoginProgress.h"
 #define kScreenWidth [UIApplication sharedApplication].keyWindow.bounds.size.width
 
 @interface LoginViewController ()<UITextFieldDelegate>
@@ -25,6 +28,8 @@
 @property (nonatomic ,weak)UIButton *btn;
 @property (nonatomic ,weak)UILabel *prompt;
 
+@property (nonatomic ,strong) LoginProgress *loginPregress;
+@property (nonatomic ,copy) HXSocketLoginCallback loginCallback;
 @end
 
 @implementation LoginViewController
@@ -33,6 +38,7 @@
     [super viewDidLoad];
 
     [self viewsSetting];
+    [self initForSocketLogin];
     self.view.userInteractionEnabled = YES;
     UITapGestureRecognizer *singleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(fingerTapped:)];
     [self.view addGestureRecognizer:singleTap];
@@ -63,35 +69,76 @@
 - (void)login{
     [self.view endEditing:YES];
     NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"LOGIN",@"type",self.account.text,@"mobile",self.pwd.text,@"password", nil];
-    __weak typeof (self)weakself = self;
+    __weak typeof(self) ws = self;
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        __strong typeof(ws) ss = ws;
         [HXNetworking postWithUrl:httpUrl params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
             NSLog(@"dataID:%@",[responseObject objectForKey:@"identity"]);
             NSLog(@"dataMessage:%@",[responseObject objectForKey:@"message"]);
-            dispatch_async(dispatch_get_main_queue(), ^{
-                if ([[responseObject objectForKey:@"state"]boolValue] == 0) {//后台数据返回的问题。state实际上是一种__NSCFBoolean类型的数据，要转成bool再判断
+            if ([[responseObject objectForKey:@"state"]boolValue] == 0) {//后台数据返回的问题。state实际上是一种__NSCFBoolean类型的数据，要转成bool再判断
+                dispatch_async(dispatch_get_main_queue(), ^{
                     if([[responseObject objectForKey:@"message"] isEqualToString:@"密码错误！"]){
-                        weakself.prompt.text = @"密码错误(这里的文案有安全性问题";
+                        ss.prompt.text = @"密码错误(这里的文案有安全性问题";
                     }else if ([[responseObject objectForKey:@"message"] isEqualToString:@"手机号未注册！"]){
-                        weakself.prompt.text = @"该号码未注册";
+                        ss.prompt.text = @"该号码未注册";
                     }
-                }else{
-                    UIViewController *temp = weakself.presentingViewController;//先取得presentingViewController。不先保存的话，popvc之后可能就为空了
-                    [weakself.navigationController popToRootViewControllerAnimated:YES];
-                    [temp dismissViewControllerAnimated:YES completion:^{
-                        [[NSNotificationCenter defaultCenter] postNotificationName:HXPushViewControllerNotification object:nil];
-                    }];
-                    AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
-                    NSString *result = [responseObject objectForKey:@"identity"];
-                    appDelegate.userName = [[result componentsSeparatedByString:@"("] firstObject];
-                    appDelegate.userid = [[[[result componentsSeparatedByString:@"("] lastObject] componentsSeparatedByString:@")"]firstObject];
-                    appDelegate.phone = weakself.account.text;
-                }
-            });
+                });
+            }else{
+                AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+                NSString *result = [responseObject objectForKey:@"identity"];
+                appDelegate.userName = [[result componentsSeparatedByString:@"("] firstObject];
+                appDelegate.userid = [[[[result componentsSeparatedByString:@"("] lastObject] componentsSeparatedByString:@")"]firstObject];
+                appDelegate.phone = ss.account.text;
+                
+//                建立socket连接
+                NSDictionary *tokenDict = @{@"from":result};
+                [ss.loginPregress showProgress:YES onView:ss.view];
+                [[HXSocketBusinessManager shareInstance]connectSocket:tokenDict authAppraisalFailCallBack:self.loginCallback];
+            }
         } failure:^(NSURLSessionDataTask *task, NSError *error) {
             NSLog(@"Error: %@", error);
         } refresh:NO];
     });
+}
+
+- (void)initForSocketLogin{
+    __weak typeof(self) ws = self;
+    self.loginPregress = [[LoginProgress alloc]init];
+    //设置超时block
+    self.loginPregress.loginTimeoutBlock = ^{
+        NSLog(@"登录超时");
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [ws.loginPregress showProgress:NO onView:ws.view];
+            MBProgressHUD *timeOutHud = [MBProgressHUD showHUDAddedTo:ws.view animated:YES];
+            timeOutHud.mode = MBProgressHUDModeText;
+            timeOutHud.label.text = @"登录超时";
+            [timeOutHud hideAnimated:YES afterDelay:1.5];
+        });
+    };
+    //登录回调Block
+    self.loginCallback = ^(BOOL error) {
+        if ([ws.loginPregress timerIsActive]){ //延迟很久才收到，这个过时的包应该丢弃。这里不应该用timer是否销毁做判据，因为用户可能在足够短的时间内又发起登录请求。应该用一个包的唯一id（比如时间戳）什么的判断超时包
+            [ws.loginPregress showProgress:NO onView:ws.view];
+            if (error) {//登录出错
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:ws.view animated:YES];
+                    hud.mode = MBProgressHUDModeText;
+                    hud.label.text = @"登录失败";
+                    [hud hideAnimated:YES afterDelay:1.5];
+                });
+            } else{//登录成功
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    UIViewController *temp = ws.presentingViewController;//先取得presentingViewController。不先保存的话，popvc之后可能就为空了
+                    [ws.navigationController popToRootViewControllerAnimated:YES];
+                    [temp dismissViewControllerAnimated:YES completion:^{
+                        [[NSNotificationCenter defaultCenter] postNotificationName:HXPushViewControllerNotification object:nil];
+                    }];
+                });
+            }
+        } else{
+            ws.loginPregress.loginTimeoutBlock();
+        }
+    };
 }
 
 //重置密码
@@ -195,6 +242,7 @@
     }];
     _account.keyboardType = UIKeyboardTypeNumberPad;
     _account.delegate = self;
+    _account.text = @"15918887876";
     
     HXTextField *pwd = [[HXTextField alloc]init];
     _pwd = pwd;
@@ -210,6 +258,7 @@
     _pwd.keyboardType = UIKeyboardTypeASCIICapable;
     _pwd.delegate = self;
     self.pwd.secureTextEntry = YES;
+    _pwd.text = @"123456a";
     
     UIButton *eye = [[UIButton alloc]init];
     _eye = eye;

@@ -18,24 +18,66 @@
 #import "TxAvatar.h"
 #import "AppDelegate.h"
 #import "HXNotifyConfig.h"
+#import "HXDBManager.h"
+#import "MBProgressHUD.h"
 
 @interface GroupHomePageViewController ()<UITableViewDelegate,UITableViewDataSource>
 @property (nonatomic ,weak)UIImageView *menu;
 @property (nonatomic ,weak)UITableView *groupTable;
 @property (nonatomic ,weak)UIButton *menuBtn;
 @property (nonatomic ,strong)NSMutableArray <GroupListModel *> *groupModels;//群组模型数组
-
+@property (nonatomic ,strong) HXDBManager *hxDB;
+@property (nonatomic ,strong) MBProgressHUD *hud;
 @end
 
 @implementation GroupHomePageViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-
-    [self viewsSetting];
+    self.edgesForExtendedLayout = UIRectEdgeNone;//一定要先设，不然使用了MBProgressHUD会导致tableView移位
+    __weak typeof(self) ws = self;
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        __strong typeof(ws) ss = ws;
+        dispatch_async(dispatch_get_main_queue(), ^{
+            ss.hud = [MBProgressHUD showHUDAddedTo:ss.view animated:YES];
+            ss.hud.label.text = @"请稍等";
+        });
+        
+        [ss dbSetting];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [ss viewsSetting];
+            [ss.hud hideAnimated:YES];
+        });
+    });
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(refreshGroupDetail:) name:HXEditGroupDetailNotification object:nil];//刷新群资料
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(refreshGroupInfo:) name:HXPublishGroupInfoNotification object:nil];//刷新群消息
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(refreshGroupList:) name:HXDismissExitGroupNotification object:nil];//刷新群消息
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(refreshUserDetail:) name:HXRefreshUserDetailNotification object:nil];//刷新成员信息
+}
+
+- (void)dbSetting{
+    self.hxDB = [HXDBManager shareInstance];
+    [self.hxDB createTable:@"groupTable" colDict:@{@"groupId":@"TEXT",@"groupName":@"TEXT",@"groupAvatarId":@"TEXT",@"numberOfMembers":@"TEXT",@"groupManagerId":@"TEXT"} isPrimaryKey:YES primaryKeyIndex:0];
+    [self.hxDB createTable:@"memberTable" colDict:@{@"memberId":@"TEXT",@"memberName":@"TEXT",@"memberphone":@"TEXT"} isPrimaryKey:YES primaryKeyIndex:0];
+
+    [self.hxDB tableCreate:@"CREATE TABLE IF NOT EXISTS memberGroupRelation (memberId TEXT,groupId TEXT,FOREIGN KEY(groupId) REFERENCES groupTable(groupId) ON DELETE CASCADE);" table:@"memberGroupRelation"];
+    [self.hxDB tableCreate:@"CREATE TABLE IF NOT EXISTS groupInfoTable(publishTime TEXT,publisher TEXT,eventDate TEXT,eventSection TEXT,event TEXT,deadlineIndex TEXT,groupId TEXT,FOREIGN KEY(groupId) REFERENCES groupTable(groupId) ON DELETE CASCADE);" table:@"groupInfoTable"];
+
+//        [self.hxDB insertTable:@"groupTable" param:@{@"groupId":@"75",@"groupName":@"测试",@"groupAvatarId":@"0",@"numberOfMembers":@"2",@"groupManagerId":@"7"} callback:nil];
+////        [self.hxDB insertTable:@"memberTable" param:@{@"memberId":@"7",@"memberName":@"彗星",@"memberphone":@"15918887876"} callback:nil];
+//        [self.hxDB insertTable:@"memberTable" param:@{@"memberId":@"8",@"memberName":@"巫辉强",@"memberphone":@"13660259565"} callback:nil];
+//        [self.hxDB insertTable:@"memberGroupRelation" param:@{@"memberId":@"7",@"groupId":@"75"} callback:nil];
+//        [self.hxDB insertTable:@"memberGroupRelation" param:@{@"memberId":@"8",@"groupId":@"75"} callback:nil];
+    
+    NSArray *groupArr = [self.hxDB queryAll:@"groupTable" callback:^(NSError *error) {
+        if (error) {
+            NSLog(@"%@",error.userInfo[NSLocalizedDescriptionKey]);
+        }
+    }];
+    for (NSDictionary *dict in groupArr) {
+        GroupListModel *model = [GroupListModel groupWithDict:dict];
+        [self.groupModels addObject:model];
+    }
 }
 
 - (void)didReceiveMemoryWarning {
@@ -51,8 +93,7 @@
 
 //刷新群资料相关信息 自己是群主自己编辑了信息 刷新走viewWillAppear
 - (void)refreshGroupDetail:(NSNotification *)notification{
-    NSDictionary *refreshData = [notification userInfo];
-    GroupListModel *refreshModel = [refreshData objectForKey:HXEditGroupDetailKey];
+    GroupListModel *refreshModel = [[notification userInfo] objectForKey:HXEditGroupDetailKey];
     [self.groupModels enumerateObjectsUsingBlock:^(GroupListModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         if (obj.groupId == refreshModel.groupId) {
             obj.groupMembers = [refreshModel.groupMembers mutableCopy];
@@ -66,9 +107,8 @@
 
 //自己发布了群消息
 - (void)refreshGroupInfo:(NSNotification *)notification{
-    NSDictionary *refreshInfo = [notification userInfo];
-    GroupInfoModel *refreshModel = [refreshInfo objectForKey:HXNewGroupInfo];
-    NSString *gid = [refreshInfo objectForKey:HXGroupID];
+    GroupInfoModel *refreshModel = [[notification userInfo] objectForKey:HXNewGroupInfo];
+    NSString *gid = [[notification userInfo] objectForKey:HXGroupID];
     [self.groupModels enumerateObjectsUsingBlock:^(GroupListModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         if (obj.groupId == gid) {
             if (obj.groupEvents) {//不为空
@@ -91,6 +131,18 @@
         }
     }];
     [self.groupModels removeObjectAtIndex:deleteIndex];
+}
+
+//刷新成员信息
+- (void)refreshUserDetail:(NSNotification *)notification{
+    NSMutableArray <GroupMemberModel *> *membersModel =  [[notification userInfo] objectForKey:HXRefreshUserDetailKey];
+    NSString *groupId = [[notification userInfo] objectForKey:@"groupId"];
+    [self.groupModels enumerateObjectsUsingBlock:^(GroupListModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        if (obj.groupId == groupId) {
+            obj.groupMembers = [membersModel mutableCopy];
+            *stop = YES;
+        }
+    }];
 }
 
 - (void)groupCreate{
@@ -240,6 +292,7 @@
     [self.view addSubview:_groupTable];
     [_groupTable mas_makeConstraints:^(MASConstraintMaker *make) {
         make.width.height.top.centerX.equalTo(self.view);
+        make.top.equalTo(self.navigationController.navigationBar.mas_bottom);
     }];
     
     [_groupTable setTableFooterView:[[UIView alloc] initWithFrame:CGRectZero]];
@@ -279,14 +332,15 @@
 #pragma mark lazyload
 - (NSMutableArray *)groupModels{
     if (_groupModels == nil) {
-        NSString *path = [[NSBundle mainBundle]pathForResource:@"test.plist" ofType:nil];
-        NSArray *arrayDict = [NSArray arrayWithContentsOfFile:path];
-        NSMutableArray *arrModels = [NSMutableArray array];
-        for (NSDictionary *dict in arrayDict) {
-            GroupListModel *model = [GroupListModel groupWithDict:dict];
-            [arrModels addObject:model];
-        }
-        _groupModels = arrModels;
+//        NSString *path = [[NSBundle mainBundle]pathForResource:@"test.plist" ofType:nil];
+//        NSArray *arrayDict = [NSArray arrayWithContentsOfFile:path];
+//        NSMutableArray *arrModels = [NSMutableArray array];
+//        for (NSDictionary *dict in arrayDict) {
+//            GroupListModel *model = [GroupListModel groupWithDict:dict];
+//            [arrModels addObject:model];
+//        }
+//        _groupModels = arrModels;
+        _groupModels = [NSMutableArray array];
     }
     return _groupModels;
 }
@@ -295,5 +349,6 @@
     [[NSNotificationCenter defaultCenter] removeObserver:self name:HXEditGroupDetailNotification object:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:HXPublishGroupInfoNotification object:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:HXDismissExitGroupNotification object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:HXRefreshUserDetailNotification object:nil];
 }
 @end

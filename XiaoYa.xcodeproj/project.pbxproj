@@ -32,6 +32,7 @@
 		571DB1DB1F68383200D319EF /* EditGroupDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 571DB1DA1F68383200D319EF /* EditGroupDetailViewController.m */; };
 		571DB1E51F7A6A7E00D319EF /* HXDBManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 571DB1E41F7A6A7E00D319EF /* HXDBManager.m */; };
 		571DB1E81F7A6D6D00D319EF /* MessageProtoBuf.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 571DB1E71F7A6D6D00D319EF /* MessageProtoBuf.pbobjc.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		571DB1EB1F7BC32A00D319EF /* HXTokenManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 571DB1EA1F7BC32A00D319EF /* HXTokenManager.m */; };
 		572B6D121F166A520069D1D2 /* AddGroupMemberViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 572B6D111F166A520069D1D2 /* AddGroupMemberViewController.m */; };
 		572B6D151F1748590069D1D2 /* JoinGroupViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 572B6D141F1748590069D1D2 /* JoinGroupViewController.m */; };
 		572EA9181F2F2E760052907C /* EventDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 572EA9171F2F2E760052907C /* EventDetailViewController.m */; };
@@ -81,6 +82,7 @@
 		57BDFA241E52F06A00C0E254 /* UIAlertController+Appearance.m in Sources */ = {isa = PBXBuildFile; fileRef = 57BDFA231E52F06A00C0E254 /* UIAlertController+Appearance.m */; };
 		57C761241E7D9EBC0002FA77 /* CollectView.m in Sources */ = {isa = PBXBuildFile; fileRef = 57C761231E7D9EBC0002FA77 /* CollectView.m */; };
 		57C761271E7E57320002FA77 /* CollectionViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 57C761261E7E57320002FA77 /* CollectionViewCell.m */; };
+		57D10BB71F874DEB004DCA4D /* LoginProgress.m in Sources */ = {isa = PBXBuildFile; fileRef = 57D10BB61F874DEB004DCA4D /* LoginProgress.m */; };
 		57D49D1F1F0FB9660063C861 /* GroupHomePageViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 57D49D1E1F0FB9660063C861 /* GroupHomePageViewController.m */; };
 		57D49D231F121AD90063C861 /* GroupHomePageCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 57D49D221F121AD90063C861 /* GroupHomePageCell.m */; };
 		57D49D251F13DA740063C861 /* test.plist in Resources */ = {isa = PBXBuildFile; fileRef = 57D49D241F13DA740063C861 /* test.plist */; };
@@ -182,6 +184,8 @@
 		571DB1E41F7A6A7E00D319EF /* HXDBManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HXDBManager.m; sourceTree = "<group>"; };
 		571DB1E61F7A6D6D00D319EF /* MessageProtoBuf.pbobjc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MessageProtoBuf.pbobjc.h; sourceTree = "<group>"; };
 		571DB1E71F7A6D6D00D319EF /* MessageProtoBuf.pbobjc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MessageProtoBuf.pbobjc.m; sourceTree = "<group>"; };
+		571DB1E91F7BC32A00D319EF /* HXTokenManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HXTokenManager.h; sourceTree = "<group>"; };
+		571DB1EA1F7BC32A00D319EF /* HXTokenManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HXTokenManager.m; sourceTree = "<group>"; };
 		572B6D101F166A520069D1D2 /* AddGroupMemberViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AddGroupMemberViewController.h; sourceTree = "<group>"; };
 		572B6D111F166A520069D1D2 /* AddGroupMemberViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AddGroupMemberViewController.m; sourceTree = "<group>"; };
 		572B6D131F1748590069D1D2 /* JoinGroupViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JoinGroupViewController.h; sourceTree = "<group>"; };
@@ -278,6 +282,8 @@
 		57C761231E7D9EBC0002FA77 /* CollectView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CollectView.m; sourceTree = "<group>"; };
 		57C761251E7E57320002FA77 /* CollectionViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CollectionViewCell.h; sourceTree = "<group>"; };
 		57C761261E7E57320002FA77 /* CollectionViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CollectionViewCell.m; sourceTree = "<group>"; };
+		57D10BB51F874DEB004DCA4D /* LoginProgress.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LoginProgress.h; sourceTree = "<group>"; };
+		57D10BB61F874DEB004DCA4D /* LoginProgress.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LoginProgress.m; sourceTree = "<group>"; };
 		57D49D1D1F0FB9660063C861 /* GroupHomePageViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GroupHomePageViewController.h; sourceTree = "<group>"; };
 		57D49D1E1F0FB9660063C861 /* GroupHomePageViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GroupHomePageViewController.m; sourceTree = "<group>"; };
 		57D49D211F121AD90063C861 /* GroupHomePageCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GroupHomePageCell.h; sourceTree = "<group>"; };
@@ -509,6 +515,8 @@
 			children = (
 				573F11091EE6DE4200E9F99E /* LoginViewController.h */,
 				573F110A1EE6DE4200E9F99E /* LoginViewController.m */,
+				57D10BB51F874DEB004DCA4D /* LoginProgress.h */,
+				57D10BB61F874DEB004DCA4D /* LoginProgress.m */,
 				573F11131EE7F60A00E9F99E /* RegisterViewController.h */,
 				573F11141EE7F60A00E9F99E /* RegisterViewController.m */,
 				577C66FB1EE828D30006E783 /* RegiTextCodeViewController.h */,
@@ -727,6 +735,8 @@
 				57DC77781F4A9B0500F5FF94 /* HXSocketBusinessManager.m */,
 				57DC777B1F4ECB9600F5FF94 /* HXErrorManager.h */,
 				57DC777C1F4ECB9600F5FF94 /* HXErrorManager.m */,
+				571DB1E91F7BC32A00D319EF /* HXTokenManager.h */,
+				571DB1EA1F7BC32A00D319EF /* HXTokenManager.m */,
 			);
 			name = Manager;
 			sourceTree = "<group>";
@@ -1070,6 +1080,7 @@
 				577C670A1EE96C360006E783 /* RegiPwdViewController.m in Sources */,
 				E26B70131E6AFF75000A08CB /* DaySelectCell.m in Sources */,
 				57DC77721F4A957900F5FF94 /* HXSocketManager.m in Sources */,
+				571DB1EB1F7BC32A00D319EF /* HXTokenManager.m in Sources */,
 				577FA5CE1DEC45C400A0AEF7 /* SectionSelect.m in Sources */,
 				57D65F6E1F287ED800D3BE72 /* TxAvatar.m in Sources */,
 				577FA5C51DEBDE0400A0AEF7 /* BusinessCourseManage.m in Sources */,
@@ -1091,6 +1102,7 @@
 				572B6D151F1748590069D1D2 /* JoinGroupViewController.m in Sources */,
 				E2647DF71DD05CAD0034BE4D /* businessviewcell.m in Sources */,
 				571DB1B71F64279200D319EF /* MemberDetailViewController.m in Sources */,
+				57D10BB71F874DEB004DCA4D /* LoginProgress.m in Sources */,
 				577FA5D11DEDD5EB00A0AEF7 /* PublicTemplateCell.m in Sources */,
 				57D49D2C1F14BFDD0063C861 /* GroupCreateViewController.m in Sources */,
 				572EA9181F2F2E760052907C /* EventDetailViewController.m in Sources */,

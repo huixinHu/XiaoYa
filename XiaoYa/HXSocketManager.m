@@ -15,7 +15,7 @@
 
 @interface HXSocketManager()
 @property (nonatomic ,strong) GCDAsyncSocket *socket;   //socket
-@property (nonatomic ,assign) NSInteger reconnectionCount;//重连次数
+//@property (nonatomic ,assign) NSInteger reconnectionCount;//重连次数
 @property (nonatomic ,assign) NSInteger heartBeatCount;//心跳计数
 @property (nonatomic ,strong) NSTimer *reconnectTimer;//重连计时器
 @property (nonatomic ,strong) NSTimer *heartBeatTimer;//心跳计时器
@@ -53,10 +53,8 @@ static HXSocketManager *manager = nil;
     //连接状态-正在连接
     self.connectStatus = HXSocketConnectStatusConnecting;
     
-    dispatch_queue_t concurrentQueue = dispatch_queue_create("concurrent", DISPATCH_QUEUE_CONCURRENT);
+    dispatch_queue_t concurrentQueue = dispatch_queue_create("socket_concurrent", DISPATCH_QUEUE_CONCURRENT);
     GCDAsyncSocket *socket = [[GCDAsyncSocket alloc]initWithDelegate:delegate delegateQueue:concurrentQueue];
-    //回调线程-globalQueue除了处理socket可能还有其他类的事件？
-//    GCDAsyncSocket *socket = [[GCDAsyncSocket alloc]initWithDelegate:delegate delegateQueue:dispatch_get_global_queue(0, 0)];
     NSError *error = nil;
     if (![socket connectToHost:HOST onPort:PORT withTimeout:CONNECT_TIMEOUT error:&error]) {
         self.connectStatus = HXSocketConnectStatusDisconnect;//连接状态-未连接
@@ -66,17 +64,24 @@ static HXSocketManager *manager = nil;
     
 }
 
+//手动断开socket
 - (void)disconnectSocket{
+    [self.socket disconnect];
+    self.reconnectionCount = -1;
+    [self.heartBeatTimer invalidate];
+    self.heartBeatTimer = nil;
+}
+
+- (void)socketWriteData:(NSData *)data timeout:(NSTimeInterval)ti{
     
 }
 
 - (void)socketWriteData:(NSData *)data{
     [self.socket writeData:data withTimeout:-1 tag:0];
-    [self socketReadData];
 }
 
 - (void)socketReadData{
-    [self.socket readDataWithTimeout:READ_TIMEOUT tag:0];
+    [self.socket readDataWithTimeout:-1 tag:0];//读取超时会触发socket失败的代理
 //     [self.socket readDataToData:[GCDAsyncSocket CRLFData] withTimeout:10 maxLength:0 tag:0];
 }
 
@@ -84,8 +89,8 @@ static HXSocketManager *manager = nil;
     //连接状态-未连接
     self.connectStatus = HXSocketConnectStatusDisconnect;
     
-    self.reconnectionCount++;
     if (self.reconnectionCount >= 0 && self.reconnectionCount <= RECONNECT_LIMIT) {
+        self.reconnectionCount++;
         NSLog(@"重连次数：%ld",self.reconnectionCount);
         NSTimeInterval ti = pow(2, self.reconnectionCount);
         __weak typeof(self) weakself = self;
@@ -100,9 +105,9 @@ static HXSocketManager *manager = nil;
         [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]];
         
     }
-    else{
-//        [self.reconnectTimer invalidate];
-//        self.reconnectTimer = nil;
+    else{//当手动断开socket时（退出账号、进入后台等），reconnectCount<0
+        [self.reconnectTimer invalidate];
+        self.reconnectTimer = nil;
         self.reconnectionCount = 0;
     }
     
@@ -123,6 +128,7 @@ static HXSocketManager *manager = nil;
             //如果连续三次心跳都没有收到响应，就断开socket
             if (strongself.heartBeatCount >= HEARTBEAT_LIMIT) {
                 [strongself.socket disconnect];
+//                self.reconnectionCount = -1; ？？心跳失败后还需不需要重连？不需要就设-1
                 [timer invalidate];
                 timer = nil;
             }else{

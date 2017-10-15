@@ -11,4 +11,5 @@
 @interface GroupDetailViewController : UIViewController
 
 - (instancetype)initWithGroupInfo:(GroupListModel *)model;
+//- (instancetype)init NS_UNAVAILABLE;
 @end

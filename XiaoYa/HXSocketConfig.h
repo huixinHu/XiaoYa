@@ -13,10 +13,10 @@ static NSString *HOST = @"139.199.170.95";
 static const int PORT = 8989;
 
 static const int CONNECT_TIMEOUT = 30;
-static const int READ_TIMEOUT = 10;
+static const int READ_TIMEOUT = 5;
 //心跳
 static const int HEARTBEAT_LIMIT = 3;//心跳没有响应的上限次数
-static const int HEARTBEAT_INTERVAL = 180;
+static const int HEARTBEAT_INTERVAL = 60;
 //重连
 static const int RECONNECT_LIMIT = 5;
 

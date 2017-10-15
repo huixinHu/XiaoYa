@@ -26,7 +26,7 @@ static NSString * const HXGroupID = @"hxGroupID";
 static NSString * const HXDismissExitGroupNotification = @"hxDismissExitGroup";
 static NSString * const HXDismissExitGroupKey = @"hxDismissExitGroupKey";
 
-//获取到后台返回的用户信息，通知刷新
+//查看群资料 从数据库或者后台获取到返回的用户信息，通知刷新
 static NSString * const HXRefreshUserDetailNotification = @"hxRefreshUserDetail";
 static NSString * const HXRefreshUserDetailKey = @"hxRefreshUserDetailKey";
 

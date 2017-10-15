@@ -13,6 +13,9 @@
 #import "Masonry.h"
 #import "HXNetworking.h"
 #import "HXNotifyConfig.h"
+#import "HXSocketBusinessManager.h"
+#import "MBProgressHUD.h"
+#import "LoginProgress.h"
 #define kScreenWidth [UIApplication sharedApplication].keyWindow.bounds.size.width
 
 @interface RegiNameViewController ()<UITextFieldDelegate>
@@ -21,6 +24,9 @@
 @property (nonatomic ,weak)UIButton *nextStep;
 @property (nonatomic ,copy)NSString *pwd;
 @property (nonatomic ,copy)NSString *phoneNum;
+
+@property (nonatomic ,strong) LoginProgress *loginPregress;
+@property (nonatomic ,copy) HXSocketLoginCallback loginCallback;
 @end
 
 @implementation RegiNameViewController
@@ -87,27 +93,69 @@
 - (void)login{
     NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"LOGIN",@"type",self.phoneNum,@"mobile",self.pwd,@"password", nil];
     __weak typeof (self)ws = self;
-    [HXNetworking postWithUrl:httpUrl params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
-        NSLog(@"登录dataID:%@",[responseObject objectForKey:@"identity"]);
-        dispatch_async(dispatch_get_main_queue(), ^{
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        __strong typeof(ws) ss = ws;
+        [HXNetworking postWithUrl:httpUrl params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
+            NSLog(@"登录dataID:%@",[responseObject objectForKey:@"identity"]);
             if ([[responseObject objectForKey:@"state"]boolValue] == 0) {
-                _prompt.text = @"登录失败";
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    _prompt.text = @"登录失败";
+                });
             }else {
-                UIViewController *temp = ws.presentingViewController;//先取得presentingViewController。不先保存的话，popvc之后可能就为空了
-                [ws.navigationController popToRootViewControllerAnimated:YES];
-                [temp dismissViewControllerAnimated:YES completion:^{
-                    [[NSNotificationCenter defaultCenter] postNotificationName:HXPushViewControllerNotification object:nil];
-                }];
                 AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
                 NSString *result = [responseObject objectForKey:@"identity"];
                 appDelegate.userName = [[result componentsSeparatedByString:@"("] firstObject];
                 appDelegate.userid = [[[[result componentsSeparatedByString:@"("] lastObject] componentsSeparatedByString:@")"]firstObject];
-                appDelegate.phone = ws.phoneNum;
+                appDelegate.phone = ss.phoneNum;
+                
+                NSDictionary *tokenDict = @{@"from":result};
+                [ss.loginPregress showProgress:YES onView:ss.view];
+                [[HXSocketBusinessManager shareInstance]connectSocket:tokenDict authAppraisalFailCallBack:self.loginCallback];
             }
+        } failure:^(NSURLSessionDataTask *task, NSError *error) {
+            NSLog(@"Error: %@", error);
+        } refresh:NO];
+    });
+}
+
+- (void)initForSocketLogin{
+    __weak typeof(self) ws = self;
+    self.loginPregress = [[LoginProgress alloc]init];
+    //设置超时block
+    self.loginPregress.loginTimeoutBlock = ^{
+        NSLog(@"登录超时");
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [ws.loginPregress showProgress:NO onView:ws.view];
+            MBProgressHUD *timeOutHud = [MBProgressHUD showHUDAddedTo:ws.view animated:YES];
+            timeOutHud.mode = MBProgressHUDModeText;
+            timeOutHud.label.text = @"登录超时";
+            [timeOutHud hideAnimated:YES afterDelay:1.5];
         });
-    } failure:^(NSURLSessionDataTask *task, NSError *error) {
-        NSLog(@"Error: %@", error);
-    } refresh:NO];
+    };
+    //登录回调Block
+    self.loginCallback = ^(BOOL error) {
+        if ([ws.loginPregress timerIsActive]){
+            [ws.loginPregress showProgress:NO onView:ws.view];
+            if (error) {//登录出错
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:ws.view animated:YES];
+                    hud.mode = MBProgressHUDModeText;
+                    hud.label.text = @"登录失败";
+                    [hud hideAnimated:YES afterDelay:1.5];
+                });
+            } else{//登录成功
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    UIViewController *temp = ws.presentingViewController;//先取得presentingViewController。不先保存的话，popvc之后可能就为空了
+                    [ws.navigationController popToRootViewControllerAnimated:YES];
+                    [temp dismissViewControllerAnimated:YES completion:^{
+                        [[NSNotificationCenter defaultCenter] postNotificationName:HXPushViewControllerNotification object:nil];
+                    }];
+                });
+            }
+        } else{
+            ws.loginPregress.loginTimeoutBlock();
+        }
+    };
 }
 
 #pragma mark textfield

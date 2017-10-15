@@ -18,6 +18,7 @@ typedef NS_ENUM(NSInteger, HXCmdType) {
 
 //typedef void (^HXSocketCallbackBlock)(NSError *__nullable error, id __nullable data);
 typedef void(^HXSocketCallbackBlock)(void);
+typedef void(^HXSocketLoginCallback)(BOOL error);
 
 @interface HXSocketBusinessManager : NSObject
 
@@ -28,9 +29,19 @@ typedef void(^HXSocketCallbackBlock)(void);
  */
 + (instancetype)shareInstance;
 
-
 /**
  socket初始化和建立连接
+
+ @param token 登录令牌
+ @param block 鉴权失败的回调
  */
-- (void)connectSocket;
+- (void)connectSocket:(NSDictionary *)token  authAppraisalFailCallBack:(HXSocketLoginCallback)block;
+
+- (void)writeDataWithCmdtype:(HXCmdType)cmdType requestBody:(NSData *)requestData block:(HXSocketCallbackBlock)callback;
+
+
+/**
+ 主动断开socket。比如退出账号、app进入后台等等。
+ */
+- (void)disconnectSocket;
 @end

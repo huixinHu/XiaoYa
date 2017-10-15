@@ -23,14 +23,14 @@
 #import "SingleChoiceView.h"
 #import "BgView.h"
 #import "GroupInfoModel.h"
-//#import "ProtoMessage.pbobjc.h"
-#import "GCDAsyncSocket.h"
+#import "MessageProtoBuf.pbobjc.h"
+#import "HXSocketBusinessManager.h"
 
 #define scaleToWidth [UIApplication sharedApplication].keyWindow.bounds.size.width/750.0
 #define kScreenWidth [UIApplication sharedApplication].keyWindow.bounds.size.width
 #define kScreenHeight [UIApplication sharedApplication].keyWindow.bounds.size.height
 
-@interface EventPublishViewController () <UITextFieldDelegate ,MonthPickerDelegate ,SectionSelectDelegate,GCDAsyncSocketDelegate>
+@interface EventPublishViewController () <UITextFieldDelegate ,MonthPickerDelegate ,SectionSelectDelegate>
 @property (nonatomic ,weak) HXTextField *eventDescription;
 @property (nonatomic ,weak) businessviewcell *eventTimeView;
 @property (nonatomic ,weak) UIView *coverLayer;
@@ -51,7 +51,6 @@
 @property (nonatomic , assign) NSInteger dlIndex;//截止回复时间 所选项
 @property (nonatomic , strong) GroupInfoModel *infoModel;
 @property (nonatomic , strong) publishCompBlock compBlock;
-@property (nonatomic , strong)GCDAsyncSocket *socket;
 @property (nonatomic , copy) NSString *groupid;
 @end
 
@@ -88,14 +87,7 @@
         self.commentInfo = [self.infoModel.comment copy];
         self.dlIndex = self.infoModel.dlIndex;
     }
-    
-    GCDAsyncSocket *socket = [[GCDAsyncSocket alloc]initWithDelegate:self delegateQueue:dispatch_get_global_queue(0, 0)];
-    NSError *error = nil;
-    [socket connectToHost:@"139.199.170.95" onPort:8989 error:&error];
-    self.socket = socket;
-    
     [self viewsSetting];
-    [self rightBarBtnCanBeSelect];
 }
 
 - (void)cancel{
@@ -111,17 +103,24 @@
 
 - (void)confirm{
     //网络请求
-    AppDelegate *appdelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+    AppDelegate *apd = (AppDelegate *)[[UIApplication sharedApplication] delegate];
     
-//    ProtoMessage* s1 = [[ProtoMessage alloc]init];
-//    s1.type = ProtoMessage_Type_Chat;
-//    s1.from = appdelegate.user;
-//    s1.to = @"38";
-//    s1.time = @"2017/9/11";
-//    s1.body = self.eventDescription.text;
-//    NSData *data = [s1 data];
-//    Byte *byteArr = (Byte *)[data bytes];
-//    [self.socket writeData:data withTimeout:-1 tag:100];
+    ProtoMessage* s1 = [[ProtoMessage alloc]init];
+    s1.type = ProtoMessage_Type_Chat;
+    s1.from = [NSString stringWithFormat:@"%@(%@)",apd.userName,apd.userid];
+    s1.to = @"75";
+    s1.time = @"2017-09-11 12:12:00";//yyyy-MM-dd hh:mm:ss
+    NSDictionary *bodyDict = @{@"description":@"消息",@"comment":@"",@"week":@"1",@"day_of_week":@"2",@"date":@"2017-10-01",@"time":@"1,2,3",@"repeat":@"-1",@"alarm":@"1000000"};
+    BOOL isConverse = [NSJSONSerialization isValidJSONObject:bodyDict];
+    if (isConverse) {
+        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:bodyDict options:0 error:NULL];
+        NSString *jsonStr = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+        s1.body = jsonStr;
+    }
+//    s1.body = @"{"description":"",comment":"","week":"","day_of_week":"","date":"","time":"","repeat":"-1","alarm":"1000000"}";
+    [[HXSocketBusinessManager shareInstance]writeDataWithCmdtype:HXCmdType_Chat requestBody:[s1 data] block:^{
+        NSLog(@"回调！！");
+    }];
     
     //如果发布成功，就添加到群组消息页
     NSDateFormatter *df = [[NSDateFormatter alloc]init];
@@ -158,34 +157,6 @@
     }else{
         self.navigationItem.rightBarButtonItem.enabled = NO;
     }
-}
-
-- (void)socket:(GCDAsyncSocket *)sock didReadData:(NSData *)data withTag:(long)tag{
-    NSLog(@"%@",data);
-    
-//    ProtoMessage *s2 = [ProtoMessage parseFromData:data error:NULL];
-//    NSLog(@"type:%d,from:%@,to:%@,time:%@,body:%@",s2.type,s2.from,s2.to,s2.time,s2.body);
-//    
-//    NSString *data2Str = [[NSString alloc]initWithData:data encoding:NSUTF8StringEncoding];
-//    NSLog(@"%@",data2Str);
-    
-    
-    [sock readDataWithTimeout:-1 tag:100];
-}
-
-- (void)socket:(GCDAsyncSocket *)sock didWriteDataWithTag:(long)tag{
-    NSLog(@"发送数据成功");
-}
-
-- (void)socket:(GCDAsyncSocket *)sock didConnectToHost:(NSString *)host port:(uint16_t)port{
-    NSLog(@"连接成功");
-    [self.socket readDataWithTimeout:-1 tag:100];
-    //心跳处理
-}
-
-- (void)socketDidDisconnect:(GCDAsyncSocket *)sock withError:(NSError *)err{
-    NSLog(@"连接失败:%@",err);
-    //重连处理
 }
 
 #pragma mark textfield

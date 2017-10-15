@@ -19,6 +19,7 @@ typedef NS_ENUM(NSInteger, HXSocketConnectStatus) {
 @interface HXSocketManager : NSObject
 
 @property (nonatomic ,assign) HXSocketConnectStatus connectStatus;  //连接状态
+@property (nonatomic, assign) NSInteger reconnectionCount;
 
 /**
  单例创建对象
@@ -34,7 +35,10 @@ typedef NS_ENUM(NSInteger, HXSocketConnectStatus) {
  */
 - (void)connectSocket:(nonnull id)delegate;
 
-
+/**
+ 主动断开socket。比如退出账号、app进入后台等等。
+ */
+- (void)disconnectSocket;
 /**
  向服务器写入数据
 

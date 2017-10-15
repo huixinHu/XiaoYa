@@ -46,11 +46,29 @@
         self.memberId = [dict objectForKey:@"memberId"];
         self.memberName = [dict objectForKey:@"memberName"];
         self.memberPhone = [dict objectForKey:@"memberPhone"];
-        self.memberAvatar = [UIImage imageNamed:[dict objectForKey:@"memberAvatar"]];
+        if ([dict objectForKey:@"memberAvatar"]) {
+            self.memberAvatar = [UIImage imageNamed:[dict objectForKey:@"memberAvatar"]];
+        } else{
+            NSString *avaText = [NSString string];
+            if (self.memberName.length > 2) {
+                avaText = [self.memberName substringWithRange:NSMakeRange(self.memberName.length - 2, 2)];
+            }else{
+                avaText = self.memberName;
+            }
+            CGFloat avaFontSize = 0;
+            if (avaText.length == 2) {
+                avaFontSize = 18;
+            }else{
+                avaFontSize = 24.0;
+            }
+            self.memberAvatar = [TxAvatar avatarWithText:avaText fontSize:avaFontSize longside:50];
+        }
     }
     return self;
 }
 
+//从数据库查找数据，转模型
+//或者某些空模型
 + (instancetype)ordinaryModelWithDict:(NSDictionary *)dict{
     return [[self alloc] initOrdinaryModelWithDict:dict];
 }
@@ -73,7 +91,7 @@
 //根据群组id查询群组中所有用户信息，结果(用户信息字典)转模型
 - (instancetype)initWithOneOfAllUserDict:(NSDictionary *)dict{
     if (self = [super init]) {
-        self.memberId = dict[@"id"];
+        self.memberId = [NSString stringWithFormat:@"%@",dict[@"id"]];//要显式转成nsstring，dict[@"id"]得到的是long
         self.memberName = dict[@"userName"];
         self.memberPhone = dict[@"mobile"];
         
