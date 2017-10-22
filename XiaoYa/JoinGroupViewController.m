@@ -17,6 +17,7 @@
 #import "GroupListModel.h"
 #import "UIAlertController+Appearance.h"
 #import "AppDelegate.h"
+#import "HXDBManager.h"
 
 @interface JoinGroupViewController ()<UITextFieldDelegate ,UITableViewDelegate ,UITableViewDataSource ,GroupSearchCellDelegate>
 @property (nonatomic ,weak) HXTextField *searchTxf;
@@ -25,8 +26,9 @@
 @property (nonatomic ,weak) UILabel *prompt;
 @property (nonatomic ,weak) UILabel *noResult;
 
-@property (nonatomic ,strong)NSMutableArray <GroupSearchModel *> *groupModels;
-@property (nonatomic ,copy)gJoinSuccessBlock sucBlock;
+@property (nonatomic ,strong) NSMutableArray <GroupSearchModel *> *groupModels;
+@property (nonatomic ,copy) gJoinSuccessBlock sucBlock;
+@property (nonatomic ,strong) HXDBManager *hxdb;
 @end
 
 @implementation JoinGroupViewController
@@ -86,30 +88,40 @@
     
     __weak typeof(self) weakself = self;
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        __strong typeof(weakself) ss = weakself;
         [HXNetworking postWithUrl:httpUrl params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                if ([[responseObject objectForKey:@"state"]boolValue] == 0){
+            if ([[responseObject objectForKey:@"state"]boolValue] == 0){
+                dispatch_async(dispatch_get_main_queue(), ^{
                     //加入失败的交互待完善
                     void (^otherBlock)(UIAlertAction *action) = ^(UIAlertAction *action){
                     };
                     UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"加入群组失败" message:@"请确定用户、群组信息无误" preferredStyle:UIAlertControllerStyleAlert cancelTitle:nil cancelBlock:nil otherTitles:@[@"确定"] otherBlocks:@[otherBlock]];
-                    [weakself presentViewController:alert animated:YES completion:nil];
-                }else {//成功
-                    NSLog(@"%@", [responseObject objectForKey:@"message"]);
-                    GroupListModel *groupModel = [[GroupListModel alloc]init];
-                    groupModel.groupId = weakself.groupModels[0].groupId;
-                    groupModel.groupAvatarId = [NSString stringWithFormat:@"%ld",weakself.groupModels[0].avatarId];
-                    groupModel.groupName = weakself.groupModels[0].groupName;
-                    groupModel.numberOfMember = weakself.groupModels[0].numberOfMember;
-                    if (weakself.sucBlock) {
-                        weakself.sucBlock(groupModel);
-                    }
-                    
+                    [ss presentViewController:alert animated:YES completion:nil];
+                });
+            }else {
+                NSLog(@"%@", [responseObject objectForKey:@"message"]);
+                //更新数据库 - 群组表
+                NSString *groupId = selectedModel.groupId;
+                NSString *groupName = selectedModel.groupName;
+                NSString *groupManagerId = selectedModel.managerId;
+                NSString *groupAvatarId = [NSString stringWithFormat:@"%@",[NSNumber numberWithInteger:selectedModel.avatarId]];
+                NSString *numberOfMember = [NSString stringWithFormat:@"%@",[NSNumber numberWithInteger:selectedModel.numberOfMember + 1]];//加1是因为要算上自己
+                NSDictionary *groupParaDict = @{@"groupId":groupId ,@"groupName":groupName ,@"groupManagerId":groupManagerId ,@"groupAvatarId":groupAvatarId ,@"numberOfMember":numberOfMember};
+                [ss.hxdb insertTable:groupTable param:groupParaDict callback:^(NSError *error) {
+                    if(error) NSLog(@"加入群组-插入群组表失败：%@",error);
+                }];
+
+                //更新缓存
+                GroupListModel *groupModel = [GroupListModel groupWithDict:groupParaDict];
+                if (ss.sucBlock) {
+                    ss.sucBlock(groupModel);
+                }
+                dispatch_async(dispatch_get_main_queue(), ^{
                     GroupInfoViewController *groupInfoVC = [[GroupInfoViewController alloc]initWithGroupModel:groupModel];
                     groupInfoVC.hidesBottomBarWhenPushed = YES;
-                    [weakself.navigationController pushViewController:groupInfoVC animated:YES];
-                }
-            });
+                    [ss.navigationController pushViewController:groupInfoVC animated:YES];
+                });
+            }
         } failure:^(NSURLSessionDataTask *task, NSError *error) {
             NSLog(@"Error: %@", error);
         } refresh:NO];
@@ -237,6 +249,13 @@
         _groupModels = [NSMutableArray array];
     }
     return _groupModels;
+}
+
+-(HXDBManager *)hxdb{
+    if (_hxdb == nil) {
+        _hxdb = [HXDBManager shareInstance];
+    }
+    return _hxdb;
 }
 
 - (void)dealloc{

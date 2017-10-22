@@ -16,6 +16,7 @@
 #import "HXSocketBusinessManager.h"
 #import "MBProgressHUD.h"
 #import "LoginProgress.h"
+#import "HXDBManager.h"
 #define kScreenWidth [UIApplication sharedApplication].keyWindow.bounds.size.width
 
 @interface RegiNameViewController ()<UITextFieldDelegate>
@@ -27,6 +28,7 @@
 
 @property (nonatomic ,strong) LoginProgress *loginPregress;
 @property (nonatomic ,copy) HXSocketLoginCallback loginCallback;
+@property (nonatomic ,strong) HXDBManager *hxdb;
 @end
 
 @implementation RegiNameViewController
@@ -96,17 +98,25 @@
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
         __strong typeof(ws) ss = ws;
         [HXNetworking postWithUrl:httpUrl params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
-            NSLog(@"登录dataID:%@",[responseObject objectForKey:@"identity"]);
-            if ([[responseObject objectForKey:@"state"]boolValue] == 0) {
+            NSDictionary *resultDic = (NSDictionary *)responseObject;
+            NSLog(@"登录dataID:%@",[resultDic objectForKey:@"identity"]);
+            if ([[resultDic objectForKey:@"state"]boolValue] == 0) {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     _prompt.text = @"登录失败";
                 });
             }else {
                 AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
-                NSString *result = [responseObject objectForKey:@"identity"];
+                NSString *result = [resultDic objectForKey:@"identity"];
                 appDelegate.userName = [[result componentsSeparatedByString:@"("] firstObject];
                 appDelegate.userid = [[[[result componentsSeparatedByString:@"("] lastObject] componentsSeparatedByString:@")"]firstObject];
                 appDelegate.phone = ss.phoneNum;
+                //http登录成功了就打开数据库
+                self.hxdb = [HXDBManager shareInstance];
+                [self.hxdb createTable:groupTable colDict:@{@"groupId":@"TEXT",@"groupName":@"TEXT",@"groupAvatarId":@"TEXT",@"numberOfMember":@"TEXT",@"groupManagerId":@"TEXT"} isPrimaryKey:YES primaryKey:@"groupId"];
+                [self.hxdb createTable:memberTable colDict:@{@"memberId":@"TEXT",@"memberName":@"TEXT",@"memberphone":@"TEXT"} isPrimaryKey:YES primaryKey:@"memberId"];
+                
+                [self.hxdb tableCreate:@"CREATE TABLE IF NOT EXISTS memberGroupRelation (memberId TEXT,groupId TEXT, FOREIGN KEY(groupId) REFERENCES groupTable(groupId) ON DELETE CASCADE);" table:@"memberGroupRelation"];
+                [self.hxdb tableCreate:@"CREATE TABLE IF NOT EXISTS groupInfoTable(publishTime TEXT,publisher TEXT,eventDate TEXT,eventSection TEXT,event TEXT,deadlineIndex TEXT,groupId TEXT, comment TEXT,FOREIGN KEY(groupId) REFERENCES groupTable(groupId) ON DELETE CASCADE);" table:@"groupInfoTable"];
                 
                 NSDictionary *tokenDict = @{@"from":result};
                 [ss.loginPregress showProgress:YES onView:ss.view];
@@ -133,7 +143,7 @@
         });
     };
     //登录回调Block
-    self.loginCallback = ^(BOOL error) {
+    self.loginCallback = ^(NSError *error) {
         if ([ws.loginPregress timerIsActive]){
             [ws.loginPregress showProgress:NO onView:ws.view];
             if (error) {//登录出错

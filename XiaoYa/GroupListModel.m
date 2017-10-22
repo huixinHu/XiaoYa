@@ -17,8 +17,8 @@
         self.groupId = dict[@"groupId"];
         self.groupAvatarId = dict[@"groupAvatarId"];
         self.groupMembers = dict[@"groupMembers"];
-        self.numberOfMember = [dict[@"numberOfMembers"] integerValue];
-        self.managerId = dict[@"groupManagerId"];
+        self.numberOfMember = [dict[@"numberOfMember"] integerValue];
+        self.groupManagerId = dict[@"groupManagerId"];
     }
     return self;
 }

@@ -8,15 +8,20 @@
 
 #import "HXSocketBusinessManager.h"
 #import "HXSocketManager.h"
+#import "HXErrorManager.h"
 #import "GCDAsyncSocket.h"
 #import "HXTokenManager.h"
-#import "MessageProtoBuf.pbobjc.h"
+#import "HXNotifyConfig.h"
+#import "HXDBManager.h"
+#import "GroupInfoModel.h"
+#import "GroupListModel.h"
 
 @interface HXSocketBusinessManager()<GCDAsyncSocketDelegate>
 @property (nonatomic ,strong) HXSocketManager *socketManager;
 @property (nonatomic ,strong) NSMutableDictionary *blockDic;//block管理字典
 @property (nonatomic ,copy) HXSocketLoginCallback loginCallback;//鉴权回调
 @property (nonatomic ,copy) HXSocketCallbackBlock testCallBack;//写回调 因为暂时未实现id对应block存储在字典
+@property (nonatomic ,strong) HXDBManager *hxdb;
 @end
 
 @implementation HXSocketBusinessManager
@@ -61,9 +66,8 @@ static HXSocketBusinessManager *manager = nil;
         NSMutableData *packageData = [self wrapper:requestData];
         [self.socketManager socketWriteData:packageData];
     }else{
-        NSLog(@"socket 未连接");
         if (callback) {
-            callback();
+            callback([HXErrorManager errorWithErrorCode:3001] ,nil);
         }
     }
 }
@@ -117,41 +121,119 @@ static HXSocketBusinessManager *manager = nil;
     //其他错误
     
     //判断请求类型
+    NSDateFormatter *dfm = [[NSDateFormatter alloc] init];
     switch (receiveData.type) {
         case ProtoMessage_Type_LoginResponse:{
             if ([receiveData.body isEqualToString:@"ok"]) {
                 NSLog(@"登录成功");
-                self.loginCallback(NO);
+                self.loginCallback(nil);
                 //开启心跳
 //                NSData *heartBeatData = [NSData data];//心跳包
 //                [self.socketManager socketHeartBeatBegin:heartBeatData];
                 self.socketManager.connectStatus = HXSocketConnectStatusConnected;//这句要在心跳实现时候去掉
                 self.socketManager.reconnectionCount = 0;//这句要在心跳实现时候去掉
             } else {
-                NSLog(@"登录失败");
-                self.loginCallback(YES);
+                self.loginCallback([HXErrorManager errorWithErrorCode:3000]);
             }
-        }
-            break;
-        case ProtoMessage_Type_Chat:
-            NSLog(@"body:%@",receiveData.body);
-            NSLog(@"from:%@",receiveData.from);
-            NSLog(@"to:%@",receiveData.to);
-            NSLog(@"time:%@",receiveData.time);
-            break;
-        case ProtoMessage_Type_ChatResponse:
-            //解析数据
+        } break;
+        case ProtoMessage_Type_Chat:{//收到聊天消息
+            NSString *groupId = receiveData.to;
+            NSString *publisher = receiveData.from;
+            [dfm setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
+            NSDate *tempPublishDate = [dfm dateFromString:receiveData.time];
+            [dfm setDateFormat:@"yyyyMMddHHmmss"];
+            NSString *publishTime = [dfm stringFromDate:tempPublishDate];
+            NSError *jsonError;
+            NSData *jsonData = [receiveData.body dataUsingEncoding:NSUTF8StringEncoding];
+            NSDictionary *jsonDict = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:&jsonError];
+            if (jsonError) {
+                NSLog(@"json 解析错误: --- error %@", jsonError);
+            } else{
+                NSString *event = [jsonDict objectForKey:@"description"];
+                [dfm setDateFormat:@"yyyy-MM-dd"];
+                NSDate *tempEventDate = [dfm dateFromString:[jsonDict objectForKey:@"date"]];
+                [dfm setDateFormat:@"yyyyMMdd"];
+                NSString *eventDate = [dfm stringFromDate:tempEventDate];
+                NSString *eventSection = [NSString stringWithFormat:@",%@,",[jsonDict objectForKey:@"time"]];
+//                NSString *deadlineIndex;
+                NSString *comment = [jsonDict objectForKey:@"comment"];
+
+                NSDictionary *paraDict = @{@"publishTime":publishTime ,@"publisher":publisher ,@"event":event ,@"eventDate":eventDate ,@"eventSection":eventSection ,@"deadlineIndex":@"1" ,@"groupId":groupId,@"comment":comment};
+                //插入消息表
+                [self.hxdb insertTable:groupInfoTable param:paraDict callback:^(NSError *error) {
+                    if(error) NSLog(@"%@",error);
+                }];
+                //发送通知
+                GroupInfoModel *infoModel = [GroupInfoModel groupInfoWithDict:paraDict];
+                NSDictionary *dataDict = @{HXNotiFromServerKey:infoModel ,@"type":[NSNumber numberWithInt:ProtoMessage_Type_Chat] ,@"groupId":groupId};
+                [[NSNotificationCenter defaultCenter] postNotificationName:HXNotiFromServerNotification object:nil userInfo:dataDict];
+            }
+        } break;
+        case ProtoMessage_Type_ChatResponse:{//聊天回应
             //调用block
             if ([receiveData.body isEqualToString:@"ok"]) {
-                self.testCallBack();
+                self.testCallBack(nil ,receiveData);
             }
-            break;
-        case ProtoMessage_Type_JoinGroupNotify:
-            break;
-        case ProtoMessage_Type_QuitGroupNotify:
-            break;
-        case ProtoMessage_Type_SomeoneJoinNotify:
-            break;
+        } break;
+        case ProtoMessage_Type_JoinGroupNotify:{//被拉入群
+            NSError *jsonError;
+            NSData *jsonData = [receiveData.body dataUsingEncoding:NSUTF8StringEncoding];
+            NSDictionary *jsonDict = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:&jsonError];
+            if (jsonError) {
+                NSLog(@"json 解析错误: --- error %@", jsonError);
+            } else{
+                //要显式转成nsstring，[userDict objectForKey:@"id"]得到的是long
+                NSString *groupId = [NSString stringWithFormat:@"%@",[jsonDict objectForKey:@"id"]];
+                NSString *groupName = [jsonDict objectForKey:@"groupName"];
+                NSString *groupManagerId = [NSString stringWithFormat:@"%@",[jsonDict objectForKey:@"managerId"]];
+                NSString *groupAvatarId = [NSString stringWithFormat:@"%@",[jsonDict objectForKey:@"picId"]];
+                NSString *numberOfMember = [NSString stringWithFormat:@"%@",[jsonDict objectForKey:@"amount"]];
+                NSDictionary *paraDict = @{@"groupId":groupId ,@"groupName":groupName ,@"groupManagerId":groupManagerId ,@"groupAvatarId":groupAvatarId ,@"numberOfMember":numberOfMember};
+                //插入群组表
+                [self.hxdb insertTable:groupTable param:paraDict callback:^(NSError *error) {
+                    if(error) NSLog(@"%@",error);
+                }];
+                //发送通知
+                GroupListModel *groupModel = [GroupListModel groupWithDict:paraDict];
+                NSDictionary *dataDict = @{HXNotiFromServerKey:groupModel ,@"type":[NSNumber numberWithInt:ProtoMessage_Type_JoinGroupNotify]};
+                [[NSNotificationCenter defaultCenter] postNotificationName:HXNotiFromServerNotification object:nil userInfo:dataDict];
+            }
+        } break;
+        case ProtoMessage_Type_QuitGroupNotify:{//被踢出群
+            NSString *groupId = receiveData.body;
+            //删除群组表、关系表、消息表
+            [self.hxdb deleteTable:groupTable whereArr:@[@"groupId", @"=", groupId] callback:^(NSError *error) {
+                NSLog(@"%@",error);
+            }];
+            [self.hxdb deleteTable:memberGroupRelation whereArr:@[@"groupId", @"=", groupId] callback:^(NSError *error) {
+                NSLog(@"%@",error);
+            }];
+            [self.hxdb deleteTable:groupInfoTable whereArr:@[@"groupId", @"=", groupId] callback:^(NSError *error) {
+                NSLog(@"%@",error);
+            }];
+            //这里的交互？如果用户此时正在使用该群组相关功能...所以全部聊天界面都要收到这个通知？
+            //群组首页、消息首页、发布页、事件详情页、群资料页
+            NSDictionary *dataDict = @{@"groupId":groupId ,@"type":[NSNumber numberWithInt:ProtoMessage_Type_QuitGroupNotify]};
+            [[NSNotificationCenter defaultCenter] postNotificationName:HXNotiFromServerNotification object:nil userInfo:dataDict];
+        } break;
+        case ProtoMessage_Type_SomeoneJoinNotify:{//有人进群
+            NSError *jsonError;
+            NSData *jsonData = [receiveData.body dataUsingEncoding:NSUTF8StringEncoding];
+            NSDictionary *jsonDict = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:&jsonError];
+            if (jsonError) {
+                NSLog(@"json 解析错误: --- error %@", jsonError);
+            } else{
+                //更新群组表
+                NSString *groupId = [NSString stringWithFormat:@"%@",[jsonDict objectForKey:@"groupId"]];
+                NSString *numberOfMember = [NSString stringWithFormat:@"%@",[jsonDict objectForKey:@"amount"]];
+                [self.hxdb updateTable:groupTable param:@{@"numberOfMember":numberOfMember} whereArr:@[@"groupId", @"=", groupId] callback:^(NSError *error) {
+                    NSLog(@"%@",error);
+                }];
+                //发送通知
+                NSDictionary *dataDict = @{@"groupId":groupId ,@"numberOfMember":numberOfMember ,@"type":[NSNumber numberWithInt:ProtoMessage_Type_SomeoneJoinNotify]};
+                [[NSNotificationCenter defaultCenter] postNotificationName:HXNotiFromServerNotification object:nil userInfo:dataDict];
+            }
+        } break;
         case ProtoMessage_Type_DismissGroupNotify:
             break;
         case ProtoMessage_Type_UpdateGroupNotify:
@@ -210,4 +292,10 @@ static HXSocketBusinessManager *manager = nil;
     return _blockDic;
 }
 
+- (HXDBManager *)hxdb{
+    if (_hxdb == nil) {
+        _hxdb = [HXDBManager shareInstance];
+    }
+    return _hxdb;
+}
 @end

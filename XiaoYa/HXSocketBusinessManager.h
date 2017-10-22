@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "MessageProtoBuf.pbobjc.h"
 /**
  *  业务类型
  */
@@ -17,11 +18,35 @@ typedef NS_ENUM(NSInteger, HXCmdType) {
 };
 
 //typedef void (^HXSocketCallbackBlock)(NSError *__nullable error, id __nullable data);
-typedef void(^HXSocketCallbackBlock)(void);
-typedef void(^HXSocketLoginCallback)(BOOL error);
+typedef void(^HXSocketCallbackBlock)(NSError *error, ProtoMessage *data);
+typedef void(^HXSocketLoginCallback)(NSError *error);
+
+@protocol HXSocketDelegate <NSObject>
+
+@optional
+/**
+ *  监听到服务器发送过来的消息
+ *
+ *  @param data 数据
+ *  @param type 类型
+ */
+- (void)socketReadedData:(ProtoMessage *)data forType:(ProtoMessage_Type)type;
+
+///**
+// *  连上时
+// */
+//- (void)socketDidConnect;
+//
+///**
+// *  建连时检测到token失效
+// */
+//- (void)connectionAuthAppraisalFailedWithErorr:(NSError *)error;
+
+@end
 
 @interface HXSocketBusinessManager : NSObject
 
+@property (nonatomic, weak) id<HXSocketDelegate> socketDelegate;
 /**
  单例创建对象
 

@@ -12,6 +12,7 @@
 #import "GroupInfoViewController.h"
 #import "GroupListModel.h"
 #import "GroupMemberModel.h"
+#import "GroupInfoModel.h"
 #import "GroupHomePageCell.h"
 #import "Utils.h"
 #import "Masonry.h"
@@ -19,7 +20,10 @@
 #import "AppDelegate.h"
 #import "HXNotifyConfig.h"
 #import "HXDBManager.h"
+#import "FMDB.h"
 #import "MBProgressHUD.h"
+#import "MessageProtoBuf.pbobjc.h"
+#import "UIAlertController+Appearance.h"
 
 @interface GroupHomePageViewController ()<UITableViewDelegate,UITableViewDataSource>
 @property (nonatomic ,weak)UIImageView *menu;
@@ -27,7 +31,7 @@
 @property (nonatomic ,weak)UIButton *menuBtn;
 @property (nonatomic ,strong)NSMutableArray <GroupListModel *> *groupModels;//群组模型数组
 @property (nonatomic ,strong) HXDBManager *hxDB;
-@property (nonatomic ,strong) MBProgressHUD *hud;
+@property (nonatomic ,weak) MBProgressHUD *hud;
 @end
 
 @implementation GroupHomePageViewController
@@ -53,31 +57,55 @@
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(refreshGroupInfo:) name:HXPublishGroupInfoNotification object:nil];//刷新群消息
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(refreshGroupList:) name:HXDismissExitGroupNotification object:nil];//刷新群消息
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(refreshUserDetail:) name:HXRefreshUserDetailNotification object:nil];//刷新成员信息
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(notiFromServer:) name:HXNotiFromServerNotification object:nil];//收到来自服务器的通知
 }
 
 - (void)dbSetting{
     self.hxDB = [HXDBManager shareInstance];
-    [self.hxDB createTable:@"groupTable" colDict:@{@"groupId":@"TEXT",@"groupName":@"TEXT",@"groupAvatarId":@"TEXT",@"numberOfMembers":@"TEXT",@"groupManagerId":@"TEXT"} isPrimaryKey:YES primaryKeyIndex:0];
-    [self.hxDB createTable:@"memberTable" colDict:@{@"memberId":@"TEXT",@"memberName":@"TEXT",@"memberphone":@"TEXT"} isPrimaryKey:YES primaryKeyIndex:0];
 
-    [self.hxDB tableCreate:@"CREATE TABLE IF NOT EXISTS memberGroupRelation (memberId TEXT,groupId TEXT,FOREIGN KEY(groupId) REFERENCES groupTable(groupId) ON DELETE CASCADE);" table:@"memberGroupRelation"];
-    [self.hxDB tableCreate:@"CREATE TABLE IF NOT EXISTS groupInfoTable(publishTime TEXT,publisher TEXT,eventDate TEXT,eventSection TEXT,event TEXT,deadlineIndex TEXT,groupId TEXT,FOREIGN KEY(groupId) REFERENCES groupTable(groupId) ON DELETE CASCADE);" table:@"groupInfoTable"];
-
-//        [self.hxDB insertTable:@"groupTable" param:@{@"groupId":@"75",@"groupName":@"测试",@"groupAvatarId":@"0",@"numberOfMembers":@"2",@"groupManagerId":@"7"} callback:nil];
-////        [self.hxDB insertTable:@"memberTable" param:@{@"memberId":@"7",@"memberName":@"彗星",@"memberphone":@"15918887876"} callback:nil];
-//        [self.hxDB insertTable:@"memberTable" param:@{@"memberId":@"8",@"memberName":@"巫辉强",@"memberphone":@"13660259565"} callback:nil];
-//        [self.hxDB insertTable:@"memberGroupRelation" param:@{@"memberId":@"7",@"groupId":@"75"} callback:nil];
-//        [self.hxDB insertTable:@"memberGroupRelation" param:@{@"memberId":@"8",@"groupId":@"75"} callback:nil];
+//    [self.hxDB insertTable:@"groupTable" param:@{@"groupId":@"75",@"groupName":@"测试",@"groupAvatarId":@"0",@"numberOfMember":@"2",@"groupManagerId":@"7"} callback:nil];
+//    [self.hxDB insertTable:@"memberTable" param:@{@"memberId":@"7",@"memberName":@"彗星",@"memberphone":@"15918887876"} callback:nil];
+//    [self.hxDB insertTable:@"memberTable" param:@{@"memberId":@"8",@"memberName":@"巫辉强",@"memberphone":@"13660259565"} callback:nil];
+//    [self.hxDB insertTable:@"memberGroupRelation" param:@{@"memberId":@"7",@"groupId":@"75"} callback:nil];
+//    [self.hxDB insertTable:@"memberGroupRelation" param:@{@"memberId":@"8",@"groupId":@"75"} callback:nil];
     
     NSArray *groupArr = [self.hxDB queryAll:@"groupTable" callback:^(NSError *error) {
         if (error) {
             NSLog(@"%@",error.userInfo[NSLocalizedDescriptionKey]);
         }
     }];
-    for (NSDictionary *dict in groupArr) {
-        GroupListModel *model = [GroupListModel groupWithDict:dict];
-        [self.groupModels addObject:model];
-    }
+    
+    //群组放置的先后顺序？
+    [self.hxDB.dbQueue inTransaction:^(FMDatabase *db, BOOL *rollback) {
+        [groupArr enumerateObjectsUsingBlock:^(NSMutableDictionary *_Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            GroupListModel *lModel = [GroupListModel groupWithDict:obj];
+            NSString *groupId = [obj objectForKey:@"groupId"];
+            NSMutableArray *groupInfoArr = [NSMutableArray array];//消息数组
+            //查找群消息
+            FMResultSet *rs = [db executeQuery:@"SELECT * FROM groupInfoTable WHERE groupId = ? ORDER BY publishTime DESC" withArgumentsInArray:@[groupId]];
+            while ([rs next]) {
+                int count = [rs columnCount];
+                NSMutableDictionary *modelDic = [NSMutableDictionary dictionary];
+                for (int i = 0 ; i < count ; i++) {
+                    NSString *key = [rs columnNameForIndex:i];
+                    NSString *value = [rs stringForColumnIndex:i];
+                    [modelDic setValue:value forKey:key];
+                }
+                //转模型
+                GroupInfoModel *iModel = [GroupInfoModel groupInfoWithDict:modelDic];
+                [groupInfoArr addObject:iModel];
+            }
+            //查找出错
+            if (rs == nil) {
+                NSLog(@"%@",[db lastError]);
+                [rs close];
+                return;
+            }
+            [rs close];
+            lModel.groupEvents = [groupInfoArr mutableCopy];
+            [self.groupModels addObject:lModel];
+        }];
+    }];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -95,7 +123,7 @@
 - (void)refreshGroupDetail:(NSNotification *)notification{
     GroupListModel *refreshModel = [[notification userInfo] objectForKey:HXEditGroupDetailKey];
     [self.groupModels enumerateObjectsUsingBlock:^(GroupListModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        if (obj.groupId == refreshModel.groupId) {
+        if (obj.groupId.intValue == refreshModel.groupId.intValue) {
             obj.groupMembers = [refreshModel.groupMembers mutableCopy];
             obj.groupName = refreshModel.groupName;
             obj.groupAvatarId = refreshModel.groupAvatarId;
@@ -110,7 +138,7 @@
     GroupInfoModel *refreshModel = [[notification userInfo] objectForKey:HXNewGroupInfo];
     NSString *gid = [[notification userInfo] objectForKey:HXGroupID];
     [self.groupModels enumerateObjectsUsingBlock:^(GroupListModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        if (obj.groupId == gid) {
+        if (obj.groupId.intValue == gid.intValue) {
             if (obj.groupEvents) {//不为空
                 [obj.groupEvents insertObject:refreshModel atIndex:0];
             } else{
@@ -120,12 +148,12 @@
     }];
 }
 
-//解散群或者退出群
+//自己解散群或者退出群
 - (void)refreshGroupList:(NSNotification *)notification{
     NSString *groupId = [[notification userInfo] objectForKey:HXDismissExitGroupKey];
     __block NSInteger deleteIndex = 0;
     [self.groupModels enumerateObjectsUsingBlock:^(GroupListModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        if (obj.groupId == groupId) {
+        if (obj.groupId.intValue == groupId.intValue) {
             deleteIndex = idx;
             *stop = YES;
         }
@@ -135,14 +163,91 @@
 
 //刷新成员信息
 - (void)refreshUserDetail:(NSNotification *)notification{
-    NSMutableArray <GroupMemberModel *> *membersModel =  [[notification userInfo] objectForKey:HXRefreshUserDetailKey];
+    NSMutableArray <GroupMemberModel *> *membersModel = [[notification userInfo] objectForKey:HXRefreshUserDetailKey];
     NSString *groupId = [[notification userInfo] objectForKey:@"groupId"];
     [self.groupModels enumerateObjectsUsingBlock:^(GroupListModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        if (obj.groupId == groupId) {
+        if (obj.groupId.intValue == groupId.intValue) {
             obj.groupMembers = [membersModel mutableCopy];
             *stop = YES;
         }
     }];
+}
+
+//接收到服务器的通知
+//会出现这样一种情况:刚刚登陆完，就收到离线消息，此时群组页还没加载出来，所以这个通知方法不会被调用到
+//所以应该在收到消息时就把数据保存进数据库
+- (void)notiFromServer:(NSNotification *)notification{
+    int type = [[[notification userInfo] objectForKey:@"type"] intValue];
+    switch (type) {
+        case ProtoMessage_Type_Chat:{//收到新消息
+            GroupInfoModel *infoModel = [[notification userInfo] objectForKey:HXNotiFromServerKey];
+            NSString *groupId = [[notification userInfo] objectForKey:@"groupId"];
+            [self.groupModels enumerateObjectsUsingBlock:^(GroupListModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                if (obj.groupId.intValue == groupId.intValue) {
+                    if (obj.groupEvents) {//不为空
+                        [obj.groupEvents insertObject:infoModel atIndex:0];
+                    } else{
+                        obj.groupEvents = [NSMutableArray arrayWithObject:infoModel];
+                    }
+                }
+            }];
+            if ([[Utils obtainPresentVC] isMemberOfClass:[self class]]) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [self.groupTable reloadData];//reload单行会不会更好
+                });
+            }
+        } break;
+            
+        case ProtoMessage_Type_JoinGroupNotify:{//被拉入群
+            GroupListModel *groupModel = [[notification userInfo] objectForKey:HXNotiFromServerKey];
+            [self.groupModels insertObject:groupModel atIndex:0];
+            if ([[Utils obtainPresentVC] isMemberOfClass:[self class]]) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [self.groupTable reloadData];
+                });
+            }
+        } break;
+            
+        case ProtoMessage_Type_QuitGroupNotify:{//被踢出群
+            NSString *groupId = [[notification userInfo] objectForKey:@"groupId"];
+            __block NSInteger deleteIndex = 0;
+            [self.groupModels enumerateObjectsUsingBlock:^(GroupListModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                if ([obj.groupId isEqualToString:groupId]) {
+                    deleteIndex = idx;
+                    *stop = YES;
+                }
+            }];
+            [self.groupModels removeObjectAtIndex:deleteIndex];
+
+            if ([[Utils obtainPresentVC] isMemberOfClass:[self class]]) {
+                __weak typeof(self) weakself = self;
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    void (^otherBlock)(UIAlertAction *action) = ^(UIAlertAction *action){                        
+                        [weakself.groupTable reloadData];
+                    };
+                    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"通知" message:[NSString stringWithFormat:@"你已被移除出群组%@",groupId] preferredStyle:UIAlertControllerStyleAlert cancelTitle:nil cancelBlock:nil otherTitles:@[@"确定"] otherBlocks:@[otherBlock]];
+                    [weakself presentViewController:alert animated:YES completion:nil];
+                });
+            }
+        } break;
+            
+        case ProtoMessage_Type_SomeoneJoinNotify:{//有人进群
+            NSString *groupId = [[notification userInfo] objectForKey:@"groupId"];
+            NSString *numberOfMember = [[notification userInfo] objectForKey:@"numberOfMember"];
+            [self.groupModels enumerateObjectsUsingBlock:^(GroupListModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                if ([obj.groupId isEqualToString:groupId]) {
+                    obj.numberOfMember = numberOfMember.integerValue;
+                    if ([[Utils obtainPresentVC] isMemberOfClass:[self class]]) {
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            [self.groupTable reloadData];//刷新单行会更好
+                        });
+                    }
+                }
+            }];
+        } break;
+        default:
+            break;
+    }
 }
 
 - (void)groupCreate{
@@ -332,14 +437,6 @@
 #pragma mark lazyload
 - (NSMutableArray *)groupModels{
     if (_groupModels == nil) {
-//        NSString *path = [[NSBundle mainBundle]pathForResource:@"test.plist" ofType:nil];
-//        NSArray *arrayDict = [NSArray arrayWithContentsOfFile:path];
-//        NSMutableArray *arrModels = [NSMutableArray array];
-//        for (NSDictionary *dict in arrayDict) {
-//            GroupListModel *model = [GroupListModel groupWithDict:dict];
-//            [arrModels addObject:model];
-//        }
-//        _groupModels = arrModels;
         _groupModels = [NSMutableArray array];
     }
     return _groupModels;
@@ -350,5 +447,6 @@
     [[NSNotificationCenter defaultCenter] removeObserver:self name:HXPublishGroupInfoNotification object:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:HXDismissExitGroupNotification object:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:HXRefreshUserDetailNotification object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:HXNotiFromServerNotification object:nil];
 }
 @end

@@ -40,9 +40,7 @@
 
 - (void)setGroup:(GroupListModel *)group{
     _group = group;
-    self.groupName.text = [NSString stringWithFormat:@"%@(%ld人)",group.groupName,group.numberOfMember];
-//    self.groupMessage.text = group.groupMessage;
-//    self.time.text = group.time;
+    self.groupName.text = [NSString stringWithFormat:@"%@(%@人)",group.groupName,[NSNumber numberWithInteger:group.numberOfMember]];
     switch ([group.groupAvatarId intValue]) {
         case 0:
             self.avatar.image = [UIImage imageNamed:@"头像1"];
@@ -56,10 +54,15 @@
         default:
             break;
     }
-    self.groupMessage.text = group.groupEvents[0].event;
-    NSDateFormatter *df = [[NSDateFormatter alloc] init];
-    [df setDateFormat:@"MM月dd日"];
-    self.time.text = [df stringFromDate:group.groupEvents[0].publishTime];
+    if (group.groupEvents && group.groupEvents.count > 0){
+        self.groupMessage.text = group.groupEvents[0].event;
+        NSDateFormatter *df = [[NSDateFormatter alloc] init];
+        [df setDateFormat:@"MM月dd日"];
+        self.time.text = [df stringFromDate:group.groupEvents[0].publishTime];
+    }else {
+        self.time.text = @" ";
+        self.groupMessage.text = @"";
+    }
 }
 
 - (void)initSubView{

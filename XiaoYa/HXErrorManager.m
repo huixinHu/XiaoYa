@@ -48,8 +48,18 @@
 //        default:
 //            break;
 //    }
+    switch (errorCode) {
+        case 3000:
+            errorMessage = HX_LOGIN_ERROR;
+            break;
+        case 3001:
+            errorMessage = HX_DISCONNECT;
+            break;
+        default:
+            break;
+    }
     return [NSError errorWithDomain:NSURLErrorDomain
                                code:errorCode
-                           userInfo:@{ NSLocalizedDescriptionKey: errorMessage }];
+                           userInfo:@{ NSLocalizedDescriptionKey: errorMessage}];
 }
 @end

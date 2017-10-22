@@ -25,7 +25,7 @@ static NSString *identifier = @"MemberListCollectionCell";
 
 - (instancetype)initWithAllMembersModel:(NSArray <GroupMemberModel *>*)members totalMember:(NSInteger)memberCount{
     if (self = [super init]) {
-        self.groupMembers = members;
+        self.groupMembers = members;//这里没有用到copy，直接用上一个界面（群资料页）的数据，本页只作展示不涉及数据修改
         self.totalCount = memberCount;
     }
     return self;

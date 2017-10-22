@@ -17,7 +17,8 @@
 #import "Masonry.h"
 #import "HXNetworking.h"
 #import "UIAlertController+Appearance.h"
-
+#import "HXDBManager.h"
+#import "FMDB.h"
 
 #define kScreenWidth [UIApplication sharedApplication].keyWindow.bounds.size.width
 #define kScreenHeight [UIApplication sharedApplication].keyWindow.bounds.size.height
@@ -36,6 +37,7 @@
 @property (nonatomic ,strong) GroupListModel *groupModel;
 @property (nonatomic ,copy) gCreateSucBlock sucBlock;
 @property (nonatomic ,assign) NSInteger avatarID; //存储选择的群头像id
+@property (nonatomic ,strong) HXDBManager *hxdb;
 @end
 
 static NSString *identifier = @"collectionCell";
@@ -57,7 +59,7 @@ static NSString *identifier = @"collectionCell";
     if (self = [super init]) {
         self.groupModel = [model copy];
         [self.dataArray removeAllObjects];
-        [self.dataArray addObjectsFromArray:self.groupModel.groupMembers];
+        [self.dataArray addObjectsFromArray:[self.groupModel.groupMembers copy]];
         self.sucBlock = block;
     }
     return self;
@@ -88,33 +90,55 @@ static NSString *identifier = @"collectionCell";
         [usersStr appendString:[NSString stringWithFormat:@",%@",member.memberId]];
     }
     NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"INITGROUP", @"type", self.groupName.text,@"groupName", manager.memberId, @"managerId", [NSNumber numberWithInteger:self.avatarID-101], @"picId", usersStr, @"users",nil];
+    __weak typeof(self) ws = self;
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
-        __weak typeof(self) ws = self;
+        __strong typeof(ws) ss = ws;
         [HXNetworking postWithUrl:httpUrl params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
             NSDictionary *responseDic = (NSDictionary *)responseObject;
-            NSLog(@"dataID:%@",[responseDic objectForKey:@"identity"]);
-            NSLog(@"dataMessage:%@",[responseDic objectForKey:@"message"]);
-            NSLog(@"dataState:%@",[responseDic objectForKey:@"state"]);
-
             if ([[responseObject objectForKey:@"state"]boolValue] == 0){
                 NSLog(@"群组创建失败");
                 //此处应有提示
             } else{
-                GroupListModel *model = [[GroupListModel alloc]init];
-                model.groupMembers = [ws.dataArray mutableCopy];
-                model.groupAvatarId = [NSString stringWithFormat:@"%ld",ws.avatarID-101];
-                model.groupId = [[[[[responseDic objectForKey:@"identity"] componentsSeparatedByString:@"("] lastObject] componentsSeparatedByString:@")"] firstObject];
-    //            model.groupId = [NSString stringWithFormat:@"%d",100 +  (arc4random() % 101)];//100-200的随机整数
-                model.groupName = ws.groupName.text;
-                model.numberOfMember = ws.dataArray.count;
-                model.managerId = manager.memberId;
-                if(ws.sucBlock){
-                    ws.sucBlock(model);
+                //存入数据库
+                //1.群组表
+                NSString *groupId = [[[[[responseDic objectForKey:@"identity"] componentsSeparatedByString:@"("] lastObject] componentsSeparatedByString:@")"] firstObject];
+                NSString *groupName = [[[responseDic objectForKey:@"identity"] componentsSeparatedByString:@"("] firstObject];
+                NSString *groupManagerId = manager.memberId;
+                NSString *groupAvatarId = [NSString stringWithFormat:@"%@",[NSNumber numberWithInteger:ss.avatarID-101]];
+                NSString *numberOfMember = [NSString stringWithFormat:@"%@", [NSNumber numberWithInteger:ss.dataArray.count]];
+                NSMutableDictionary *groupParaDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:groupId, @"groupId", groupName, @"groupName", groupManagerId, @"groupManagerId", groupAvatarId, @"groupAvatarId", numberOfMember, @"numberOfMember",nil];
+
+                [ss.hxdb insertTable:groupTable param:groupParaDict callback:^(NSError *error) {
+                    if(error) NSLog(@"创建群组-插入群组表失败：%@",error);
+                }];
+                //2.关系表
+                NSMutableArray *relatParaArr = [NSMutableArray array];
+                [ss.dataArray enumerateObjectsUsingBlock:^(GroupMemberModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                    NSDictionary *relatDict = @{@"memberId":obj.memberId ,@"groupId":groupId};
+                    [relatParaArr addObject:relatDict];
+                }];
+                [ss.hxdb insertTableInTransaction:memberGroupRelation paramArr:relatParaArr callback:^(NSError *error) {
+                    if(error) NSLog(@"创建群组-插入关系表失败：%@",error);
+                }];
+                //3.成员表 要注意重复问题，不过memberTable中的memberId已经设了是唯一Id
+                //利用唯一id避免重复，这里不能使用封装的HXDB的事务方法，封装的方法中，只要有一条出错就回溯并且停止后续插入
+                [ss.hxdb.dbQueue inTransaction:^(FMDatabase *db, BOOL *rollback) {
+                    [ss.dataArray enumerateObjectsUsingBlock:^(GroupMemberModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                        [db executeUpdate:@"INSERT INTO memberTable (memberId,memberPhone,memberName) VALUES(?,?,?)" withArgumentsInArray:@[obj.memberId ,obj.memberName ,obj.memberPhone]];
+                    }];
+                }];
+                
+                //更新缓存
+                [groupParaDict setValue:[ss.dataArray mutableCopy] forKey:@"groupMembers"];
+                GroupListModel *gmodel = [GroupListModel groupWithDict:groupParaDict];
+                if(ss.sucBlock){
+                    ss.sucBlock(gmodel);
                 }
+                
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    GroupInfoViewController *groupInfoVC = [[GroupInfoViewController alloc]initWithGroupModel:model];
+                    GroupInfoViewController *groupInfoVC = [[GroupInfoViewController alloc]initWithGroupModel:gmodel];
                     groupInfoVC.hidesBottomBarWhenPushed = YES;
-                    [ws.navigationController pushViewController:groupInfoVC animated:YES];//这里要放主线程
+                    [ss.navigationController pushViewController:groupInfoVC animated:YES];//这里要放主线程
                 });
             }
         } failure:^(NSURLSessionDataTask *task, NSError *error) {
@@ -124,7 +148,7 @@ static NSString *identifier = @"collectionCell";
 }
 
 #pragma mark AddGroupMemberViewControllerDelegate
-- (void)AddGroupMemberViewController:(AddGroupMemberViewController*)viewController addMembersFinish:(NSMutableArray *)modelArray{
+- (void)AddGroupMemberViewController:(AddGroupMemberViewController*)viewController addMembersFinish:(NSMutableArray <GroupMemberModel *>*)modelArray{
     [self.dataArray addObjectsFromArray:[modelArray copy]];
     [self.collectionView reloadData];
     
@@ -255,8 +279,6 @@ static NSString *identifier = @"collectionCell";
     singleTap.cancelsTouchesInView = NO;
     [self.view addGestureRecognizer:singleTap];
     
-    [[NSNotificationCenter defaultCenter] addObserver: self selector:@selector(textFieldValueChanged) name:UITextFieldTextDidChangeNotification object:self.groupName];
-    
     [self avatarAndNameSetting];
     [self teamerListSetting];
 }
@@ -315,6 +337,7 @@ static NSString *identifier = @"collectionCell";
         make.centerX.equalTo(bg.mas_centerX);
     }];
     _groupName.delegate = self;
+    [[NSNotificationCenter defaultCenter] addObserver: self selector:@selector(textFieldValueChanged) name:UITextFieldTextDidChangeNotification object:self.groupName];
 }
 
 - (void)addAvatar{
@@ -536,6 +559,13 @@ static NSString *identifier = @"collectionCell";
         _indexArray = [NSMutableArray array];
     }
     return _indexArray;
+}
+
+- (HXDBManager *)hxdb{
+    if (_hxdb == nil) {
+        _hxdb = [HXDBManager shareInstance];
+    }
+    return _hxdb;
 }
 
 - (void)dealloc{

@@ -19,6 +19,7 @@
 #import "HXSocketBusinessManager.h"
 #import "MBProgressHUD.h"
 #import "LoginProgress.h"
+#import "HXDBManager.h"
 #define kScreenWidth [UIApplication sharedApplication].keyWindow.bounds.size.width
 
 @interface LoginViewController ()<UITextFieldDelegate>
@@ -30,6 +31,7 @@
 
 @property (nonatomic ,strong) LoginProgress *loginPregress;
 @property (nonatomic ,copy) HXSocketLoginCallback loginCallback;
+@property (nonatomic ,strong) HXDBManager *hxdb;
 @end
 
 @implementation LoginViewController
@@ -73,22 +75,30 @@
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
         __strong typeof(ws) ss = ws;
         [HXNetworking postWithUrl:httpUrl params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
-            NSLog(@"dataID:%@",[responseObject objectForKey:@"identity"]);
-            NSLog(@"dataMessage:%@",[responseObject objectForKey:@"message"]);
-            if ([[responseObject objectForKey:@"state"]boolValue] == 0) {//后台数据返回的问题。state实际上是一种__NSCFBoolean类型的数据，要转成bool再判断
+            NSDictionary *resultDic = (NSDictionary *)responseObject;
+            NSLog(@"dataID:%@",[resultDic objectForKey:@"identity"]);
+            NSLog(@"dataMessage:%@",[resultDic objectForKey:@"message"]);
+            if ([[resultDic objectForKey:@"state"]boolValue] == 0) {//后台数据返回的问题。state实际上是一种__NSCFBoolean类型的数据，要转成bool再判断
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    if([[responseObject objectForKey:@"message"] isEqualToString:@"密码错误！"]){
+                    if([[resultDic objectForKey:@"message"] isEqualToString:@"密码错误！"]){
                         ss.prompt.text = @"密码错误(这里的文案有安全性问题";
-                    }else if ([[responseObject objectForKey:@"message"] isEqualToString:@"手机号未注册！"]){
+                    }else if ([[resultDic objectForKey:@"message"] isEqualToString:@"手机号未注册！"]){
                         ss.prompt.text = @"该号码未注册";
                     }
                 });
             }else{
                 AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
-                NSString *result = [responseObject objectForKey:@"identity"];
+                NSString *result = [resultDic objectForKey:@"identity"];
                 appDelegate.userName = [[result componentsSeparatedByString:@"("] firstObject];
                 appDelegate.userid = [[[[result componentsSeparatedByString:@"("] lastObject] componentsSeparatedByString:@")"]firstObject];
                 appDelegate.phone = ss.account.text;
+                //http登录成功了就打开数据库.一定要保证这是整个app中第一次调用hxdb的地方(和用户有关，一个用户一份独立数据)
+                self.hxdb = [HXDBManager shareInstance];
+                [self.hxdb createTable:groupTable colDict:@{@"groupId":@"TEXT",@"groupName":@"TEXT",@"groupAvatarId":@"TEXT",@"numberOfMember":@"TEXT",@"groupManagerId":@"TEXT"} isPrimaryKey:YES primaryKey:@"groupId"];
+                [self.hxdb createTable:memberTable colDict:@{@"memberId":@"TEXT",@"memberName":@"TEXT",@"memberPhone":@"TEXT"} isPrimaryKey:YES primaryKey:@"memberId"];
+                
+                [self.hxdb tableCreate:@"CREATE TABLE IF NOT EXISTS memberGroupRelation (memberId TEXT,groupId TEXT, FOREIGN KEY(groupId) REFERENCES groupTable(groupId) ON DELETE CASCADE);" table:@"memberGroupRelation"];
+                [self.hxdb tableCreate:@"CREATE TABLE IF NOT EXISTS groupInfoTable(publishTime TEXT,publisher TEXT,eventDate TEXT,eventSection TEXT,event TEXT,deadlineIndex TEXT,groupId TEXT, comment TEXT,FOREIGN KEY(groupId) REFERENCES groupTable(groupId) ON DELETE CASCADE);" table:@"groupInfoTable"];
                 
 //                建立socket连接
                 NSDictionary *tokenDict = @{@"from":result};
@@ -116,7 +126,7 @@
         });
     };
     //登录回调Block
-    self.loginCallback = ^(BOOL error) {
+    self.loginCallback = ^(NSError *error) {
         if ([ws.loginPregress timerIsActive]){ //延迟很久才收到，这个过时的包应该丢弃。这里不应该用timer是否销毁做判据，因为用户可能在足够短的时间内又发起登录请求。应该用一个包的唯一id（比如时间戳）什么的判断超时包
             [ws.loginPregress showProgress:NO onView:ws.view];
             if (error) {//登录出错

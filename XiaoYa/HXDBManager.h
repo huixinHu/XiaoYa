@@ -32,7 +32,7 @@ static NSString * groupInfoTable = @"groupInfoTable";
 - (FMDatabaseQueue *)dbQueue;
 - (void)changeFilePath:(NSString *)path;
 - (BOOL)tableCreate:(NSString *)sql table:(NSString *)tableName;
-- (BOOL)createTable:(NSString *)tableName colDict:(NSDictionary *)dict isPrimaryKey:(BOOL)isPK primaryKeyIndex:(NSInteger )pkIndex;
+- (BOOL)createTable:(NSString *)tableName colDict:(NSDictionary *)dict isPrimaryKey:(BOOL)isPK primaryKey:(NSString *)pk;
 - (void)dropTable:(NSString *)tableName callback:(void(^)(NSError *error ))block;
 
 - (void)insertTable:(NSString *)tableName param:(NSDictionary *)paraDict callback:(void(^)(NSError *error ))block;

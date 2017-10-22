@@ -23,8 +23,9 @@
 #import "SingleChoiceView.h"
 #import "BgView.h"
 #import "GroupInfoModel.h"
-#import "MessageProtoBuf.pbobjc.h"
 #import "HXSocketBusinessManager.h"
+#import "HXDBManager.h"
+#import "MBProgressHUD.h"
 
 #define scaleToWidth [UIApplication sharedApplication].keyWindow.bounds.size.width/750.0
 #define kScreenWidth [UIApplication sharedApplication].keyWindow.bounds.size.width
@@ -39,6 +40,7 @@
 @property (nonatomic ,weak) UIButton *replyDL;
 @property (nonatomic ,weak) HXTextField *commentfield;
 @property (nonatomic ,weak) SingleChoiceView *dlRemindView;
+@property (nonatomic ,weak) MBProgressHUD *hud;
 
 @property (nonatomic , strong) NSDate *currentDate;//当前日期
 @property (nonatomic , strong) NSDate *lastSelectedDate;//上一次选择的日期
@@ -52,6 +54,7 @@
 @property (nonatomic , strong) GroupInfoModel *infoModel;
 @property (nonatomic , strong) publishCompBlock compBlock;
 @property (nonatomic , copy) NSString *groupid;
+@property (nonatomic , strong) HXDBManager *hxdb;
 @end
 
 @implementation EventPublishViewController
@@ -63,7 +66,7 @@
 
 - (instancetype)initWithInfoModel:(GroupInfoModel *)model groupId:(nonnull NSString *)gId publishCompBlock:(publishCompBlock)block{
     if (self = [super init]) {
-        self.infoModel = model;
+        self.infoModel = [model copy];
         self.compBlock = block;
         self.groupid = gId;
     }
@@ -72,6 +75,8 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(notiFromServer:) name:HXNotiFromServerNotification object:nil];//收到来自服务器的通知
     {
         //事件时间
         NSDateFormatter *df = [[NSDateFormatter alloc]init];
@@ -85,9 +90,38 @@
         self.originDate = self.currentDate;
         self.originArr = [self.sectionArray mutableCopy];
         self.commentInfo = [self.infoModel.comment copy];
-        self.dlIndex = self.infoModel.dlIndex;
+        self.dlIndex = self.infoModel.deadlineIndex;
     }
     [self viewsSetting];
+}
+
+//接收到服务器的通知
+- (void)notiFromServer:(NSNotification *)notification{
+    int type = [[[notification userInfo] objectForKey:@"type"] intValue];
+    switch (type) {
+        case ProtoMessage_Type_QuitGroupNotify:{//被踢出群
+            NSString *groupId = [[notification userInfo] objectForKey:@"groupId"];
+            if ([self.groupid isEqualToString:groupId]) {
+                UIViewController *presentVC = [Utils obtainPresentVC];
+                if ([presentVC isMemberOfClass:[self class]]) {
+                    __weak typeof(self) weakself = self;
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        void (^otherBlock)(UIAlertAction *action) = ^(UIAlertAction *action){
+                            for (UIViewController *tempVC in self.navigationController.viewControllers) {
+                                if ([tempVC isKindOfClass:NSClassFromString(@"GroupHomePageViewController")]) {
+                                    [self.navigationController popToViewController:tempVC animated:YES];
+                                }
+                            }
+                        };
+                        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"通知" message:@"你已被移除出该群组" preferredStyle:UIAlertControllerStyleAlert cancelTitle:nil cancelBlock:nil otherTitles:@[@"确定"] otherBlocks:@[otherBlock]];
+                        [weakself presentViewController:alert animated:YES completion:nil];
+                    });
+                }
+            }
+        } break;
+        default:
+            break;
+    }
 }
 
 - (void)cancel{
@@ -102,43 +136,92 @@
 }
 
 - (void)confirm{
-    //网络请求
-    AppDelegate *apd = (AppDelegate *)[[UIApplication sharedApplication] delegate];
-    
-    ProtoMessage* s1 = [[ProtoMessage alloc]init];
-    s1.type = ProtoMessage_Type_Chat;
-    s1.from = [NSString stringWithFormat:@"%@(%@)",apd.userName,apd.userid];
-    s1.to = @"75";
-    s1.time = @"2017-09-11 12:12:00";//yyyy-MM-dd hh:mm:ss
-    NSDictionary *bodyDict = @{@"description":@"消息",@"comment":@"",@"week":@"1",@"day_of_week":@"2",@"date":@"2017-10-01",@"time":@"1,2,3",@"repeat":@"-1",@"alarm":@"1000000"};
-    BOOL isConverse = [NSJSONSerialization isValidJSONObject:bodyDict];
-    if (isConverse) {
-        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:bodyDict options:0 error:NULL];
-        NSString *jsonStr = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-        s1.body = jsonStr;
-    }
-//    s1.body = @"{"description":"",comment":"","week":"","day_of_week":"","date":"","time":"","repeat":"-1","alarm":"1000000"}";
-    [[HXSocketBusinessManager shareInstance]writeDataWithCmdtype:HXCmdType_Chat requestBody:[s1 data] block:^{
-        NSLog(@"回调！！");
-    }];
-    
-    //如果发布成功，就添加到群组消息页
-    NSDateFormatter *df = [[NSDateFormatter alloc]init];
-    [df setDateFormat:@"yyyyMMdd"];
-    NSString *eventTime = [df stringFromDate:self.currentDate];
-    [df setDateFormat:@"yyyMMddHHmm"];
-    NSString *publishTime = [df stringFromDate:[NSDate date]];
-    NSDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:publishTime,@"publishTime",self.infoModel.publisher,@"publisher",self.eventDescription.text,@"event",eventTime,@"eventTime", [self appendStringWithArray:self.sectionArray],@"eventSection",self.commentInfo,@"comment",[NSString stringWithFormat:@"%ld",self.dlIndex],@"dlIndex",nil];
-    GroupInfoModel *newEvent = [GroupInfoModel groupInfoWithDict:dict];
-    for (UIViewController *tempVC in self.navigationController.viewControllers) {
-        if ([tempVC isKindOfClass:NSClassFromString(@"GroupInfoViewController")]) {
-            [self.navigationController popToViewController:tempVC animated:YES];
+    [self.view endEditing:YES];
+    __weak typeof(self) ws = self;
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        __strong typeof(ws) ss = ws;
+        NSDateFormatter *dfm = [[NSDateFormatter alloc]init];
+        
+        NSInteger dateDistance = [DateUtils dateDistanceFromDate:ss.currentDate toDate:ss.firstDateOfTerm];
+        NSString *week = [NSString stringWithFormat:@"%@",[NSNumber numberWithInteger:dateDistance / 7]];//这里从0开始算第一周。但超过24周要怎么算呢？
+        NSString *dayOfWeek = [NSString stringWithFormat:@"%d",([ss.currentDate dayOfWeek] - 2) % 7];//从0开始算周一
+        [dfm setDateFormat:@"yyyy-MM-dd"];
+        NSString *eventDate = [dfm stringFromDate:ss.currentDate];
+        [Utils sortArrayFromMinToMax:ss.sectionArray];
+        NSMutableString *sectionStr = [NSMutableString string];
+        [ss.sectionArray enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            if (idx != ss.sectionArray.count - 1) {
+                [sectionStr appendFormat:@"%@,",obj];
+            } else{
+                [sectionStr appendFormat:@"%@",obj];
+            }
+        }];
+        NSDictionary *bodyDict = @{@"description":ss.eventDescription.text,@"comment":ss.commentfield.text,@"week":week,@"day_of_week":dayOfWeek,@"date":eventDate,@"time":sectionStr,@"repeat":@"-1",@"alarm":@"1000000"};
+        if ([NSJSONSerialization isValidJSONObject:bodyDict]) {
+            NSError *jsonErr;
+            NSData *jsonData = [NSJSONSerialization dataWithJSONObject:bodyDict options:0 error:&jsonErr];
+            if (jsonErr) {
+                NSLog(@"json 编译错误: --- error %@", jsonErr);
+                return;
+            }
+            NSString *jsonStr = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+            [dfm setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
+            AppDelegate *apd = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+            ProtoMessage* s1 = [[ProtoMessage alloc]init];
+            s1.type = ProtoMessage_Type_Chat;
+            s1.from = [NSString stringWithFormat:@"%@(%@)",apd.userName,apd.userid];
+            s1.to = ss.groupid;
+            s1.time = [dfm stringFromDate:[NSDate date]];//yyyy-MM-dd HH:mm:ss 应该以服务器时间为准
+            s1.body = jsonStr;
+            
+            [[HXSocketBusinessManager shareInstance] writeDataWithCmdtype:HXCmdType_Chat requestBody:[s1 data] block:^(NSError *error, ProtoMessage *data) {
+                if (error) {
+                    NSLog(@"%@",error);
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        ss.hud = [MBProgressHUD showHUDAddedTo:ss.view animated:YES];
+                        ss.hud.mode = MBProgressHUDModeText;
+                        ss.hud.label.text = @"发送失败";
+                        [ss.hud hideAnimated:YES afterDelay:1.5];
+                    });
+                } else{
+                    //如果发布成功，就添加到群组消息页
+                    [dfm setDateFormat:@"yyyyMMdd"];
+                    NSString *eventTime = [dfm stringFromDate:ss.currentDate];
+                    [dfm setDateFormat:@"yyyMMddHHmmss"];
+                    NSString *publishTime = [dfm stringFromDate:[NSDate date]];//应该以服务器时间为准
+                    NSString *publisher = [NSString stringWithFormat:@"%@(%@)",apd.userName,apd.userid];
+                    NSString *eventSection = [ss appendStringWithArray:ss.sectionArray];
+                    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:publishTime,@"publishTime",publisher,@"publisher",ss.eventDescription.text,@"event",eventTime,@"eventDate",eventSection,@"eventSection",ss.commentfield.text,@"comment",[NSString stringWithFormat:@"%@",[NSNumber numberWithInteger:ss.dlIndex]],@"deadlineIndex",nil];
+                    GroupInfoModel *newEvent = [GroupInfoModel groupInfoWithDict:dict];
+                    //更新缓存，通知首页
+                    ss.compBlock(newEvent);
+                    NSDictionary *dataDict = [NSDictionary dictionaryWithObjectsAndKeys:newEvent, HXNewGroupInfo, ss.groupid, HXGroupID, nil];
+                    [[NSNotificationCenter defaultCenter] postNotificationName:HXPublishGroupInfoNotification object:nil userInfo:dataDict];
+                    //更新数据库
+                    [dict setObject:ss.groupid forKey:@"groupId"];
+                    [ss.hxdb insertTable:groupInfoTable param:dict callback:^(NSError *error) {
+                        if (error) NSLog(@"%@",error.userInfo[NSLocalizedDescriptionKey]);
+                    }];
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        for (UIViewController *tempVC in ss.navigationController.viewControllers) {
+                            if ([tempVC isKindOfClass:NSClassFromString(@"GroupInfoViewController")]) {
+                                [ss.navigationController popToViewController:tempVC animated:YES];
+                            }
+                        }
+                    });
+                }
+            }];
         }
-    }
-    self.compBlock(newEvent);
-    
-    NSDictionary *dataDict = [NSDictionary dictionaryWithObjectsAndKeys:newEvent, HXNewGroupInfo, self.groupid, HXGroupID, nil];
-    [[NSNotificationCenter defaultCenter] postNotificationName:HXPublishGroupInfoNotification object:nil userInfo:dataDict];
+        else{
+            NSLog(@"数据有误，不能转为Json");
+            void (^otherBlock)(UIAlertAction *action) = ^(UIAlertAction *action){};
+            NSArray *otherBlocks = @[otherBlock];
+            UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"出错!" message:@"数据有误，不能转为Json" preferredStyle:UIAlertControllerStyleAlert cancelTitle:nil cancelBlock:nil otherTitles:@[@"确定"] otherBlocks:otherBlocks];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [ss presentViewController:alert animated:YES completion:nil];
+            });
+        }
+    });
 }
 
 - (NSString *)appendStringWithArray:(NSMutableArray *)array{
@@ -495,5 +578,16 @@
         _dlItem = @[@"当事件发生时",@"事件开始前12小时",@"事件开始前24小时",@"事件开始前36小时",@"事件开始前48小时",@"事件开始前一周",@"事件开始前一个月"];
     }
     return _dlItem;
+}
+
+- (HXDBManager *)hxdb{
+    if (_hxdb == nil) {
+        _hxdb = [HXDBManager shareInstance];
+    }
+    return _hxdb;
+}
+
+- (void)dealloc{
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:HXNotiFromServerNotification object:nil];
 }
 @end

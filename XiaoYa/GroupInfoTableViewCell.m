@@ -30,7 +30,7 @@
 @implementation GroupInfoTableViewCell
 - (void)setModel:(GroupInfoModel *)model{
     self.publishTime.text = [self publishTimeToFormatStr:model.publishTime];
-    self.publisher.text = [NSString stringWithFormat:@"发布者：%@", model.publisher];
+    self.publisher.text = [NSString stringWithFormat:@"发布者：%@",[[model.publisher componentsSeparatedByString:@"("] firstObject]];
     self.event.text = [NSString stringWithFormat:@"事件：%@", model.event];
     self.eventTime.text = [NSString stringWithFormat:@"时间：%@", [self eventTimeToFormatStr:model.eventDate eventSection:model.eventSection]];
     self.remainTime.text = [NSString stringWithFormat:@"剩余回复时间：%@", [self dlTimeToFormatStr:model.deadlineTime]];

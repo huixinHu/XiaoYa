@@ -30,4 +30,8 @@ static NSString * const HXDismissExitGroupKey = @"hxDismissExitGroupKey";
 static NSString * const HXRefreshUserDetailNotification = @"hxRefreshUserDetail";
 static NSString * const HXRefreshUserDetailKey = @"hxRefreshUserDetailKey";
 
+//接收到来自服务器主动发送的消息（不是对客户端的响应）。聊天信息、某用户被拉入群组、某组被解散等等
+static NSString * const HXNotiFromServerNotification = @"hxNotiFromServer";
+static NSString * const HXNotiFromServerKey = @"hxNotiFromServerKeyy";
+
 #endif /* HXNotifyConfig_h */

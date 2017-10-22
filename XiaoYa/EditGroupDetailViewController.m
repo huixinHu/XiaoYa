@@ -13,10 +13,12 @@
 #import "GroupMemberModel.h"
 #import "UIAlertController+Appearance.h"
 #import "HXNetworking.h"
+#import "HXDBManager.h"
 
 @interface EditGroupDetailViewController ()
 @property (nonatomic ,copy) gCreateSucBlock completeBlock;
 @property (nonatomic ,strong) NSMutableSet <NSString *>*originMemberIds;
+@property (nonatomic ,strong) HXDBManager *hxdb;
 @end
 
 @implementation EditGroupDetailViewController
@@ -24,9 +26,9 @@
 - (instancetype)initWithGroupModel:(GroupListModel *)model successBlock:(gCreateSucBlock)block{
     if (self = [super initWithGroupModel:model successBlock:nil]) {
         self.completeBlock = block;
-        NSMutableSet *originMemberIds = [NSMutableSet set];
+        self.originMemberIds = [NSMutableSet set];
         [model.groupMembers enumerateObjectsUsingBlock:^(GroupMemberModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-            [originMemberIds addObject:obj.memberId];
+            [self.originMemberIds addObject:obj.memberId];
         }];
     }
     return self;
@@ -57,43 +59,54 @@
         return;
     }
     
-    GroupListModel *refreshModel = [[GroupListModel alloc]init];
-    refreshModel.groupMembers = [self.dataArray mutableCopy];
-    if (self.avatarID >= 0) {
-        refreshModel.groupAvatarId = [NSString stringWithFormat:@"%ld",self.avatarID - 101];
-    } else{
-        refreshModel.groupAvatarId = self.groupModel.groupAvatarId;
-    }
-    refreshModel.groupName = self.groupName.text;
-    refreshModel.numberOfMember = self.dataArray.count;
-    refreshModel.groupId = self.groupModel.groupId;
-    refreshModel.managerId = self.groupModel.managerId;
-    
-    NSMutableSet <NSString *>*curMemberIds = [NSMutableSet set];
+    NSString *groupName = self.groupName.text;
+    NSString *groupId = self.groupModel.groupId;
+    NSString *groupAvatarId = (self.avatarID >= 0) ? [NSString stringWithFormat:@"%@",[NSNumber numberWithInteger:self.avatarID - 101]] : self.groupModel.groupAvatarId;
+    NSString *groupManagerId = self.groupModel.groupManagerId;
+    NSString *numberOfMember = [NSString stringWithFormat:@"%@",[NSNumber numberWithInteger:self.dataArray.count]];
+    //成员增减
+    NSMutableSet <NSString *>*curMemberIds = [NSMutableSet set];//存放新增成员的id
+    NSMutableArray <GroupMemberModel*> *addMemberArr = [NSMutableArray array];//存放新增成员的模型
     [self.dataArray enumerateObjectsUsingBlock:^(GroupMemberModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         [curMemberIds addObject:obj.memberId];
+        if (![self.originMemberIds containsObject:obj.memberId]) {
+//            [curMemberIds addObject:obj.memberId];
+            [addMemberArr addObject:obj];
+        }
     }];
     NSMutableSet <NSString *> *originSetCopy1 = [self.originMemberIds mutableCopy];
     [originSetCopy1 minusSet:curMemberIds];//减
-    [curMemberIds minusSet:self.originMemberIds];//增
-    NSString *minusUsers = [NSString string];
+//    [curMemberIds minusSet:self.originMemberIds];//增
+    NSMutableString *minus = [NSMutableString string];
+    NSMutableArray *delRelatWheresArr = [NSMutableArray array];//删除关系表的wheres数组
     if (originSetCopy1.count > 0) {//有删减
-        NSMutableString *minus = [NSMutableString string];
         [originSetCopy1 enumerateObjectsUsingBlock:^(NSString * _Nonnull obj, BOOL * _Nonnull stop) {
             [minus appendString:[NSString stringWithFormat:@"%@,",obj]];
+            NSArray *temp = @[@"memberId", @"=", obj, @"groupId", @"=" ,groupId];
+            [delRelatWheresArr addObject:temp];
         }];
-        minusUsers = [minus substringToIndex:minus.length - 1];
+        [minus deleteCharactersInRange:NSMakeRange(minus.length - 1, 1)];
     }
-    NSString *addUsers = [NSMutableString string];
-    if (curMemberIds.count > 0){//有增加
-        NSMutableString *add = [NSMutableString string];
-        [curMemberIds enumerateObjectsUsingBlock:^(NSString * _Nonnull obj, BOOL * _Nonnull stop) {
-            [add appendString:[NSString stringWithFormat:@"%@,",obj]];
+    NSMutableString *add = [NSMutableString string];
+    NSMutableArray *addRelatParaArr = [NSMutableArray array];//插入关系表的数据
+    if (addMemberArr.count > 0) {
+        [addMemberArr enumerateObjectsUsingBlock:^(GroupMemberModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            [add appendString:[NSString stringWithFormat:@"%@,",obj.memberId]];
+            NSDictionary *tempDict = @{@"memberId":obj.memberId ,@"groupId":groupId};
+            [addRelatParaArr addObject:tempDict];
         }];
-        addUsers = [add substringToIndex:add.length - 1];
+        [add deleteCharactersInRange:NSMakeRange(add.length - 1, 1)];
     }
+//    if (curMemberIds.count > 0){//有增加
+//        [curMemberIds enumerateObjectsUsingBlock:^(NSString * _Nonnull obj, BOOL * _Nonnull stop) {
+//            [add appendString:[NSString stringWithFormat:@"%@,",obj]];
+//            NSDictionary *tempDict = @{@"memberId":obj ,@"groupId":groupId};
+//            [addRelatParaArr addObject:tempDict];
+//        }];
+//        [add deleteCharactersInRange:NSMakeRange(add.length - 1, 1)];
+//    }
     
-    NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"CHGROUPDATA", @"type", refreshModel.groupId,@"groupId", refreshModel.managerId, @"managerId", refreshModel.groupAvatarId, @"picId",refreshModel.groupName,@"groupName",addUsers,@"addUsers",minusUsers,@"minusUsers",nil];
+    NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"CHGROUPDATA", @"type", groupId,@"groupId", groupManagerId, @"managerId", groupAvatarId, @"picId",groupName,@"groupName",add,@"addUsers",minus,@"minusUsers",nil];
     __weak typeof(self) ws = self;
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
         __strong typeof(ws) ss = ws;
@@ -102,6 +115,40 @@
                 NSLog(@"修改群资料失败");
             } else{
                 NSLog(@"%@",[response objectForKey:@"message"]);
+                //更新数据库
+                //1.群组表
+                NSDictionary *groupParaDict = @{@"groupName":groupName ,@"groupAvatarId":groupAvatarId ,@"numberOfMember":numberOfMember};
+                [ss.hxdb updateTable:groupTable param:groupParaDict whereArr:@[@"groupId", @"=" ,groupId] callback:^(NSError *error) {
+                    NSLog(@"%@",error);
+                }];
+                //2.关系表
+                if (delRelatWheresArr.count > 0) {
+                    [ss.hxdb deleteTableInTransaction:memberGroupRelation whereArrs:delRelatWheresArr callback:^(NSError *error) {
+                        NSLog(@"%@",error);
+                    }];
+                }
+                if (addRelatParaArr.count > 0) {
+                    [ss.hxdb insertTableInTransaction:memberGroupRelation paramArr:addRelatParaArr callback:^(NSError *error) {
+                        NSLog(@"%@",error);
+                    }];
+                }
+                //3.成员表 只需插入新加的人
+                NSMutableArray *addMemParaArr = [NSMutableArray array];//插入成员表的数据
+                [ss.dataArray enumerateObjectsUsingBlock:^(GroupMemberModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                    //查询成员表，这些新增的人是否已经在数据库
+                    int count = [ss.hxdb itemCountForTable:memberTable whereArr:@[@"memberId", @"=", obj.memberId]];
+                    if (count == 0) {//数据库中没有
+                        NSDictionary *memDict = @{@"memberId":obj.memberId, @"memberName":obj.memberName, @"memberPhone":obj.memberPhone};
+                        [addMemParaArr addObject:memDict];
+                    }
+                }];
+                [ss.hxdb insertTableInTransaction:memberTable paramArr:addMemParaArr callback:^(NSError *error) {
+                    NSLog(@"%@",error);
+                }];
+                
+                //更新缓存
+                NSDictionary *modelDict = @{@"groupName":groupName, @"groupId":groupId, @"groupAvatarId":groupAvatarId, @"numberOfMember":numberOfMember, @"groupManagerId":groupManagerId, @"groupMembers":[self.dataArray mutableCopy]};
+                GroupListModel *refreshModel = [GroupListModel groupWithDict:modelDict];
                 if (ss.completeBlock) {
                     ss.completeBlock(refreshModel);
                 }
@@ -115,6 +162,13 @@
             NSLog(@"Error: %@", error);
         } refresh:NO];
     });
+}
+
+- (HXDBManager *)hxdb{
+    if (_hxdb == nil) {
+        _hxdb = [HXDBManager shareInstance];
+    }
+    return _hxdb;
 }
 
 - (void)didReceiveMemoryWarning {

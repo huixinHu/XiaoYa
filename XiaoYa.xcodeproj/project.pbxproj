@@ -85,7 +85,6 @@
 		57D10BB71F874DEB004DCA4D /* LoginProgress.m in Sources */ = {isa = PBXBuildFile; fileRef = 57D10BB61F874DEB004DCA4D /* LoginProgress.m */; };
 		57D49D1F1F0FB9660063C861 /* GroupHomePageViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 57D49D1E1F0FB9660063C861 /* GroupHomePageViewController.m */; };
 		57D49D231F121AD90063C861 /* GroupHomePageCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 57D49D221F121AD90063C861 /* GroupHomePageCell.m */; };
-		57D49D251F13DA740063C861 /* test.plist in Resources */ = {isa = PBXBuildFile; fileRef = 57D49D241F13DA740063C861 /* test.plist */; };
 		57D49D281F13DC890063C861 /* GroupListModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 57D49D271F13DC890063C861 /* GroupListModel.m */; };
 		57D49D2C1F14BFDD0063C861 /* GroupCreateViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 57D49D2B1F14BFDD0063C861 /* GroupCreateViewController.m */; };
 		57D49D2F1F15178D0063C861 /* MemberCollectionViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 57D49D2E1F15178D0063C861 /* MemberCollectionViewCell.m */; };
@@ -288,7 +287,6 @@
 		57D49D1E1F0FB9660063C861 /* GroupHomePageViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GroupHomePageViewController.m; sourceTree = "<group>"; };
 		57D49D211F121AD90063C861 /* GroupHomePageCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GroupHomePageCell.h; sourceTree = "<group>"; };
 		57D49D221F121AD90063C861 /* GroupHomePageCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GroupHomePageCell.m; sourceTree = "<group>"; };
-		57D49D241F13DA740063C861 /* test.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = test.plist; sourceTree = "<group>"; };
 		57D49D261F13DC890063C861 /* GroupListModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GroupListModel.h; sourceTree = "<group>"; };
 		57D49D271F13DC890063C861 /* GroupListModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GroupListModel.m; sourceTree = "<group>"; };
 		57D49D2A1F14BFDD0063C861 /* GroupCreateViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GroupCreateViewController.h; sourceTree = "<group>"; };
@@ -441,7 +439,6 @@
 				57D69A291DC7832F005E73EA /* CourseModel.m */,
 				57BDFA191E4CB98000C0E254 /* BusinessModel.h */,
 				57BDFA1A1E4CB98100C0E254 /* BusinessModel.m */,
-				57D49D241F13DA740063C861 /* test.plist */,
 				57D49D261F13DC890063C861 /* GroupListModel.h */,
 				57D49D271F13DC890063C861 /* GroupListModel.m */,
 				57D49D721F1611410063C861 /* member.plist */,
@@ -948,7 +945,6 @@
 			files = (
 				579C2FCC1DAD000E00E4EE54 /* LaunchScreen.storyboard in Resources */,
 				579C2FC91DAD000E00E4EE54 /* Assets.xcassets in Resources */,
-				57D49D251F13DA740063C861 /* test.plist in Resources */,
 				57D49D731F1611410063C861 /* member.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

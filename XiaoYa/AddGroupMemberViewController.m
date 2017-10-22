@@ -21,7 +21,7 @@
 @property (nonatomic ,weak) UILabel *noResult;
 @property (nonatomic ,weak) UIButton *searchBtn;
 
-@property (nonatomic ,strong) NSMutableArray *memberModels;
+@property (nonatomic ,strong) NSMutableArray <GroupMemberModel *> *memberModels;
 @property (nonatomic ,strong) NSMutableArray <NSNumber *> *selectIndexs;
 @property (nonatomic ,strong) NSMutableArray *addedMembers;
 @end
@@ -47,7 +47,7 @@
 }
 
 - (void)done{
-    NSMutableArray *selectedModel = [NSMutableArray array];
+    NSMutableArray <GroupMemberModel *>*selectedModel = [NSMutableArray array];
     for (NSNumber *num in self.selectIndexs) {
         [selectedModel addObject:self.memberModels[num.intValue]];
     }

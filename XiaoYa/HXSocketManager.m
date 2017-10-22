@@ -91,7 +91,7 @@ static HXSocketManager *manager = nil;
     
     if (self.reconnectionCount >= 0 && self.reconnectionCount <= RECONNECT_LIMIT) {
         self.reconnectionCount++;
-        NSLog(@"重连次数：%ld",self.reconnectionCount);
+        NSLog(@"重连次数：%@",[NSNumber numberWithInteger:self.reconnectionCount]);
         NSTimeInterval ti = pow(2, self.reconnectionCount);
         __weak typeof(self) weakself = self;
         self.reconnectTimer = [NSTimer scheduledTimerWithTimeInterval:ti block:^(NSTimer *timer) {

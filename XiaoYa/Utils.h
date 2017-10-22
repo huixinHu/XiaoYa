@@ -100,4 +100,11 @@
  @return 格式化的节数表示字符串
  */
 + (NSString *)sectionArrToFormatStr:(NSMutableArray *)sectionsArr;
+
+/**
+ 获取当前显示的控制器
+
+ @return 当前控制器
+ */
++ (UIViewController *)obtainPresentVC;
 @end

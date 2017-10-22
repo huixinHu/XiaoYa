@@ -141,4 +141,9 @@
     return self;
     
 }
+
+- (id)copyWithZone:(NSZone *)zone{
+    GroupMemberModel *model = [NSKeyedUnarchiver unarchiveObjectWithData:[NSKeyedArchiver archivedDataWithRootObject:self]];
+    return model;
+}
 @end

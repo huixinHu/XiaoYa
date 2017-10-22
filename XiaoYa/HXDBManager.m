@@ -157,11 +157,10 @@ static HXDBManager *sharedManager=nil;
     return result;
 }
 
-//根据传入的参数拼接创建表sql语句，只支持设置字段名、字段类型、主键。dict：key 字段名、value 字段类型；isPK：是否设置主键，如果为NO，忽略pkIndex参数；pkIndex：主键索引。
-- (BOOL)createTable:(NSString *)tableName colDict:(NSDictionary *)dict isPrimaryKey:(BOOL)isPK primaryKeyIndex:(NSInteger )pkIndex{
+//根据传入的参数拼接创建表sql语句，只支持设置字段名、字段类型、主键。dict：key 字段名、value 字段类型；isPK：是否设置主键，如果为NO，忽略pk参数；pk：主键。
+- (BOOL)createTable:(NSString *)tableName colDict:(NSDictionary *)dict isPrimaryKey:(BOOL)isPK primaryKey:(NSString *)pk{
     NSAssert((dict != nil)&&(dict.count > 0) , @"创建表：dict 参数无效");
-    NSAssert(pkIndex < dict.count, @"创建表：主键index无效");
-    if (tableName == nil ||(dict == nil) || (dict.count == 0) || pkIndex > dict.count) {
+    if (tableName == nil ||(dict == nil) || (dict.count == 0)) {
         return NO;
     }
     __block BOOL result = NO;
@@ -173,7 +172,7 @@ static HXDBManager *sharedManager=nil;
         }else{
             [sqlStr appendFormat:@"%@ %@,",obj,dict[obj]];
         }
-        if (isPK && (idx == pkIndex)) {
+        if (isPK && (obj == pk)) {
             [sqlStr insertString:@" PRIMARY KEY" atIndex:sqlStr.length-1];
         }
     }];

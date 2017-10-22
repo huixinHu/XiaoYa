@@ -19,14 +19,14 @@
 - (instancetype)initWithDict:(NSDictionary *)dict{
     if (self = [super init]) {
         NSDateFormatter *df = [[NSDateFormatter alloc]init];
-        [df setDateFormat:@"yyyyMMddHHmm"];
+        [df setDateFormat:@"yyyyMMddHHmmss"];
         
         self.publishTime = [df dateFromString:[dict objectForKey:@"publishTime"]];
         self.publisher = [dict objectForKey:@"publisher"];
         self.event = [dict objectForKey:@"event"];
-        self.eventDate = [dict objectForKey:@"eventTime"];
+        self.eventDate = [dict objectForKey:@"eventDate"];
         self.comment = [dict objectForKey:@"comment"];
-        self.dlIndex = [[dict objectForKey:@"dlIndex"] integerValue];
+        self.deadlineIndex = [[dict objectForKey:@"deadlineIndex"] integerValue];
         
         NSString *sectionStr = [dict objectForKey:@"eventSection"];
         self.eventSection = [NSMutableArray array];
@@ -42,7 +42,7 @@
             NSString *exactTime = [NSString stringWithFormat:@"%@%@",self.eventDate,sectionStartTime];
             NSDate *exactDate = [df dateFromString:exactTime];
             NSTimeInterval ti = 0;
-            switch (self.dlIndex) {
+            switch (self.deadlineIndex) {
                 case 0:
                     ti = 0;
                     break;
@@ -83,9 +83,9 @@
     NSString *currentDateStr = [dateFormatter stringFromDate:[NSDate date]];
     
     AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
-    NSString *user = appDelegate.userName;
+    NSString *user = [NSString stringWithFormat:@"%@(%@)",appDelegate.userName,appDelegate.userid];
     
-    NSMutableDictionary *modelDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"197012120000",@"publishTime",user,@"publisher",@"",@"event",currentDateStr,@"eventTime",@"",@"eventSection",@"",@"comment",@"0",@"dlIndex",nil];
+    NSMutableDictionary *modelDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"19711212000000",@"publishTime",user,@"publisher",@"",@"event",currentDateStr,@"eventDate",@"",@"eventSection",@"",@"comment",@"0",@"deadlineIndex",nil];
     GroupInfoModel *defaultModel = [self groupInfoWithDict:modelDict];
     return defaultModel;
 }
@@ -121,5 +121,10 @@
     }
     return self;
     
+}
+
+- (id)copyWithZone:(NSZone *)zone{
+    GroupInfoModel *model = [NSKeyedUnarchiver unarchiveObjectWithData:[NSKeyedArchiver archivedDataWithRootObject:self]];
+    return model;
 }
 @end

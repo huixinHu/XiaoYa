@@ -22,6 +22,7 @@
 #import "HXNotifyConfig.h"
 #import "FMDB.h"
 #import "HXDBManager.h"
+#import "MessageProtoBuf.pbobjc.h"
 
 static NSString *identifier = @"groupDetailCollectionCell";
 
@@ -34,27 +35,25 @@ static NSString *identifier = @"groupDetailCollectionCell";
 
 @property (nonatomic ,strong) GroupListModel *groupModel;
 @property (nonatomic ,strong) HXDBManager *hxDB;
+@property (nonatomic ,assign) BOOL isNetWorkFinish;//网络请求完毕，数据转为用户模型且更新本页缓存之后设为YES
 @end
 
 @implementation GroupDetailViewController
 - (instancetype)initWithGroupInfo:(GroupListModel *)model{
     if (self = [super init]) {
+        self.isNetWorkFinish = NO;
         self.groupModel = [model copy];
         
-        self.hxDB = [HXDBManager shareInstance];
         __weak typeof(self) ws = self;
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
             NSMutableArray *relationMemberIdArr = [NSMutableArray array];//关系表中的用户id数组
-            NSMutableArray *memberIdFindByDbArr = [NSMutableArray array];//在关系表中存在的用户id，同时也能在数据库中找到对应信息
             //无论有没有缓存都先取数据库，再取网络
 //            if (model.groupMembers.count == 0 || !model.groupMembers){
             //从数据库去取
             __strong typeof(ws) ss = ws;
             //1.查找该群组所有的用户id 查找关系表
             NSArray *dbMemberIdDictArr = [ss.hxDB queryTable:memberGroupRelation columns:@[@"memberId"] whereArr:@[@"groupId",@"=",model.groupId] callback:^(NSError *error) {
-                if (error) {
-                    NSLog(@"%@",error.userInfo[NSLocalizedDescriptionKey]);
-                }
+                NSLog(@"%@",error.userInfo[NSLocalizedDescriptionKey]);
             }];//NSArray <NSDictionary *>*
             //如果关系表有
             if (dbMemberIdDictArr.count > 0) {
@@ -83,22 +82,23 @@ static NSString *identifier = @"groupDetailCollectionCell";
                             }
                             //转模型
                             GroupMemberModel *mModel = [GroupMemberModel ordinaryModelWithDict:dic];
-                            if (mModel.memberId == ss.groupModel.managerId) {
+                            if (mModel.memberId == ss.groupModel.groupManagerId) {
                                 [membersInfoArr insertObject:mModel atIndex:0];//把群主移到第一个
                             } else{
                                 [membersInfoArr addObject:mModel];
                             }
-                            [memberIdFindByDbArr addObject:dic[@"memberId"]];
                         }
                         //查找出错
                         if (rs == nil) {
                             NSLog(@"%@",[db lastError]);
+                            [rs close];
+                            return;
                         }
                         [rs close];
                     }];
                     //3.更新缓存
-                    ss.groupModel.groupMembers = membersInfoArr;
-                    //通知本页和首页
+                    ss.groupModel.groupMembers = [membersInfoArr mutableCopy];
+                    //通知本页和首页、成员列表页、成员详情页
                     NSDictionary *dataDict = @{HXRefreshUserDetailKey:membersInfoArr ,@"groupId":ss.groupModel.groupId};
                     [[NSNotificationCenter defaultCenter] postNotificationName:HXRefreshUserDetailNotification object:nil userInfo:dataDict];
                 }];
@@ -109,30 +109,32 @@ static NSString *identifier = @"groupDetailCollectionCell";
             NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"GETUSERS",@"type",model.groupId,@"groupId",nil];
             [HXNetworking postWithUrl:httpUrl params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id response) {
                 __strong typeof(ws) ss = ws;
-                if ([[response objectForKey:@"state"]boolValue] == 0) {
+                NSDictionary *responseDict = (NSDictionary *)response;
+                if ([[responseDict objectForKey:@"state"]boolValue] == 0) {
                     NSLog(@"获取群组用户信息失败");
                 } else{
-                    NSArray *users = [response objectForKey:@"identity"];
+                    NSArray *users = [responseDict objectForKey:@"identity"];
                     NSMutableArray <GroupMemberModel *>*groupMembers = [NSMutableArray array];
-                    NSMutableArray <GroupMemberModel *>*addMemberTable = [NSMutableArray array];//需要添加到成员表的数据
-                    NSMutableSet *networkMemberIdSet = [NSMutableSet set];
+                    NSMutableArray *deleteMemberWheres = [NSMutableArray array];//该群组成员已存在于成员表的成员id 的where条件数组
+                    NSMutableSet *networkMemberIdSet = [NSMutableSet set];//网络请求获得的所有成员id
                     [users enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
                         NSDictionary *userDict = (NSDictionary *)obj;
                         GroupMemberModel *mModel = [GroupMemberModel memberModelWithOneOfAllUserDict:userDict];
-                        if (mModel.memberId == ss.groupModel.managerId) {
+                        if (mModel.memberId == ss.groupModel.groupManagerId) {
                             [groupMembers insertObject:mModel atIndex:0];//把群主移到第一个
                         } else{
                             [groupMembers addObject:mModel];
-                        }        
-                        NSString *mId = [NSString stringWithFormat:@"%@",[userDict objectForKey:@"id"]];//要显式转成nsstring，[userDict objectForKey:@"id"]得到的是long
-                        //关系表存在，且在成员表中不能找到用户信息
-                        if (memberIdFindByDbArr.count > 0 && ![memberIdFindByDbArr containsObject:mId]) {
-                            [addMemberTable addObject:mModel];
                         }
-                        [networkMemberIdSet addObject:[NSString stringWithFormat:@"%@",[userDict objectForKey:@"id"]]];//获取成员id
+                        [networkMemberIdSet addObject:[NSString stringWithFormat:@"%@",[userDict objectForKey:@"id"]]];//获取成员id//要显式转成nsstring，[userDict objectForKey:@"id"]得到的是long
+                        NSArray *whereArr = @[@"memberId", @"=", [NSString stringWithFormat:@"%@",[userDict objectForKey:@"id"]]];
+                        int count = [ss.hxDB itemCountForTable:memberTable whereArr:whereArr];
+                        if (count > 0) {
+                            [deleteMemberWheres addObject:whereArr];
+                        }
                     }];
-                    ss.groupModel.groupMembers = groupMembers;//更新缓存
-                    //通知本页和首页
+                    ss.groupModel.groupMembers = [groupMembers mutableCopy];//更新缓存
+                    ss.isNetWorkFinish = YES;
+                    //通知本页和首页、成员列表页、成员详情页
                     NSDictionary *dataDict = @{HXRefreshUserDetailKey:groupMembers ,@"groupId":ss.groupModel.groupId};
                     [[NSNotificationCenter defaultCenter] postNotificationName:HXRefreshUserDetailNotification object:nil userInfo:dataDict];
                     //更新数据库
@@ -148,7 +150,7 @@ static NSString *identifier = @"groupDetailCollectionCell";
                             [addRelation addObject:addParaDict];
                         }];//增
                         [ss.hxDB insertTableInTransaction:memberGroupRelation paramArr:addRelation callback:^(NSError *error) {
-                            if (error) NSLog(@"%@",error.userInfo[NSLocalizedDescriptionKey]);
+                            NSLog(@"%@",error.userInfo[NSLocalizedDescriptionKey]);
                         }];
                     }
                     if (relationMemberIdSet.count > 0) {
@@ -158,40 +160,76 @@ static NSString *identifier = @"groupDetailCollectionCell";
                             [deleteRelation addObject:deleteWhereArr];
                         }];//删
                         [ss.hxDB deleteTableInTransaction:memberGroupRelation whereArrs:deleteRelation callback:^(NSError *error) {
-                            if (error) NSLog(@"%@",error.userInfo[NSLocalizedDescriptionKey]);
+                            NSLog(@"%@",error.userInfo[NSLocalizedDescriptionKey]);
                         }];
                     }
-                    //2.更新成员表,只增
-                    if (addMemberTable.count > 0) {
-                        NSMutableArray *addMember = [NSMutableArray array];
-                        [addMemberTable enumerateObjectsUsingBlock:^(GroupMemberModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-                            NSDictionary *addParaDict = @{@"memberId":obj.memberId ,@"memberName":obj.memberName,@"memberphone":obj.memberPhone};
-                            [addMember addObject:addParaDict];
-                        }];
-                        [ss.hxDB insertTableInTransaction:memberTable paramArr:addMember callback:^(NSError *error) {
-                            if (error) NSLog(@"%@",error.userInfo[NSLocalizedDescriptionKey]);
+                    //2.更新成员表,删除旧数据、插入新数据
+                    if (deleteMemberWheres.count > 0) {
+                        [ss.hxDB deleteTableInTransaction:memberTable whereArrs:deleteMemberWheres callback:^(NSError *error) {
+                            NSLog(@"%@",error);
                         }];
                     }
+                    NSMutableArray *memParaArr = [NSMutableArray array];
+                    [groupMembers enumerateObjectsUsingBlock:^(GroupMemberModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                        NSDictionary *memDict = @{@"memberId":obj.memberId, @"memberName":obj.memberName, @"memberPhone":obj.memberPhone};
+                        [memParaArr addObject:memDict];
+                    }];
+                    [ss.hxDB insertTableInTransaction:memberTable paramArr:memParaArr callback:^(NSError *error) {
+                        NSLog(@"%@",error);
+                    }];
                 }
             } failure:^(NSURLSessionDataTask *task, NSError *error) {
                 NSLog(@"Error: %@", error);
             } refresh:NO];
-        });
-        
+        });        
     }
     return self;
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    [self viewsSetting];
+    
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(refreshUserDetail:) name:HXRefreshUserDetailNotification object:nil];//刷新成员信息
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(notiFromServer:) name:HXNotiFromServerNotification object:nil];//收到来自服务器的通知
+    [self viewsSetting];
 }
 
 //调用这个通知方法时，有可能控制器还没加载出来（没调viewDidLoad）
 - (void)refreshUserDetail:(NSNotification *)notification{
     if (self.collectionView) {
         [self.collectionView reloadData];
+    }
+    if (self.isNetWorkFinish) {
+        self.editBtn.enabled = YES;
+    }
+}
+
+//接收到服务器的通知
+- (void)notiFromServer:(NSNotification *)notification{
+    int type = [[[notification userInfo] objectForKey:@"type"] intValue];
+    switch (type) {
+        case ProtoMessage_Type_QuitGroupNotify:{//被踢出群
+            NSString *groupId = [[notification userInfo] objectForKey:@"groupId"];
+            if ([self.groupModel.groupId isEqualToString:groupId]) {
+                UIViewController *presentVC = [Utils obtainPresentVC];
+                if ([presentVC isMemberOfClass:[self class]]) {
+                    __weak typeof(self) weakself = self;
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        void (^otherBlock)(UIAlertAction *action) = ^(UIAlertAction *action){
+                            for (UIViewController *tempVC in self.navigationController.viewControllers) {
+                                if ([tempVC isKindOfClass:NSClassFromString(@"GroupHomePageViewController")]) {
+                                    [self.navigationController popToViewController:tempVC animated:YES];
+                                }
+                            }
+                        };
+                        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"通知" message:@"你已被移除出该群组" preferredStyle:UIAlertControllerStyleAlert cancelTitle:nil cancelBlock:nil otherTitles:@[@"确定"] otherBlocks:@[otherBlock]];
+                        [weakself presentViewController:alert animated:YES completion:nil];
+                    });
+                }
+            }
+        } break;
+        default:
+            break;
     }
 }
 
@@ -203,14 +241,16 @@ static NSString *identifier = @"groupDetailCollectionCell";
     __weak typeof(self) ws = self;
     EditGroupDetailViewController *vc = [[EditGroupDetailViewController alloc] initWithGroupModel:self.groupModel successBlock:^(GroupListModel *model) {
         ws.groupModel = model;
-        [ws settingImage:[model.groupAvatarId integerValue]];
-        ws.groupName.text = model.groupName;
-        [ws.collectionView reloadData];
-        if (model.groupMembers.count > 4) {
-            ws.moreBtn.hidden = NO;
-        } else{
-            ws.moreBtn.hidden = YES;
-        }
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [ws settingImage:[model.groupAvatarId integerValue]];
+            ws.groupName.text = model.groupName;
+            [ws.collectionView reloadData];
+            if (model.groupMembers.count > 4) {
+                ws.moreBtn.hidden = NO;
+            } else{
+                ws.moreBtn.hidden = YES;
+            }
+        });
     }];
     [self.navigationController pushViewController:vc animated:YES];
 }
@@ -222,17 +262,30 @@ static NSString *identifier = @"groupDetailCollectionCell";
 
 - (void)exit{
     AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+    NSString *groupId = self.groupModel.groupId;
+    NSString *userid = appDelegate.userid;
     __weak typeof(self) ws = self;
-    if (appDelegate.userid.intValue == self.groupModel.managerId.intValue) {//解散群
+    if (appDelegate.userid.intValue == self.groupModel.groupManagerId.intValue) {//解散群
         void (^otherBlock)(UIAlertAction *action) = ^(UIAlertAction *action){
             __strong typeof(ws) ss = ws;
-            NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"DISMISSGROUP",@"type",ss.groupModel.groupId,@"groupId",appDelegate.userid,@"managerId",nil];
+            NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"DISMISSGROUP",@"type",groupId,@"groupId",userid,@"managerId",nil];
             dispatch_async(dispatch_get_global_queue(0, 0), ^{
-//                __strong typeof(ws) ss = ws;
                 [HXNetworking postWithUrl:httpUrl params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id response) {
-                    if ([[response objectForKey:@"state"]boolValue] == 0){
+                    NSDictionary *responseDict = (NSDictionary *)response;
+                    if ([[responseDict objectForKey:@"state"]boolValue] == 0){
                         NSLog(@"解散群组失败");
                     }else {
+                        //更新数据库 //删除群组表、关系表、消息表
+                        [self.hxDB deleteTable:groupTable whereArr:@[@"groupId", @"=", groupId] callback:^(NSError *error) {
+                            NSLog(@"%@",error);
+                        }];
+                        [self.hxDB deleteTable:memberGroupRelation whereArr:@[@"groupId", @"=", groupId] callback:^(NSError *error) {
+                            NSLog(@"%@",error);
+                        }];
+                        [self.hxDB deleteTable:groupInfoTable whereArr:@[@"groupId", @"=", groupId] callback:^(NSError *error) {
+                            NSLog(@"%@",error);
+                        }];
+                        //更新缓存
                         NSDictionary *dataDict = [NSDictionary dictionaryWithObject:ss.groupModel.groupId forKey:HXDismissExitGroupKey];
                         [[NSNotificationCenter defaultCenter] postNotificationName:HXDismissExitGroupNotification object:nil userInfo:dataDict];
                         dispatch_async(dispatch_get_main_queue(), ^{
@@ -255,12 +308,24 @@ static NSString *identifier = @"groupDetailCollectionCell";
     } else {//退出群
         void (^otherBlock)(UIAlertAction *action) = ^(UIAlertAction *action){
             __strong typeof(ws) ss = ws;
-            NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"SIGNOUTGROUP",@"type",appDelegate.userid,@"userId",ss.groupModel.groupId,@"groupId",nil];
+            NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"SIGNOUTGROUP",@"type",userid,@"userId",groupId,@"groupId",nil];
             dispatch_async(dispatch_get_global_queue(0, 0), ^{
                 [HXNetworking postWithUrl:httpUrl params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id response) {
-                    if ([[response objectForKey:@"state"]boolValue] == 0){
+                    NSDictionary *responseDict = (NSDictionary *)response;
+                    if ([[responseDict objectForKey:@"state"]boolValue] == 0){
                         NSLog(@"退出群组失败");
                     }else {
+                        //更新数据库 //删除群组表、关系表、消息表
+                        [self.hxDB deleteTable:groupTable whereArr:@[@"groupId", @"=", groupId] callback:^(NSError *error) {
+                            NSLog(@"%@",error);
+                        }];
+                        [self.hxDB deleteTable:memberGroupRelation whereArr:@[@"groupId", @"=", groupId] callback:^(NSError *error) {
+                            NSLog(@"%@",error);
+                        }];
+                        [self.hxDB deleteTable:groupInfoTable whereArr:@[@"groupId", @"=", groupId] callback:^(NSError *error) {
+                            NSLog(@"%@",error);
+                        }];
+                        //更新缓存
                         NSDictionary *dataDict = [NSDictionary dictionaryWithObject:ss.groupModel.groupId forKey:HXDismissExitGroupKey];
                         [[NSNotificationCenter defaultCenter] postNotificationName:HXDismissExitGroupNotification object:nil userInfo:dataDict];
                         dispatch_async(dispatch_get_main_queue(), ^{
@@ -325,6 +390,7 @@ static NSString *identifier = @"groupDetailCollectionCell";
     _editBtn = editBtn;//要判断是否群主
     [editBtn addTarget:self action:@selector(edit) forControlEvents:UIControlEventTouchUpInside];
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc]initWithCustomView:editBtn];
+    _editBtn.enabled = self.isNetWorkFinish ? YES : NO;//网络加载完毕才能编辑。
     
     self.view.backgroundColor = [Utils colorWithHexString:@"#F0F0F6"];
     self.edgesForExtendedLayout = UIRectEdgeNone;
@@ -433,7 +499,7 @@ static NSString *identifier = @"groupDetailCollectionCell";
     }];
     
     AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
-    if (appDelegate.userid.intValue == self.groupModel.managerId.intValue) {
+    if (appDelegate.userid.intValue == self.groupModel.groupManagerId.intValue) {
         self.editBtn.hidden = NO;
         [exit setTitle:@"解散该群" forState:UIControlStateNormal];
     } else{
@@ -465,6 +531,13 @@ static NSString *identifier = @"groupDetailCollectionCell";
 
 - (void)dealloc{
     [[NSNotificationCenter defaultCenter] removeObserver:self name:HXRefreshUserDetailNotification object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:HXNotiFromServerNotification object:nil];
 }
 
+- (HXDBManager *)hxDB{
+    if (_hxDB == nil) {
+        _hxDB = [HXDBManager shareInstance];
+    }
+    return _hxDB;
+}
 @end

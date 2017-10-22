@@ -39,7 +39,7 @@
 
 - (void)setModel:(GroupSearchModel *)model{
     _model = model;
-    self.groupName.text = [NSString stringWithFormat:@"%@(%ld)",model.groupName,model.numberOfMember];
+    self.groupName.text = [NSString stringWithFormat:@"%@(%@)",model.groupName,[NSNumber numberWithInteger:model.numberOfMember]];
     self.groupManager.text = [NSString stringWithFormat:@"群主：%@",model.managerName];
     switch (model.avatarId) {
         case 0:

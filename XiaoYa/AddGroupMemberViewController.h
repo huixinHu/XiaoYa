@@ -7,11 +7,11 @@
 //
 
 #import <UIKit/UIKit.h>
-
+@class GroupMemberModel;
 @class AddGroupMemberViewController;
 @protocol AddGroupMemberViewControllerDelegate <NSObject>
 //传回添加的model
-- (void)AddGroupMemberViewController:(AddGroupMemberViewController*)viewController addMembersFinish:(NSMutableArray *)modelArray;
+- (void)AddGroupMemberViewController:(AddGroupMemberViewController*)viewController addMembersFinish:(NSMutableArray <GroupMemberModel *>*)modelArray;
 
 @end
 

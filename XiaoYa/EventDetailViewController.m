@@ -16,6 +16,9 @@
 #import "AppDelegate.h"
 #import "SectionSchedule.h"
 #import "GroupInfoModel.h"
+#import "UIAlertController+Appearance.h"
+#import "MessageProtoBuf.pbobjc.h"
+#import "HXNotifyConfig.h"
 
 #define kScreenWidth [UIApplication sharedApplication].keyWindow.bounds.size.width
 #define kScreenHeight [UIApplication sharedApplication].keyWindow.bounds.size.height
@@ -59,10 +62,41 @@ typedef NS_ENUM(NSInteger, HXReplyStatus) {
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    [self viewsSetting];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(notiFromServer:) name:HXNotiFromServerNotification object:nil];//收到来自服务器的通知
     [self addObserver:self forKeyPath:NSStringFromSelector(@selector(state)) options:NSKeyValueObservingOptionNew context:nil];
+    [self viewsSetting];
+
     //此处获取回复状态
     self.state = HXReplyStatusNotReply;//测试
+}
+
+//接收到服务器的通知
+- (void)notiFromServer:(NSNotification *)notification{
+    int type = [[[notification userInfo] objectForKey:@"type"] intValue];
+    switch (type) {
+        case ProtoMessage_Type_QuitGroupNotify:{//被踢出群
+            NSString *groupId = [[notification userInfo] objectForKey:@"groupId"];
+            if ([self.groupId isEqualToString:groupId]) {
+                UIViewController *presentVC = [Utils obtainPresentVC];
+                if ([presentVC isMemberOfClass:[self class]]) {
+                    __weak typeof(self) weakself = self;
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        void (^otherBlock)(UIAlertAction *action) = ^(UIAlertAction *action){
+                            for (UIViewController *tempVC in self.navigationController.viewControllers) {
+                                if ([tempVC isKindOfClass:NSClassFromString(@"GroupHomePageViewController")]) {
+                                    [self.navigationController popToViewController:tempVC animated:YES];
+                                }
+                            }
+                        };
+                        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"通知" message:@"你已被移除出该群组" preferredStyle:UIAlertControllerStyleAlert cancelTitle:nil cancelBlock:nil otherTitles:@[@"确定"] otherBlocks:@[otherBlock]];
+                        [weakself presentViewController:alert animated:YES completion:nil];
+                    });
+                }
+            }
+        } break;
+        default:
+            break;
+    }
 }
 
 - (void)back{
@@ -179,10 +213,18 @@ typedef NS_ENUM(NSInteger, HXReplyStatus) {
     [edit setTitleColor:[Utils colorWithHexString:@"#666666"] forState:UIControlStateNormal];
     edit.titleLabel.font = [UIFont systemFontOfSize:15];
     [edit addTarget:self action:@selector(editEvent) forControlEvents:UIControlEventTouchUpInside];
+    edit.hidden = YES;
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc]initWithCustomView:edit];
     self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc]initWithImage:[[UIImage imageNamed:@"导航栏返回图标"]imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal] style:UIBarButtonItemStyleDone target:self action:@selector(back)];
     self.view.backgroundColor = [Utils colorWithHexString:@"#F0F0F6"];
     self.edgesForExtendedLayout = UIRectEdgeNone;
+    
+    //只有发布者才能看到编辑按钮
+    NSString *publisherId = [[[[self.infoModel.publisher componentsSeparatedByString:@"("] lastObject] componentsSeparatedByString:@")"] firstObject];
+    AppDelegate *apd = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+    if ([apd.userid isEqualToString:publisherId]) {
+        edit.hidden = NO;
+    }
     
     UILabel *publishTime = [[UILabel alloc]init];
     _publishTime = publishTime;
@@ -219,7 +261,7 @@ typedef NS_ENUM(NSInteger, HXReplyStatus) {
     
     UILabel *publisher = [[UILabel alloc]init];
     _publisher = publisher;
-    _publisher.text = [NSString stringWithFormat:@"发布者：%@", self.infoModel.publisher];
+    _publisher.text = [NSString stringWithFormat:@"发布者：%@", [[self.infoModel.publisher componentsSeparatedByString:@"("]firstObject]];
     _publisher.textColor = [Utils colorWithHexString:@"#333333"];
     _publisher.font = [UIFont systemFontOfSize:15];
     [bg addSubview:_publisher];
@@ -348,5 +390,7 @@ typedef NS_ENUM(NSInteger, HXReplyStatus) {
 
 - (void)dealloc{
     [self removeObserver:self forKeyPath:NSStringFromSelector(@selector(state))];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:HXNotiFromServerNotification object:nil];
+
 }
 @end

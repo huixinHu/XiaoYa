@@ -8,14 +8,14 @@
 
 #import <Foundation/Foundation.h>
 
-@interface GroupInfoModel : NSObject<NSCoding>
-@property (nonatomic ,strong) NSDate *publishTime;//发布时间
-@property (nonatomic ,copy) NSString *publisher;//发布者
+@interface GroupInfoModel : NSObject<NSCopying ,NSCoding>
+@property (nonatomic ,strong) NSDate *publishTime;//发布时间            yyyyMMddHHmmss
+@property (nonatomic ,copy) NSString *publisher;//发布者               姓名(id)
 @property (nonatomic ,copy) NSString *event;//事件
-@property (nonatomic ,copy) NSString *eventDate;//事件时间
-@property (nonatomic ,strong) NSMutableArray *eventSection;//时间节数
+@property (nonatomic ,copy) NSString *eventDate;//事件时间              yyyyMMdd
+@property (nonatomic ,strong) NSMutableArray *eventSection;//时间节数   ,0,1,2,....
 @property (nonatomic ,copy) NSString *comment;//备注
-@property (nonatomic ,assign) NSInteger dlIndex;//截止选项
+@property (nonatomic ,assign) NSInteger deadlineIndex;//截止选项        0
 @property (nonatomic ,copy) NSString *deadlineTime;//截止回复时间
 
 + (instancetype)groupInfoWithDict:(NSDictionary *)dict;

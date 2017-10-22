@@ -17,12 +17,13 @@
 #import "GroupListModel.h"
 #import "AppDelegate.h"
 #import "HXNotifyConfig.h"
+#import "MessageProtoBuf.pbobjc.h"
+#import "UIAlertController+Appearance.h"
 
-@interface GroupInfoViewController ()<UITableViewDelegate ,UITableViewDataSource >
+@interface GroupInfoViewController ()<UITableViewDelegate ,UITableViewDataSource>
 @property (nonatomic ,weak) UITableView *infoList;
 @property (nonatomic ,weak) UIButton *publish;
 
-@property (nonatomic ,strong) NSMutableArray <GroupInfoModel *> *infoModels; //事件模型
 @property (nonatomic ,strong) GroupListModel *detailmodel;
 @end
 
@@ -36,15 +37,16 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-//    self.detailmodel.groupEvents = self.infoModels;
 
-    [self viewsSetting];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(refreshGroupDetail:) name:HXEditGroupDetailNotification object:nil];//刷新群
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(notiFromServer:) name:HXNotiFromServerNotification object:nil];//收到来自服务器的通知
+    [self viewsSetting];
 }
 
 - (void)viewWillAppear:(BOOL)animated{
     [super viewWillAppear:animated];
     self.navigationItem.title = self.detailmodel.groupName;
+    [self.infoList reloadData];
 }
 
 //刷新群资料相关信息 自己是群主自己编辑了信息 刷新走viewWillAppear
@@ -57,8 +59,50 @@
     self.detailmodel.numberOfMember = refreshModel.numberOfMember;
 }
 
+//接收到服务器的通知
+- (void)notiFromServer:(NSNotification *)notification{
+    int type = [[[notification userInfo] objectForKey:@"type"] intValue];
+    switch (type) {
+        //收到新消息
+        case ProtoMessage_Type_Chat:{
+            GroupInfoModel *infoModel = [[notification userInfo] objectForKey:HXNotiFromServerKey];
+            NSString *groupId = [[notification userInfo] objectForKey:@"groupId"];
+            if ([self.detailmodel.groupId isEqualToString:groupId]) {
+                if (self.detailmodel.groupEvents) {//不为空
+                    [self.detailmodel.groupEvents insertObject:infoModel atIndex:0];
+                } else{
+                    self.detailmodel.groupEvents = [NSMutableArray arrayWithObject:infoModel];
+                }
+                UIViewController *presentVC = [Utils obtainPresentVC];
+                if ([presentVC isMemberOfClass:[self class]]) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [self.infoList reloadData];
+                    });
+                }
+            }
+        } break;
+        case ProtoMessage_Type_QuitGroupNotify:{//被踢出群
+            NSString *groupId = [[notification userInfo] objectForKey:@"groupId"];
+            if ([self.detailmodel.groupId isEqualToString:groupId]) {
+                UIViewController *presentVC = [Utils obtainPresentVC];
+                if ([presentVC isMemberOfClass:[self class]]) {
+                    __weak typeof(self) weakself = self;
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        void (^otherBlock)(UIAlertAction *action) = ^(UIAlertAction *action){
+                            [weakself back];
+                        };
+                        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"通知" message:@"你已被移除出该群组" preferredStyle:UIAlertControllerStyleAlert cancelTitle:nil cancelBlock:nil otherTitles:@[@"确定"] otherBlocks:@[otherBlock]];
+                        [weakself presentViewController:alert animated:YES completion:nil];
+                    });
+                }
+            }
+        } break;
+        default:
+            break;
+    }
+}
+
 - (void)back{
-    [self.navigationController popViewControllerAnimated:YES];
     for (UIViewController *tempVC in self.navigationController.viewControllers) {
         if ([tempVC isKindOfClass:NSClassFromString(@"GroupHomePageViewController")]) {
             [self.navigationController popToViewController:tempVC animated:YES];
@@ -76,12 +120,15 @@
     __weak typeof(self) ws = self;
     GroupInfoModel *dfm = [GroupInfoModel defaultModel];
     EventPublishViewController *VC = [[EventPublishViewController alloc]initWithInfoModel:dfm groupId:self.detailmodel.groupId publishCompBlock:^(GroupInfoModel *newEvent) {
-        if (ws.detailmodel.groupEvents) {//不为空
-            [ws.detailmodel.groupEvents addObject:newEvent];
+        __strong typeof(ws) ss = ws;
+        if (ss.detailmodel.groupEvents) {//不为空
+            [ss.detailmodel.groupEvents insertObject:newEvent atIndex:0];
         } else{
-            ws.detailmodel.groupEvents = [NSMutableArray arrayWithObject:newEvent];
+            ss.detailmodel.groupEvents = [NSMutableArray arrayWithObject:newEvent];
         }
-        [ws.infoList reloadData];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [ss.infoList reloadData];
+        });
     }];
     [self.navigationController pushViewController:VC animated:YES];
 }
@@ -103,7 +150,9 @@
                                                     groupId:ws.detailmodel.groupId
                                               editCompBlock:^(GroupInfoModel *edittedModel) {
                                                   [ws.detailmodel.groupEvents replaceObjectAtIndex:indexPath.row withObject:edittedModel];
-                                                  [ws.infoList reloadData];//reloadRowsAtIndexPaths ？
+                                                  dispatch_async(dispatch_get_main_queue(), ^{
+                                                      [ws.infoList reloadData];//reloadRowsAtIndexPaths ？
+                                                  });
                                               }];
         [ws.navigationController pushViewController:VC animated:YES];
     }];
@@ -162,24 +211,12 @@
     }];
 }
 
-- (NSMutableArray *)infoModels{
-    if (_infoModels == nil) {
-        NSMutableArray *modelArr = [NSMutableArray array];
-//        AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
-//        NSString *user = [[appDelegate.user componentsSeparatedByString:@"("]firstObject];
-        NSDictionary *testDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"201709011200",@"publishTime",@"usertest",@"publisher",@"开会",@"event",@"20170910",@"eventTime",@",1,2,",@"eventSection",@"记得准时到",@"comment",@"1",@"dlIndex",nil];
-        GroupInfoModel *model = [GroupInfoModel groupInfoWithDict:testDict];
-        [modelArr addObject:model];
-        _infoModels = modelArr;
-    }
-    return _infoModels;
-}
-
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
 }
 
 - (void)dealloc{
     [[NSNotificationCenter defaultCenter] removeObserver:self name:HXEditGroupDetailNotification object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:HXNotiFromServerNotification object:nil];
 }
 @end

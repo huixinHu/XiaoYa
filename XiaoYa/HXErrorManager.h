@@ -8,6 +8,8 @@
 
 #import <Foundation/Foundation.h>
 
+#define HX_LOGIN_ERROR @"登录失败"
+#define HX_DISCONNECT @"socket未连接"
 @interface HXErrorManager : NSObject
 
 + (NSError *)errorWithErrorCode:(NSInteger)errorCode;
