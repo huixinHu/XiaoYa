@@ -136,6 +136,7 @@ static HXSocketBusinessManager *manager = nil;
                 self.loginCallback([HXErrorManager errorWithErrorCode:3000]);
             }
         } break;
+            
         case ProtoMessage_Type_Chat:{//收到聊天消息
             NSString *groupId = receiveData.to;
             NSString *publisher = receiveData.from;
@@ -169,12 +170,14 @@ static HXSocketBusinessManager *manager = nil;
                 [[NSNotificationCenter defaultCenter] postNotificationName:HXNotiFromServerNotification object:nil userInfo:dataDict];
             }
         } break;
+            
         case ProtoMessage_Type_ChatResponse:{//聊天回应
             //调用block
             if ([receiveData.body isEqualToString:@"ok"]) {
                 self.testCallBack(nil ,receiveData);
             }
         } break;
+            
         case ProtoMessage_Type_JoinGroupNotify:{//被拉入群
             NSError *jsonError;
             NSData *jsonData = [receiveData.body dataUsingEncoding:NSUTF8StringEncoding];
@@ -199,6 +202,7 @@ static HXSocketBusinessManager *manager = nil;
                 [[NSNotificationCenter defaultCenter] postNotificationName:HXNotiFromServerNotification object:nil userInfo:dataDict];
             }
         } break;
+        case ProtoMessage_Type_DismissGroupNotify://群解散
         case ProtoMessage_Type_QuitGroupNotify:{//被踢出群
             NSString *groupId = receiveData.body;
             //删除群组表、关系表、消息表
@@ -213,9 +217,11 @@ static HXSocketBusinessManager *manager = nil;
             }];
             //这里的交互？如果用户此时正在使用该群组相关功能...所以全部聊天界面都要收到这个通知？
             //群组首页、消息首页、发布页、事件详情页、群资料页
-            NSDictionary *dataDict = @{@"groupId":groupId ,@"type":[NSNumber numberWithInt:ProtoMessage_Type_QuitGroupNotify]};
+            NSNumber *type = [NSNumber numberWithInt:receiveData.type == ProtoMessage_Type_QuitGroupNotify ? ProtoMessage_Type_QuitGroupNotify : ProtoMessage_Type_DismissGroupNotify];
+            NSDictionary *dataDict = @{@"groupId":groupId ,@"type":type};
             [[NSNotificationCenter defaultCenter] postNotificationName:HXNotiFromServerNotification object:nil userInfo:dataDict];
         } break;
+            
         case ProtoMessage_Type_SomeoneJoinNotify:{//有人进群
             NSError *jsonError;
             NSData *jsonData = [receiveData.body dataUsingEncoding:NSUTF8StringEncoding];
@@ -234,10 +240,30 @@ static HXSocketBusinessManager *manager = nil;
                 [[NSNotificationCenter defaultCenter] postNotificationName:HXNotiFromServerNotification object:nil userInfo:dataDict];
             }
         } break;
-        case ProtoMessage_Type_DismissGroupNotify:
-            break;
-        case ProtoMessage_Type_UpdateGroupNotify:
-            break;
+            
+        case ProtoMessage_Type_UpdateGroupNotify:{//更新群资料
+            NSError *jsonError;
+            NSData *jsonData = [receiveData.body dataUsingEncoding:NSUTF8StringEncoding];
+            NSDictionary *jsonDict = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:&jsonError];
+            if (jsonError) {
+                NSLog(@"json 解析错误: --- error %@", jsonError);
+            } else{
+                //更新群组表
+                NSString *groupId = [NSString stringWithFormat:@"%@",[jsonDict objectForKey:@"id"]];
+                NSString *groupName = [jsonDict objectForKey:@"groupName"];
+                NSString *numberOfMember = [NSString stringWithFormat:@"%@",[jsonDict objectForKey:@"amount"]];
+//                NSString *groupManagerId = [NSString stringWithFormat:@"%@",[jsonDict objectForKey:@"managerId"]];//群主暂时不变
+                NSString *groupAvatarId = [NSString stringWithFormat:@"%@",[jsonDict objectForKey:@"picId"]];
+                NSDictionary *paraDict = @{@"groupId":groupId ,@"groupAvatarId":groupAvatarId ,@"groupName":groupName, @"numberOfMember":numberOfMember};
+                [self.hxdb updateTable:groupTable param:paraDict whereArr:@[@"groupId", @"=", groupId] callback:^(NSError *error) {
+                    NSLog(@"%@",error);
+                }];
+                //发送通知
+                NSDictionary *dataDict = @{HXNotiFromServerKey:paraDict ,@"type":[NSNumber numberWithInt:ProtoMessage_Type_UpdateGroupNotify]};
+                [[NSNotificationCenter defaultCenter] postNotificationName:HXNotiFromServerNotification object:nil userInfo:dataDict];
+            }
+        } break;
+            
         case ProtoMessage_Type_NoGroupNotify:
             break;
             

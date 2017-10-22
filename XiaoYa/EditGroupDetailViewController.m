@@ -70,13 +70,11 @@
     [self.dataArray enumerateObjectsUsingBlock:^(GroupMemberModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         [curMemberIds addObject:obj.memberId];
         if (![self.originMemberIds containsObject:obj.memberId]) {
-//            [curMemberIds addObject:obj.memberId];
             [addMemberArr addObject:obj];
         }
     }];
     NSMutableSet <NSString *> *originSetCopy1 = [self.originMemberIds mutableCopy];
     [originSetCopy1 minusSet:curMemberIds];//减
-//    [curMemberIds minusSet:self.originMemberIds];//增
     NSMutableString *minus = [NSMutableString string];
     NSMutableArray *delRelatWheresArr = [NSMutableArray array];//删除关系表的wheres数组
     if (originSetCopy1.count > 0) {//有删减
@@ -97,14 +95,6 @@
         }];
         [add deleteCharactersInRange:NSMakeRange(add.length - 1, 1)];
     }
-//    if (curMemberIds.count > 0){//有增加
-//        [curMemberIds enumerateObjectsUsingBlock:^(NSString * _Nonnull obj, BOOL * _Nonnull stop) {
-//            [add appendString:[NSString stringWithFormat:@"%@,",obj]];
-//            NSDictionary *tempDict = @{@"memberId":obj ,@"groupId":groupId};
-//            [addRelatParaArr addObject:tempDict];
-//        }];
-//        [add deleteCharactersInRange:NSMakeRange(add.length - 1, 1)];
-//    }
     
     NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"CHGROUPDATA", @"type", groupId,@"groupId", groupManagerId, @"managerId", groupAvatarId, @"picId",groupName,@"groupName",add,@"addUsers",minus,@"minusUsers",nil];
     __weak typeof(self) ws = self;
@@ -142,9 +132,11 @@
                         [addMemParaArr addObject:memDict];
                     }
                 }];
-                [ss.hxdb insertTableInTransaction:memberTable paramArr:addMemParaArr callback:^(NSError *error) {
-                    NSLog(@"%@",error);
-                }];
+                if (addMemberArr.count > 0) {
+                    [ss.hxdb insertTableInTransaction:memberTable paramArr:addMemParaArr callback:^(NSError *error) {
+                        NSLog(@"%@",error);
+                    }];
+                }
                 
                 //更新缓存
                 NSDictionary *modelDict = @{@"groupName":groupName, @"groupId":groupId, @"groupAvatarId":groupAvatarId, @"numberOfMember":numberOfMember, @"groupManagerId":groupManagerId, @"groupMembers":[self.dataArray mutableCopy]};

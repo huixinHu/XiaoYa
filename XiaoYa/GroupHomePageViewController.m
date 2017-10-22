@@ -189,6 +189,7 @@
                     } else{
                         obj.groupEvents = [NSMutableArray arrayWithObject:infoModel];
                     }
+                    *stop = YES;
                 }
             }];
             if ([[Utils obtainPresentVC] isMemberOfClass:[self class]]) {
@@ -208,6 +209,7 @@
             }
         } break;
             
+        case ProtoMessage_Type_DismissGroupNotify://群解散
         case ProtoMessage_Type_QuitGroupNotify:{//被踢出群
             NSString *groupId = [[notification userInfo] objectForKey:@"groupId"];
             __block NSInteger deleteIndex = 0;
@@ -220,12 +222,13 @@
             [self.groupModels removeObjectAtIndex:deleteIndex];
 
             if ([[Utils obtainPresentVC] isMemberOfClass:[self class]]) {
+                NSString *alertMessage = (type == ProtoMessage_Type_QuitGroupNotify) ? [NSString stringWithFormat:@"你已被移除出群组%@",groupId] : [NSString stringWithFormat:@"群组%@已解散",groupId];
                 __weak typeof(self) weakself = self;
                 dispatch_async(dispatch_get_main_queue(), ^{
                     void (^otherBlock)(UIAlertAction *action) = ^(UIAlertAction *action){                        
                         [weakself.groupTable reloadData];
                     };
-                    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"通知" message:[NSString stringWithFormat:@"你已被移除出群组%@",groupId] preferredStyle:UIAlertControllerStyleAlert cancelTitle:nil cancelBlock:nil otherTitles:@[@"确定"] otherBlocks:@[otherBlock]];
+                    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"通知" message:alertMessage preferredStyle:UIAlertControllerStyleAlert cancelTitle:nil cancelBlock:nil otherTitles:@[@"确定"] otherBlocks:@[otherBlock]];
                     [weakself presentViewController:alert animated:YES completion:nil];
                 });
             }
@@ -242,6 +245,24 @@
                             [self.groupTable reloadData];//刷新单行会更好
                         });
                     }
+                    *stop = YES;
+                }
+            }];
+        } break;
+            
+        case ProtoMessage_Type_UpdateGroupNotify:{//群资料更新
+            NSDictionary *detailDict = [[notification userInfo] objectForKey:HXNotiFromServerKey];
+            [self.groupModels enumerateObjectsUsingBlock:^(GroupListModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                if ([obj.groupId isEqualToString:[detailDict objectForKey:@"groupId"]]) {
+                    obj.groupName = [detailDict objectForKey:@"groupName"];
+                    obj.groupAvatarId = [detailDict objectForKey:@"groupAvatarId"];
+                    obj.numberOfMember = [[detailDict objectForKey:@"numberOfMember"] integerValue];
+                    if ([[Utils obtainPresentVC] isMemberOfClass:[self class]]) {
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            [self.groupTable reloadData];//刷新单行会更好
+                        });
+                    }
+                    *stop = YES;
                 }
             }];
         } break;

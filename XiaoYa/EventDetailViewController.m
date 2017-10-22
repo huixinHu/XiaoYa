@@ -74,11 +74,12 @@ typedef NS_ENUM(NSInteger, HXReplyStatus) {
 - (void)notiFromServer:(NSNotification *)notification{
     int type = [[[notification userInfo] objectForKey:@"type"] intValue];
     switch (type) {
+        case ProtoMessage_Type_DismissGroupNotify://群解散
         case ProtoMessage_Type_QuitGroupNotify:{//被踢出群
             NSString *groupId = [[notification userInfo] objectForKey:@"groupId"];
             if ([self.groupId isEqualToString:groupId]) {
-                UIViewController *presentVC = [Utils obtainPresentVC];
-                if ([presentVC isMemberOfClass:[self class]]) {
+                if ([[Utils obtainPresentVC] isMemberOfClass:[self class]]) {
+                    NSString *alertMessage = (type == ProtoMessage_Type_QuitGroupNotify) ? @"你已被移除出该群组" : @"群组已解散";
                     __weak typeof(self) weakself = self;
                     dispatch_async(dispatch_get_main_queue(), ^{
                         void (^otherBlock)(UIAlertAction *action) = ^(UIAlertAction *action){
@@ -88,7 +89,7 @@ typedef NS_ENUM(NSInteger, HXReplyStatus) {
                                 }
                             }
                         };
-                        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"通知" message:@"你已被移除出该群组" preferredStyle:UIAlertControllerStyleAlert cancelTitle:nil cancelBlock:nil otherTitles:@[@"确定"] otherBlocks:@[otherBlock]];
+                        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"通知" message:alertMessage preferredStyle:UIAlertControllerStyleAlert cancelTitle:nil cancelBlock:nil otherTitles:@[@"确定"] otherBlocks:@[otherBlock]];
                         [weakself presentViewController:alert animated:YES completion:nil];
                     });
                 }
