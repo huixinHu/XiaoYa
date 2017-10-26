@@ -179,6 +179,7 @@
     
     HXTextField *searchTxf = [[HXTextField alloc]init];
     _searchTxf = searchTxf;
+    _searchTxf.keyboardType = UIKeyboardTypeNumberPad;
     [_searchTxf appearanceWithTextColor:[Utils colorWithHexString:@"#333333"] textFontSize:15 placeHolderColor:[Utils colorWithHexString:@"#999999"] placeHolderFontSize:15 placeHolderText:@"搜索手机号码" leftView:nil];
     [bg addSubview:_searchTxf];
     [_searchTxf mas_makeConstraints:^(MASConstraintMaker *make) {

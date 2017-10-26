@@ -98,6 +98,7 @@ static NSString *identifier = @"groupDetailCollectionCell";
                     }];
                     //3.更新缓存
                     ss.groupModel.groupMembers = [membersInfoArr mutableCopy];
+                    ss.groupModel.numberOfMember = membersInfoArr.count;
                     //通知本页和首页、成员列表页、成员详情页
                     NSDictionary *dataDict = @{HXRefreshUserDetailKey:membersInfoArr ,@"groupId":ss.groupModel.groupId};
                     [[NSNotificationCenter defaultCenter] postNotificationName:HXRefreshUserDetailNotification object:nil userInfo:dataDict];
@@ -132,7 +133,9 @@ static NSString *identifier = @"groupDetailCollectionCell";
                             [deleteMemberWheres addObject:whereArr];
                         }
                     }];
-                    ss.groupModel.groupMembers = [groupMembers mutableCopy];//更新缓存
+                    //更新缓存
+                    ss.groupModel.groupMembers = [groupMembers mutableCopy];
+                    ss.groupModel.numberOfMember = groupMembers.count;
                     ss.isNetWorkFinish = YES;
                     //通知本页和首页、成员列表页、成员详情页
                     NSDictionary *dataDict = @{HXRefreshUserDetailKey:groupMembers ,@"groupId":ss.groupModel.groupId};
@@ -194,14 +197,20 @@ static NSString *identifier = @"groupDetailCollectionCell";
     [self viewsSetting];
 }
 
+- (void)viewWillAppear:(BOOL)animated{
+    [super viewWillAppear:animated];
+}
+
 //调用这个通知方法时，有可能控制器还没加载出来（没调viewDidLoad）
 - (void)refreshUserDetail:(NSNotification *)notification{
-    if (self.collectionView) {
-        [self.collectionView reloadData];
-    }
-    if (self.isNetWorkFinish) {
-        self.editBtn.enabled = YES;
-    }
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (self.collectionView) {
+            [self.collectionView reloadData];
+        }
+        if (self.isNetWorkFinish) {
+            self.editBtn.enabled = YES;
+        }
+    });
 }
 
 //接收到服务器的通知
@@ -356,7 +365,7 @@ static NSString *identifier = @"groupDetailCollectionCell";
 
 #pragma mark collectionViewDataSource
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
-    if (self.groupModel.numberOfMember >= 4) {
+    if (self.groupModel.numberOfMember >= 4) {//使用成员总人数字段而不是成员数组的元素数目，要给在数据库总没有的记录占位
         return 4;
     }else{
         return self.groupModel.numberOfMember;

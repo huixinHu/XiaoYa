@@ -112,8 +112,8 @@
                 appDelegate.phone = ss.phoneNum;
                 //http登录成功了就打开数据库
                 self.hxdb = [HXDBManager shareInstance];
-                [self.hxdb createTable:groupTable colDict:@{@"groupId":@"TEXT",@"groupName":@"TEXT",@"groupAvatarId":@"TEXT",@"numberOfMember":@"TEXT",@"groupManagerId":@"TEXT"} isPrimaryKey:YES primaryKey:@"groupId"];
-                [self.hxdb createTable:memberTable colDict:@{@"memberId":@"TEXT",@"memberName":@"TEXT",@"memberphone":@"TEXT"} isPrimaryKey:YES primaryKey:@"memberId"];
+                [self.hxdb createTable:groupTable colDict:@{@"groupId":@"TEXT",@"groupName":@"TEXT",@"groupAvatarId":@"TEXT",@"numberOfMember":@"TEXT",@"groupManagerId":@"TEXT"} primaryKey:@"groupId"];
+                [self.hxdb createTable:memberTable colDict:@{@"memberId":@"TEXT",@"memberName":@"TEXT",@"memberphone":@"TEXT"} primaryKey:@"memberId"];
                 
                 [self.hxdb tableCreate:@"CREATE TABLE IF NOT EXISTS memberGroupRelation (memberId TEXT,groupId TEXT, FOREIGN KEY(groupId) REFERENCES groupTable(groupId) ON DELETE CASCADE);" table:@"memberGroupRelation"];
                 [self.hxdb tableCreate:@"CREATE TABLE IF NOT EXISTS groupInfoTable(publishTime TEXT,publisher TEXT,eventDate TEXT,eventSection TEXT,event TEXT,deadlineIndex TEXT,groupId TEXT, comment TEXT,FOREIGN KEY(groupId) REFERENCES groupTable(groupId) ON DELETE CASCADE);" table:@"groupInfoTable"];

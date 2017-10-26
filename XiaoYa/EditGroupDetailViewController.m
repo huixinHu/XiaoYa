@@ -65,14 +65,22 @@
     NSString *groupManagerId = self.groupModel.groupManagerId;
     NSString *numberOfMember = [NSString stringWithFormat:@"%@",[NSNumber numberWithInteger:self.dataArray.count]];
     //成员增减
-    NSMutableSet <NSString *>*curMemberIds = [NSMutableSet set];//存放新增成员的id
+    NSMutableSet <NSString *>*curMemberIds = [NSMutableSet set];//存放现有成员的id
     NSMutableArray <GroupMemberModel*> *addMemberArr = [NSMutableArray array];//存放新增成员的模型
+    NSMutableString *add = [NSMutableString string];
+    NSMutableArray *addRelatParaArr = [NSMutableArray array];//插入关系表的数据
     [self.dataArray enumerateObjectsUsingBlock:^(GroupMemberModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         [curMemberIds addObject:obj.memberId];
+        //添加的人
         if (![self.originMemberIds containsObject:obj.memberId]) {
             [addMemberArr addObject:obj];
+            [add appendString:[NSString stringWithFormat:@"%@,",obj.memberId]];
+            NSDictionary *tempDict = @{@"memberId":obj.memberId ,@"groupId":groupId};//添加到关系表的数据
+            [addRelatParaArr addObject:tempDict];
         }
     }];
+    if (add.length > 0) [add deleteCharactersInRange:NSMakeRange(add.length - 1, 1)];
+    
     NSMutableSet <NSString *> *originSetCopy1 = [self.originMemberIds mutableCopy];
     [originSetCopy1 minusSet:curMemberIds];//减
     NSMutableString *minus = [NSMutableString string];
@@ -85,16 +93,15 @@
         }];
         [minus deleteCharactersInRange:NSMakeRange(minus.length - 1, 1)];
     }
-    NSMutableString *add = [NSMutableString string];
-    NSMutableArray *addRelatParaArr = [NSMutableArray array];//插入关系表的数据
-    if (addMemberArr.count > 0) {
-        [addMemberArr enumerateObjectsUsingBlock:^(GroupMemberModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-            [add appendString:[NSString stringWithFormat:@"%@,",obj.memberId]];
-            NSDictionary *tempDict = @{@"memberId":obj.memberId ,@"groupId":groupId};
-            [addRelatParaArr addObject:tempDict];
-        }];
-        [add deleteCharactersInRange:NSMakeRange(add.length - 1, 1)];
-    }
+    
+//    if (addMemberArr.count > 0) {
+//        [addMemberArr enumerateObjectsUsingBlock:^(GroupMemberModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+//            [add appendString:[NSString stringWithFormat:@"%@,",obj.memberId]];
+//            NSDictionary *tempDict = @{@"memberId":obj.memberId ,@"groupId":groupId};
+//            [addRelatParaArr addObject:tempDict];
+//        }];
+//        [add deleteCharactersInRange:NSMakeRange(add.length - 1, 1)];
+//    }
     
     NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"CHGROUPDATA", @"type", groupId,@"groupId", groupManagerId, @"managerId", groupAvatarId, @"picId",groupName,@"groupName",add,@"addUsers",minus,@"minusUsers",nil];
     __weak typeof(self) ws = self;
@@ -124,7 +131,7 @@
                 }
                 //3.成员表 只需插入新加的人
                 NSMutableArray *addMemParaArr = [NSMutableArray array];//插入成员表的数据
-                [ss.dataArray enumerateObjectsUsingBlock:^(GroupMemberModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                [addMemberArr enumerateObjectsUsingBlock:^(GroupMemberModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
                     //查询成员表，这些新增的人是否已经在数据库
                     int count = [ss.hxdb itemCountForTable:memberTable whereArr:@[@"memberId", @"=", obj.memberId]];
                     if (count == 0) {//数据库中没有
@@ -132,7 +139,7 @@
                         [addMemParaArr addObject:memDict];
                     }
                 }];
-                if (addMemberArr.count > 0) {
+                if (addMemParaArr.count > 0) {
                     [ss.hxdb insertTableInTransaction:memberTable paramArr:addMemParaArr callback:^(NSError *error) {
                         NSLog(@"%@",error);
                     }];

@@ -122,11 +122,20 @@ static NSString *identifier = @"collectionCell";
                 }];
                 //3.成员表 要注意重复问题，不过memberTable中的memberId已经设了是唯一Id
                 //利用唯一id避免重复，这里不能使用封装的HXDB的事务方法，封装的方法中，只要有一条出错就回溯并且停止后续插入
-                [ss.hxdb.dbQueue inTransaction:^(FMDatabase *db, BOOL *rollback) {
-                    [ss.dataArray enumerateObjectsUsingBlock:^(GroupMemberModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-                        [db executeUpdate:@"INSERT INTO memberTable (memberId,memberPhone,memberName) VALUES(?,?,?)" withArgumentsInArray:@[obj.memberId ,obj.memberName ,obj.memberPhone]];
-                    }];
+                NSMutableArray *addMemParaArr = [NSMutableArray array];//插入成员表的数据
+                [ss.dataArray enumerateObjectsUsingBlock:^(GroupMemberModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                    //查询成员表，这些新增的人是否已经在数据库
+                    int count = [ss.hxdb itemCountForTable:memberTable whereArr:@[@"memberId", @"=", obj.memberId]];
+                    if (count == 0) {//数据库中没有
+                        NSDictionary *memDict = @{@"memberId":obj.memberId, @"memberName":obj.memberName, @"memberPhone":obj.memberPhone};
+                        [addMemParaArr addObject:memDict];
+                    }
                 }];
+                if (addMemParaArr.count > 0) {
+                    [ss.hxdb insertTableInTransaction:memberTable paramArr:addMemParaArr callback:^(NSError *error) {
+                        NSLog(@"%@",error);
+                    }];
+                }
                 
                 //更新缓存
                 [groupParaDict setValue:[ss.dataArray mutableCopy] forKey:@"groupMembers"];

@@ -10,8 +10,13 @@
 #import "FMDB.h"
 #import <CommonCrypto/CommonCrypto.h>
 #import "AppDelegate.h"
+#import <objc/runtime.h>
 
-#define kMaxPageCount 50
+#define kMaxPageCount 50//分页条数
+#define SQL_TEXT     @"TEXT" //文本
+#define SQL_INTEGER  @"INTEGER" //int long integer ...
+#define SQL_REAL     @"REAL" //浮点
+#define SQL_BLOB     @"BLOB" //data
 
 static NSString *_HXNSStringMD5(NSString *string) {
     if (!string) return nil;
@@ -36,6 +41,7 @@ static NSString *_HXNSStringMD5(NSString *string) {
 @implementation HXDBManager
 static NSString *HXDBErrorDomain = @"com.comment.hxdbdomain";
 static HXDBManager *sharedManager=nil;
+
 + (instancetype)shareInstance{
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
@@ -65,10 +71,10 @@ static HXDBManager *sharedManager=nil;
     return self;
 }
 
-//切换用户就要切换数据库
+//切换用户就要切换数据库//这里应该根据用户信息md5建一个路径
 - (void)changeFilePath:(NSString *)path{
     NSString *directory = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)lastObject];
-    NSString *filePath = [directory stringByAppendingPathComponent:path];//这里应该根据用户信息md5建一个路径
+    NSString *filePath = [directory stringByAppendingPathComponent:path];
     
     NSFileManager *fmManager = [NSFileManager defaultManager];
     BOOL isDir;
@@ -125,11 +131,45 @@ static HXDBManager *sharedManager=nil;
     return dict;
 }
 
+#pragma mark runtime
+- (NSDictionary *)modelToDictionary:(Class)cls excludeProperty:(NSArray *)propertyArr{
+    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:0];
+    u_int count;
+    objc_property_t *properties = class_copyPropertyList(cls, &count);
+    for (int i = 0; i < count; i++) {
+        NSString *pName = [NSString stringWithCString:property_getName(properties[i]) encoding:NSUTF8StringEncoding];
+        if ([propertyArr containsObject:pName]) continue;
+        NSString *pType = [NSString stringWithCString:property_getAttributes(properties[i]) encoding:NSUTF8StringEncoding];
+        NSString *sqlType = [self ocTypeToSqlType:pType];
+        if (sqlType) {
+            [dict setObject:sqlType forKey:pName];
+        }
+    }
+    free(properties);
+    return dict;
+}
+
+- (NSString *)ocTypeToSqlType:(NSString *)ocType{
+    NSString *resultStr = nil;
+    if ([ocType hasPrefix:@"T@\"NSString\""]) {
+        resultStr = SQL_TEXT;
+    } else if ([ocType hasPrefix:@"T@\"NSData\""]) {
+        resultStr = SQL_BLOB;
+    } else if ([ocType hasPrefix:@"Ti"]||[ocType hasPrefix:@"TI"]||[ocType hasPrefix:@"Ts"]||[ocType hasPrefix:@"TS"]||[ocType hasPrefix:@"T@\"NSNumber\""]||[ocType hasPrefix:@"TB"]||[ocType hasPrefix:@"Tq"]||[ocType hasPrefix:@"TQ"]) {
+        resultStr = SQL_INTEGER;
+    } else if ([ocType hasPrefix:@"Tf"] || [ocType hasPrefix:@"Td"]){
+        resultStr= SQL_REAL;
+    }
+    
+    return resultStr;
+}
+
 //表是否存在
 - (BOOL)isExistTable:(FMDatabase *)db table:(NSString *)tableName{
     return [db tableExists:tableName];
 }
 
+#pragma mark 创建表
 //根据sql语句创建表
 - (BOOL)tableCreate:(NSString *)sql table:(NSString *)tableName{
     if (sql.length == 0) {
@@ -151,14 +191,13 @@ static HXDBManager *sharedManager=nil;
         if (!result) {
             NSLog(@"%@",[db lastError]);
         }
-//        [db close];//会清除缓存prepared
     }];
     NSLog(@"%@", result ? [NSString stringWithFormat:@"创建表 %@成功",tableName] : [NSString stringWithFormat:@"创建表 %@失败",tableName]);
     return result;
 }
 
-//根据传入的参数拼接创建表sql语句，只支持设置字段名、字段类型、主键。dict：key 字段名、value 字段类型；isPK：是否设置主键，如果为NO，忽略pk参数；pk：主键。
-- (BOOL)createTable:(NSString *)tableName colDict:(NSDictionary *)dict isPrimaryKey:(BOOL)isPK primaryKey:(NSString *)pk{
+//根据传入的参数拼接创建表sql语句，只支持设置字段名、字段类型、主键。dict：key 字段名、value 字段类型；pk：主键，可为nil。
+- (BOOL)createTable:(NSString *)tableName colDict:(NSDictionary *)dict primaryKey:(NSString *)pk{
     NSAssert((dict != nil)&&(dict.count > 0) , @"创建表：dict 参数无效");
     if (tableName == nil ||(dict == nil) || (dict.count == 0)) {
         return NO;
@@ -172,7 +211,7 @@ static HXDBManager *sharedManager=nil;
         }else{
             [sqlStr appendFormat:@"%@ %@,",obj,dict[obj]];
         }
-        if (isPK && (obj == pk)) {
+        if (pk && ([obj isEqualToString:pk])) {
             [sqlStr insertString:@" PRIMARY KEY" atIndex:sqlStr.length-1];
         }
     }];
@@ -185,7 +224,35 @@ static HXDBManager *sharedManager=nil;
     return result;
 }
 
+- (BOOL)createTable:(NSString *)tableName model:(Class)cls primaryKey:(NSString *)pk excludeColumn:(NSArray *)colArr{
+    if (tableName == nil || cls == nil || [colArr containsObject:pk]) {
+        return NO;
+    }
+    NSMutableString *sqlStr = [NSMutableString stringWithFormat:@"CREATE TABLE IF NOT EXISTS %@ (",tableName];
+    NSDictionary *dict = [self modelToDictionary:cls excludeProperty:colArr];
+    __block int count;
+    __block BOOL result = NO;
+    [dict enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+        count++;
+        if (count == dict.count) {
+            [sqlStr appendFormat:@" %@ %@)", key, obj];
+        }else{
+            [sqlStr appendFormat:@" %@ %@,", key, obj];
+        }
+        if (pk && [key isEqualToString:pk]) {
+            [sqlStr insertString:@" PRIMARY KEY" atIndex:sqlStr.length-1];
+        }
+    }];
+    [self.dbQueue inDatabase:^(FMDatabase *db) {
+        if ([db open]) {
+            result = [db executeUpdate:sqlStr];
+        }
+    }];
+    NSLog(@"%@", result ? [NSString stringWithFormat:@"创建表 %@成功",tableName] : [NSString stringWithFormat:@"创建表 %@失败",tableName]);
+    return result;
+}
 
+#pragma mark 删除表
 - (void)dropTable:(NSString *)tableName callback:(void(^)(NSError *error ))block{
     if (tableName == nil) {
         if (block) {

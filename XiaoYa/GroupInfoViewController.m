@@ -104,10 +104,10 @@
                     __weak typeof(self) weakself = self;
                     dispatch_async(dispatch_get_main_queue(), ^{
                         __strong typeof(weakself) ss = weakself;
+                        ss.navigationItem.title = [detailDict objectForKey:@"groupName"];
                         ss.detailmodel.groupName = [detailDict objectForKey:@"groupName"];
                         ss.detailmodel.groupAvatarId = [detailDict objectForKey:@"groupAvatarId"];
                         ss.detailmodel.numberOfMember = [[detailDict objectForKey:@"numberOfMember"] integerValue];
-                        
                     });
                 }
             }

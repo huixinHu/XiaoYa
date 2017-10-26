@@ -94,8 +94,8 @@
                 appDelegate.phone = ss.account.text;
                 //http登录成功了就打开数据库.一定要保证这是整个app中第一次调用hxdb的地方(和用户有关，一个用户一份独立数据)
                 self.hxdb = [HXDBManager shareInstance];
-                [self.hxdb createTable:groupTable colDict:@{@"groupId":@"TEXT",@"groupName":@"TEXT",@"groupAvatarId":@"TEXT",@"numberOfMember":@"TEXT",@"groupManagerId":@"TEXT"} isPrimaryKey:YES primaryKey:@"groupId"];
-                [self.hxdb createTable:memberTable colDict:@{@"memberId":@"TEXT",@"memberName":@"TEXT",@"memberPhone":@"TEXT"} isPrimaryKey:YES primaryKey:@"memberId"];
+                [self.hxdb createTable:groupTable colDict:@{@"groupId":@"TEXT",@"groupName":@"TEXT",@"groupAvatarId":@"TEXT",@"numberOfMember":@"TEXT",@"groupManagerId":@"TEXT"} primaryKey:@"groupId"];
+                [self.hxdb createTable:memberTable colDict:@{@"memberId":@"TEXT",@"memberName":@"TEXT",@"memberPhone":@"TEXT"} primaryKey:@"memberId"];
                 
                 [self.hxdb tableCreate:@"CREATE TABLE IF NOT EXISTS memberGroupRelation (memberId TEXT,groupId TEXT, FOREIGN KEY(groupId) REFERENCES groupTable(groupId) ON DELETE CASCADE);" table:@"memberGroupRelation"];
                 [self.hxdb tableCreate:@"CREATE TABLE IF NOT EXISTS groupInfoTable(publishTime TEXT,publisher TEXT,eventDate TEXT,eventSection TEXT,event TEXT,deadlineIndex TEXT,groupId TEXT, comment TEXT,FOREIGN KEY(groupId) REFERENCES groupTable(groupId) ON DELETE CASCADE);" table:@"groupInfoTable"];

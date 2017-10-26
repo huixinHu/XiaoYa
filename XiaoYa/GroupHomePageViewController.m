@@ -63,12 +63,6 @@
 - (void)dbSetting{
     self.hxDB = [HXDBManager shareInstance];
 
-//    [self.hxDB insertTable:@"groupTable" param:@{@"groupId":@"75",@"groupName":@"测试",@"groupAvatarId":@"0",@"numberOfMember":@"2",@"groupManagerId":@"7"} callback:nil];
-//    [self.hxDB insertTable:@"memberTable" param:@{@"memberId":@"7",@"memberName":@"彗星",@"memberphone":@"15918887876"} callback:nil];
-//    [self.hxDB insertTable:@"memberTable" param:@{@"memberId":@"8",@"memberName":@"巫辉强",@"memberphone":@"13660259565"} callback:nil];
-//    [self.hxDB insertTable:@"memberGroupRelation" param:@{@"memberId":@"7",@"groupId":@"75"} callback:nil];
-//    [self.hxDB insertTable:@"memberGroupRelation" param:@{@"memberId":@"8",@"groupId":@"75"} callback:nil];
-    
     NSArray *groupArr = [self.hxDB queryAll:@"groupTable" callback:^(NSError *error) {
         if (error) {
             NSLog(@"%@",error.userInfo[NSLocalizedDescriptionKey]);
