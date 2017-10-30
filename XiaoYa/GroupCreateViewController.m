@@ -125,7 +125,7 @@ static NSString *identifier = @"collectionCell";
                 NSMutableArray *addMemParaArr = [NSMutableArray array];//插入成员表的数据
                 [ss.dataArray enumerateObjectsUsingBlock:^(GroupMemberModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
                     //查询成员表，这些新增的人是否已经在数据库
-                    int count = [ss.hxdb itemCountForTable:memberTable whereArr:@[@"memberId", @"=", obj.memberId]];
+                    int count = [ss.hxdb itemCountForTable:memberTable whereDict:@{@"WHERE memberId = ?" : @[obj.memberId]}];
                     if (count == 0) {//数据库中没有
                         NSDictionary *memDict = @{@"memberId":obj.memberId, @"memberName":obj.memberName, @"memberPhone":obj.memberPhone};
                         [addMemParaArr addObject:memDict];
@@ -572,7 +572,7 @@ static NSString *identifier = @"collectionCell";
 
 - (HXDBManager *)hxdb{
     if (_hxdb == nil) {
-        _hxdb = [HXDBManager shareInstance];
+        _hxdb = [HXDBManager shareDB];
     }
     return _hxdb;
 }

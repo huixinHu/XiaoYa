@@ -93,7 +93,9 @@
                 appDelegate.userid = [[[[result componentsSeparatedByString:@"("] lastObject] componentsSeparatedByString:@")"]firstObject];
                 appDelegate.phone = ss.account.text;
                 //http登录成功了就打开数据库.一定要保证这是整个app中第一次调用hxdb的地方(和用户有关，一个用户一份独立数据)
-                self.hxdb = [HXDBManager shareInstance];
+                self.hxdb = [HXDBManager shareDB:@"XiaoYa.sqlite" dbPath:[Utils HXNSStringMD5:appDelegate.userid]];
+                //如果是退出再登录其他人的账号，要切换用户路径。（如果是打开app的第一次登录就只是重复执行上一句的代码）
+                [self.hxdb changeFilePath:[Utils HXNSStringMD5:appDelegate.userid] dbName:@"XiaoYa.sqlite"];
                 [self.hxdb createTable:groupTable colDict:@{@"groupId":@"TEXT",@"groupName":@"TEXT",@"groupAvatarId":@"TEXT",@"numberOfMember":@"TEXT",@"groupManagerId":@"TEXT"} primaryKey:@"groupId"];
                 [self.hxdb createTable:memberTable colDict:@{@"memberId":@"TEXT",@"memberName":@"TEXT",@"memberPhone":@"TEXT"} primaryKey:@"memberId"];
                 
@@ -107,6 +109,10 @@
             }
         } failure:^(NSURLSessionDataTask *task, NSError *error) {
             NSLog(@"Error: %@", error);
+            NSError *underErr = error.userInfo[@"NSUnderlyingError"];
+            NSData *data = underErr.userInfo[@"com.alamofire.serialization.response.error.data"];
+            NSString *result = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+            NSLog(@"result :%@",result);
         } refresh:NO];
     });
 }

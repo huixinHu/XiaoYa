@@ -9,72 +9,67 @@
 #import "HXDBManager.h"
 #import "FMDB.h"
 #import <CommonCrypto/CommonCrypto.h>
-#import "AppDelegate.h"
 #import <objc/runtime.h>
 
 #define kMaxPageCount 50//分页条数
-#define SQL_TEXT     @"TEXT" //文本
-#define SQL_INTEGER  @"INTEGER" //int long integer ...
-#define SQL_REAL     @"REAL" //浮点
-#define SQL_BLOB     @"BLOB" //data
-
-static NSString *_HXNSStringMD5(NSString *string) {
-    if (!string) return nil;
-    NSData *data = [string dataUsingEncoding:NSUTF8StringEncoding];
-    unsigned char result[CC_MD5_DIGEST_LENGTH];
-    CC_MD5(data.bytes, (CC_LONG)data.length, result);
-    return [NSString stringWithFormat:
-            @"%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
-            result[0],  result[1],  result[2],  result[3],
-            result[4],  result[5],  result[6],  result[7],
-            result[8],  result[9],  result[10], result[11],
-            result[12], result[13], result[14], result[15]
-            ];
-}
 
 @interface HXDBManager ()<NSCopying,NSMutableCopying>
 @property (nonatomic ,strong) FMDatabaseQueue *dbQueue;
 @property (nonatomic ,strong) NSString *dbPath;
 @property (nonatomic ,strong) dispatch_queue_t queue;
+@property (nonatomic, strong)FMDatabase *db;
 @end
 
 @implementation HXDBManager
 static NSString *HXDBErrorDomain = @"com.comment.hxdbdomain";
-static HXDBManager *sharedManager=nil;
+static HXDBManager *sharedManager = nil;
 
-+ (instancetype)shareInstance{
++ (instancetype)shareDB{
+    return [self shareDB:nil dbPath:nil];
+}
+
++ (instancetype)shareDB:(NSString *)dbName{
+    return [self shareDB:dbName dbPath:nil];
+}
+
++ (instancetype)shareDB:(NSString *)dbName dbPath:(NSString *)dbpath{
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        sharedManager = [[super allocWithZone:NULL] init];
+        sharedManager = [[super allocWithZone:NULL] initWithFilePath:dbpath dbName:dbName];
     });
     return sharedManager;
 }
 
 + (id)allocWithZone:(struct _NSZone *)zone{
-    return [HXDBManager shareInstance] ;
+    return [HXDBManager shareDB] ;
 }
 
 - (id)copyWithZone:(NSZone *)zone{
-    return [HXDBManager shareInstance] ;//return _instance;
+    return [HXDBManager shareDB] ;//return _instance;
 }
 
 - (id)mutableCopyWithZone:(NSZone *)zone{
-    return [HXDBManager shareInstance] ;
+    return [HXDBManager shareDB] ;
 }
 
-- (instancetype)init{
+- (instancetype)initWithFilePath:(NSString *)path dbName:(NSString *)dbName{
     if (self = [super init]) {
-        AppDelegate *apd = (AppDelegate *)[[UIApplication sharedApplication] delegate];
-        NSString *path = _HXNSStringMD5(apd.userid);
-        [self changeFilePath:path];
+//        AppDelegate *apd = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+//        NSString *path = _HXNSStringMD5(apd.userid);
+        [self changeFilePath:path dbName:dbName];
     }
     return self;
 }
 
 //切换用户就要切换数据库//这里应该根据用户信息md5建一个路径
-- (void)changeFilePath:(NSString *)path{
-    NSString *directory = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)lastObject];
-    NSString *filePath = [directory stringByAppendingPathComponent:path];
+- (void)changeFilePath:(NSString *)path dbName:(NSString *)dbName{
+    if ([self.db open]) {//切换数据库要先关闭旧用户数据库
+        [self.db close];
+    }
+    NSString *filePath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)lastObject];
+    if (path) {
+        filePath = [filePath stringByAppendingPathComponent:path];
+    }
     
     NSFileManager *fmManager = [NSFileManager defaultManager];
     BOOL isDir;
@@ -82,10 +77,14 @@ static HXDBManager *sharedManager=nil;
     if (!exit || !isDir) {
         [fmManager createDirectoryAtPath:filePath withIntermediateDirectories:YES attributes:nil error:nil];
     }
-    self.dbPath = [filePath stringByAppendingPathComponent:@"XiaoYa.sqlite"];
+    if (!dbName) {
+        dbName = @"XiaoYa.sqlite";
+    }
+    self.dbPath = [filePath stringByAppendingPathComponent:dbName];
     NSLog(@"dataBasePath:%@",filePath);
     
-    self.dbQueue  = [FMDatabaseQueue databaseQueueWithPath:self.dbPath];
+    self.dbQueue = [FMDatabaseQueue databaseQueueWithPath:self.dbPath];
+    self.db = [self.dbQueue valueForKey:@"_db"];
     [self.dbQueue inDatabase:^(FMDatabase *db) {
         BOOL result = [db executeUpdate:@"PRAGMA foreign_keys=ON;"];
         [db setShouldCacheStatements:YES];//开启缓存
@@ -107,31 +106,8 @@ static HXDBManager *sharedManager=nil;
     return string;
 }
 
-//根据where数组组合where条件语句。
-//where数组每三项的放置组合：字段、条件、字段值
-- (NSDictionary *)combineWhereStat:(NSArray *)whereArr{
-    NSMutableDictionary *dict = [NSMutableDictionary dictionary];
-    NSMutableString *whereSQL = [NSMutableString string];
-    if (!(whereArr.count % 3)){
-        [whereSQL appendString:@" where "];
-        for(int i = 0 ; i < whereArr.count ; i += 3){
-            [whereSQL appendFormat:@"%@ %@ ?",whereArr[i],whereArr[i+1]];
-            if (i != (whereArr.count - 3)) {
-                [whereSQL appendString:@" and "];
-            }
-        }
-        NSMutableArray *values = [NSMutableArray array];
-        for(int i = 0; i < whereArr.count; i += 3){
-            [values addObject:whereArr[i + 2]];
-        }
-        [dict setObject:values forKey:whereSQL];
-    } else{
-        NSLog(@"where条件数组错误!");
-    }
-    return dict;
-}
-
 #pragma mark runtime
+//模型转字典 propertyArr：模型中不需要转化的属性数组
 - (NSDictionary *)modelToDictionary:(Class)cls excludeProperty:(NSArray *)propertyArr{
     NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:0];
     u_int count;
@@ -149,6 +125,7 @@ static HXDBManager *sharedManager=nil;
     return dict;
 }
 
+//oc数据类型转sql数据类型
 - (NSString *)ocTypeToSqlType:(NSString *)ocType{
     NSString *resultStr = nil;
     if ([ocType hasPrefix:@"T@\"NSString\""]) {
@@ -162,6 +139,23 @@ static HXDBManager *sharedManager=nil;
     }
     
     return resultStr;
+}
+
+//得到model属性的名称和值
+- (NSMutableDictionary *)getModelPropertyKeyValue:(id)model tableName:(NSString *)tableName excludeProperty:(NSArray *)colArr{
+    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:0];
+    u_int count;
+    objc_property_t *properties = class_copyPropertyList([model class], &count);
+    for (int i = 0; i < count; i++) {
+        NSString *pName = [NSString stringWithCString:property_getName(properties[i]) encoding:NSUTF8StringEncoding];
+        if (colArr && [colArr containsObject:pName]) continue;
+        id pValue = [model valueForKey:pName];
+        if (pValue) {
+            [dict setObject:pValue forKey:pName];
+        }
+    }
+    free(properties);
+    return dict;
 }
 
 //表是否存在
@@ -224,32 +218,14 @@ static HXDBManager *sharedManager=nil;
     return result;
 }
 
-- (BOOL)createTable:(NSString *)tableName model:(Class)cls primaryKey:(NSString *)pk excludeColumn:(NSArray *)colArr{
+//根据模型类创建表
+//colArr 模型中不需要转化为表字段的属性数组
+- (BOOL)createTable:(NSString *)tableName modelClass:(Class)cls primaryKey:(NSString *)pk excludeProperty:(NSArray *)colArr{
     if (tableName == nil || cls == nil || [colArr containsObject:pk]) {
         return NO;
     }
-    NSMutableString *sqlStr = [NSMutableString stringWithFormat:@"CREATE TABLE IF NOT EXISTS %@ (",tableName];
     NSDictionary *dict = [self modelToDictionary:cls excludeProperty:colArr];
-    __block int count;
-    __block BOOL result = NO;
-    [dict enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
-        count++;
-        if (count == dict.count) {
-            [sqlStr appendFormat:@" %@ %@)", key, obj];
-        }else{
-            [sqlStr appendFormat:@" %@ %@,", key, obj];
-        }
-        if (pk && [key isEqualToString:pk]) {
-            [sqlStr insertString:@" PRIMARY KEY" atIndex:sqlStr.length-1];
-        }
-    }];
-    [self.dbQueue inDatabase:^(FMDatabase *db) {
-        if ([db open]) {
-            result = [db executeUpdate:sqlStr];
-        }
-    }];
-    NSLog(@"%@", result ? [NSString stringWithFormat:@"创建表 %@成功",tableName] : [NSString stringWithFormat:@"创建表 %@失败",tableName]);
-    return result;
+    return [self createTable:tableName colDict:dict primaryKey:pk];
 }
 
 #pragma mark 删除表
@@ -273,6 +249,28 @@ static HXDBManager *sharedManager=nil;
 }
 
 #pragma mark 插入
+//插入模型
+- (void)insertTable:(NSString *)tableName model:(id)model excludeProperty:(NSArray *)colArr callback:(void(^)(NSError *error ))block{
+    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:0];
+    dict = [self getModelPropertyKeyValue:model tableName:tableName excludeProperty:colArr];
+    [self insertTable:tableName param:dict callback:block];
+}
+
+//批量插入模型
+- (void)insertTableInTransaction:(NSString *)tableName modelArr:(NSArray <id>*)modelArr excludeProperty:(NSArray <NSArray *>*)colArr callback:(void(^)(NSError *error ))block{
+    NSMutableArray *arr = [NSMutableArray arrayWithCapacity:0];
+    [modelArr enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict;
+        if (idx < colArr.count) {
+            dict = [self getModelPropertyKeyValue:obj tableName:tableName excludeProperty:colArr[idx]];
+        } else {
+            dict = [self getModelPropertyKeyValue:obj tableName:tableName excludeProperty:nil];
+        }
+        [arr addObject:dict];
+    }];
+    [self insertTableInTransaction:tableName paramArr:arr callback:block];
+}
+
 //插入单条数据。paraDict：key 字段名、value 字段值；block：回调。有回调就不需要返回BOOL值（表示是否插入成功）
 - (void)insertTable:(NSString *)tableName param:(NSDictionary *)paraDict callback:(void(^)(NSError *error ))block{
     if (tableName == nil || paraDict == nil || paraDict.count == 0) {
@@ -292,12 +290,7 @@ static HXDBManager *sharedManager=nil;
             return;
         }
         if ([db open]){
-            NSMutableArray *columns = [NSMutableArray arrayWithCapacity:0];//table中的字段名
-            FMResultSet *resultSet = [db getTableSchema:tableName];
-            while([resultSet next]){
-                [columns addObject:[resultSet stringForColumn:@"name"]];//获得table中的字段名
-            }
-            [resultSet close];
+            NSArray *columns = [self tableColumnsArr:tableName db:db];//表字段
             NSMutableString *sqlStr = [NSMutableString stringWithFormat:@"INSERT INTO %@ (",tableName];
             NSArray *keys = [paraDict allKeys];
             NSMutableArray *values = [NSMutableArray arrayWithCapacity:0];
@@ -320,10 +313,10 @@ static HXDBManager *sharedManager=nil;
             }
             NSLog(result ? @"插入成功" : @"插入失败");
         }
-//        [db close];
     }];
 }
 
+//批量插入数据
 - (void)insertTableInTransaction:(NSString *)tableName paramArr:(NSArray <NSDictionary *>*)paraArr callback:(void(^)(NSError *error))block{
     if (tableName == nil || paraArr == nil || paraArr.count == 0){
         if (block) {
@@ -342,12 +335,7 @@ static HXDBManager *sharedManager=nil;
         }
         if ([db open]) {
             [db setShouldCacheStatements:YES];//开启缓存
-            NSMutableArray *columns = [NSMutableArray arrayWithCapacity:0];//table中的字段名
-            FMResultSet *resultSet = [db getTableSchema:tableName];
-            while([resultSet next]){
-                [columns addObject:[resultSet stringForColumn:@"name"]];//获得table中的字段名
-            }
-            [resultSet close];
+            NSArray *columns = [self tableColumnsArr:tableName db:db];
             [paraArr enumerateObjectsUsingBlock:^(NSDictionary * _Nonnull paraDict, NSUInteger idx, BOOL * _Nonnull stop) {
                 NSMutableString *sqlStr = [NSMutableString stringWithFormat:@"INSERT INTO %@ (",tableName];
                 NSArray *keys = [paraDict allKeys];
@@ -374,13 +362,34 @@ static HXDBManager *sharedManager=nil;
                 }
             }];
         }
-//        [db close];
     }];
 }
 
 #pragma mark 更新
-//paraDict：key 字段名、value 字段值；where数组每三项的放置组合：字段、条件、字段值,如果where数组传空，就更新整个表
-- (void)updateTable:(NSString *)tableName param:(NSDictionary *)paraDict whereArr:(NSArray *)whereArr callback:(void(^)(NSError *error ))block{
+//更新模型
+- (void)updateTable:(NSString *)tableName model:(id)model excludeProperty:(NSArray *)colArr whereDict:(NSDictionary *)where callback:(void(^)(NSError *error ))block{
+    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:0];
+    dict = [self getModelPropertyKeyValue:model tableName:tableName excludeProperty:colArr];
+    [self updateTable:tableName param:dict whereDict:where callback:block];
+}
+
+//批量更新模型
+- (void)updateTableInTransaction:(NSString *)tableName modelArr:(NSArray <id>*)modelArr excludeProperty:(NSArray <NSArray *>*)colArr whereArrs:(NSArray<NSDictionary *> *)whereArr callback:(void (^)(NSError *))block{
+    NSMutableArray *arr = [NSMutableArray arrayWithCapacity:0];
+    [modelArr enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict;
+        if (idx < colArr.count) {
+            dict = [self getModelPropertyKeyValue:obj tableName:tableName excludeProperty:colArr[idx]];
+        } else {
+            dict = [self getModelPropertyKeyValue:obj tableName:tableName excludeProperty:nil];
+        }
+        [arr addObject:dict];
+    }];
+    [self updateTableInTransaction:tableName paramArr:arr whereArrs:whereArr callback:block];
+}
+
+//paraDict：key 字段名、value 字段值；如果where传空，就更新整个表
+- (void)updateTable:(NSString *)tableName param:(NSDictionary *)paraDict whereDict:(NSDictionary *)where callback:(void(^)(NSError *error ))block{
     if (tableName == nil || paraDict == nil || paraDict.count == 0){
         if (block) {
             NSError *error = [self errorWithErrorCode:2000];
@@ -397,12 +406,7 @@ static HXDBManager *sharedManager=nil;
             return;
         }
         if ([db open]) {
-            NSMutableArray *columns = [NSMutableArray arrayWithCapacity:0];//table中的字段名
-            FMResultSet *resultSet = [db getTableSchema:tableName];
-            while([resultSet next]){
-                [columns addObject:[resultSet stringForColumn:@"name"]];//获得table中的字段名
-            }
-            [resultSet close];
+            NSArray *columns = [self tableColumnsArr:tableName db:db];
             NSMutableString *sqlStr = [NSMutableString stringWithFormat:@"UPDATE %@ SET ",tableName];
             NSArray *keys = [paraDict allKeys];
             NSMutableArray *values = [NSMutableArray arrayWithCapacity:0];
@@ -413,13 +417,11 @@ static HXDBManager *sharedManager=nil;
                 }
             }];
             [sqlStr deleteCharactersInRange:NSMakeRange(sqlStr.length - 1, 1)];
-            if (whereArr.count > 0) {
-                NSDictionary *whereDict = [self combineWhereStat:whereArr];
-                if (whereDict.count > 0) {
-                    NSArray *whereSqls = [whereDict allKeys];
-                    [sqlStr appendFormat:@" %@",whereSqls[0]];
-                    [values addObjectsFromArray:[whereDict objectForKey:whereSqls[0]]];
-                }
+            if (where.count > 0) {
+                [where enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+                    [sqlStr appendFormat:@" %@",key];
+                    [values addObjectsFromArray:obj];
+                }];
             }
             
             BOOL result = [db executeUpdate:sqlStr withArgumentsInArray:values];
@@ -429,11 +431,10 @@ static HXDBManager *sharedManager=nil;
                 }
             }
         }
-//        [db close];
     }];
 }
 
-- (void)updateTableInTransaction:(NSString *)tableName paramArr:(NSArray <NSDictionary *>*)paraArr whereArrs:(NSArray <NSArray *>*)whereArr callback:(void(^)(NSError *error))block{
+- (void)updateTableInTransaction:(NSString *)tableName paramArr:(NSArray <NSDictionary *>*)paraArr whereArrs:(NSArray <NSDictionary *>*)whereArr callback:(void(^)(NSError *error))block{
     if (tableName == nil || paraArr == nil || paraArr.count == 0 || paraArr.count != whereArr.count){
         if (block) {
             NSError *error = [self errorWithErrorCode:2000];
@@ -450,12 +451,7 @@ static HXDBManager *sharedManager=nil;
             return;
         }
         if ([db open]) {
-            NSMutableArray *columns = [NSMutableArray arrayWithCapacity:0];//table中的字段名
-            FMResultSet *resultSet = [db getTableSchema:tableName];
-            while([resultSet next]){
-                [columns addObject:[resultSet stringForColumn:@"name"]];//获得table中的字段名
-            }
-            [resultSet close];
+            NSArray *columns = [self tableColumnsArr:tableName db:db];
             [paraArr enumerateObjectsUsingBlock:^(NSDictionary * _Nonnull paraDict, NSUInteger idx, BOOL * _Nonnull stop) {
                 NSMutableString *sqlStr = [NSMutableString stringWithFormat:@"UPDATE %@ SET ",tableName];
                 NSArray *keys = [paraDict allKeys];
@@ -469,11 +465,12 @@ static HXDBManager *sharedManager=nil;
                 [sqlStr deleteCharactersInRange:NSMakeRange(sqlStr.length - 1, 1)];
                 
                 if (whereArr[idx].count > 0) {
-                    NSDictionary *whereDict = [self combineWhereStat:whereArr[idx]];
-                    if (whereDict.count > 0) {
-                        NSArray *whereSqls = [whereDict allKeys];
-                        [sqlStr appendFormat:@" %@",whereSqls[0]];
-                        [values addObjectsFromArray:[whereDict objectForKey:whereSqls[0]]];
+                    NSDictionary *where = whereArr[idx];
+                    if (where.count > 0) {
+                        [where enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+                            [sqlStr appendFormat:@" %@",key];
+                            [values addObjectsFromArray:obj];
+                        }];
                         //存在where子句才执行更新。由于这个方法是对同一个表进行批量更新，如果有其中一个事务没有where子句（更新整表），那么批量更新就没意义了
                         BOOL result = [db executeUpdate:sqlStr withArgumentsInArray:values];
                         if (!result) {
@@ -497,13 +494,12 @@ static HXDBManager *sharedManager=nil;
                 }
             }];
         }
-//        [db close];
     }];
 }
 
 #pragma mark 删除
 //如果where为空，就删除整表记录
-- (void)deleteTable:(NSString *)tableName whereArr:(NSArray *)whereArr callback:(void(^)(NSError *error))block{
+- (void)deleteTable:(NSString *)tableName whereDict:(NSDictionary *)where callback:(void(^)(NSError *error))block{
     if (tableName == nil) {
         if (block) {
             NSError *error = [self errorWithErrorCode:2000];
@@ -522,14 +518,13 @@ static HXDBManager *sharedManager=nil;
         if ([db open]) {
             NSMutableString *sqlStr = [NSMutableString stringWithFormat:@"DELETE FROM %@ ",tableName];
             NSMutableArray *values = [NSMutableArray arrayWithCapacity:0];
-            if (whereArr.count > 0) {
-                NSDictionary *whereDict = [self combineWhereStat:whereArr];
-                if (whereDict.count > 0) {
-                    NSArray *whereSqls = [whereDict allKeys];
-                    [sqlStr appendFormat:@"%@",whereSqls[0]];
-                    [values addObjectsFromArray:[whereDict objectForKey:whereSqls[0]]];
-                }
+            if (where.count > 0) {
+                [where enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+                    [sqlStr appendFormat:@" %@",key];
+                    [values addObjectsFromArray:obj];
+                }];
             }
+            
             BOOL result = [db executeUpdate:sqlStr withArgumentsInArray:values];
             if (!result) {
                 if (block) {
@@ -540,7 +535,7 @@ static HXDBManager *sharedManager=nil;
     }];
 }
 
-- (void)deleteTableInTransaction:(NSString *)tableName whereArrs:(NSArray <NSArray *>*)whereArrs callback:(void(^)(NSError *error))block{
+- (void)deleteTableInTransaction:(NSString *)tableName whereArrs:(NSArray <NSDictionary *>*)whereArrs callback:(void(^)(NSError *error))block{
     if (tableName == nil){
         if (block) {
             NSError *error = [self errorWithErrorCode:2000];
@@ -557,16 +552,14 @@ static HXDBManager *sharedManager=nil;
             return;
         }
         if ([db open]) {
-            [whereArrs enumerateObjectsUsingBlock:^(NSArray * _Nonnull whereArr, NSUInteger idx, BOOL * _Nonnull stop) {
+            [whereArrs enumerateObjectsUsingBlock:^(NSDictionary * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
                 NSMutableString *sqlStr = [NSMutableString stringWithFormat:@"DELETE FROM %@ ",tableName];
                 NSMutableArray *values = [NSMutableArray arrayWithCapacity:0];
-                if (whereArr.count > 0) {
-                    NSDictionary *whereDict = [self combineWhereStat:whereArr];
-                    if (whereDict.count > 0) {
-                        NSArray *whereSqls = [whereDict allKeys];
-                        [sqlStr appendFormat:@" %@",whereSqls[0]];
-                        [values addObjectsFromArray:[whereDict objectForKey:whereSqls[0]]];
-                    }
+                if (obj.count > 0) {
+                    [obj enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+                        [sqlStr appendFormat:@" %@",key];
+                        [values addObjectsFromArray:obj];
+                    }];
                 }
                 BOOL result = [db executeUpdate:sqlStr withArgumentsInArray:values];
                 if (!result) {
@@ -577,6 +570,7 @@ static HXDBManager *sharedManager=nil;
                     *stop = YES;
                     return;
                 }
+
             }];
         }
     }];
@@ -602,7 +596,6 @@ static HXDBManager *sharedManager=nil;
                 }
             }
         }
-//        [db close];
     }];
 }
 
@@ -629,23 +622,21 @@ static HXDBManager *sharedManager=nil;
                 }
             }];
         }
-//        [db close];
     }];
 }
 
 #pragma mark 查询
 //根据条件查询有多少条数据
-- (int)itemCountForTable:(NSString *)tableName whereArr:(NSArray *)whereArr{
+- (int)itemCountForTable:(NSString *)tableName whereDict:(NSDictionary *)where{
     NSMutableString *sqlStr = [NSMutableString stringWithFormat:@"SELECT count(*) from %@",tableName];
-    NSMutableArray *values = [NSMutableArray array];
-    if (whereArr.count > 0) {
-        NSDictionary *whereDict = [self combineWhereStat:whereArr];
-        if (whereDict.count > 0) {
-            NSArray *whereSqls = [whereDict allKeys];
-            [sqlStr appendFormat:@" %@",whereSqls[0]];
-            [values addObjectsFromArray:[whereDict objectForKey:whereSqls[0]]];
-        }
+    NSMutableArray *values = [NSMutableArray arrayWithCapacity:0];
+    if (where.count > 0) {
+        [where enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+            [sqlStr appendFormat:@" %@",key];
+            [values addObjectsFromArray:obj];
+        }];
     }
+    
     __block int count = 0;
     [self.dbQueue inDatabase:^(FMDatabase *db) {
         FMResultSet *rs;
@@ -662,9 +653,15 @@ static HXDBManager *sharedManager=nil;
     return count;
 }
 
+//查询模型
+- (NSMutableArray *)queryTable:(NSString *)tableName modelClass:(Class)cls excludeProperty:(NSArray *)colArr whereDict:(NSDictionary *)where callback:(void(^)(NSError *error))block{
+    NSDictionary *dict = [self modelToDictionary:cls excludeProperty:colArr];
+    return [self queryTable:tableName columns:dict whereDict:where callback:block];
+}
+
 //查询单条
-- (NSMutableArray *)queryTable:(NSString *)tableName columns:(NSArray *)columnArr whereArr:(NSArray *)whereArr callback:(void(^)(NSError *error))block{
-    if (tableName == nil){
+- (NSMutableArray *)queryTable:(NSString *)tableName columns:(NSDictionary *)columnDict whereDict:(NSDictionary *)where callback:(void(^)(NSError *error))block{
+    if (tableName == nil || columnDict == nil || columnDict.count == 0){
         if (block) {
             NSError *error = [self errorWithErrorCode:2000];
             block(error);
@@ -681,33 +678,25 @@ static HXDBManager *sharedManager=nil;
             return;
         }
         if ([db open]) {
-            NSMutableArray *columns = [NSMutableArray arrayWithCapacity:0];//table中的字段名
-            FMResultSet *resultSet = [db getTableSchema:tableName];
-            while([resultSet next]){
-                [columns addObject:[resultSet stringForColumn:@"name"]];//获得table中的字段名
-            }
-            [resultSet close];
+            NSArray *columns = [self tableColumnsArr:tableName db:db];
             NSMutableString *sqlStr = [NSMutableString stringWithString:@"SELECT "];
-            if (columnArr == nil || columnArr.count == 0) {
-                [sqlStr appendString:@"* "];
-            }else{
-                [columnArr enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-                    if ([columns containsObject:obj]) {
-                        [sqlStr appendFormat:@"%@ ,",obj];
-                    }
-                }];
-                [sqlStr deleteCharactersInRange:NSMakeRange(sqlStr.length - 1, 1)];
-            }
-            [sqlStr appendFormat:@"FROM %@",tableName];
-            
-            NSMutableArray *values = [NSMutableArray array];
-            if (whereArr.count > 0) {
-                NSDictionary *whereDict = [self combineWhereStat:whereArr];
-                if (whereDict.count > 0) {
-                    NSArray *whereSqls = [whereDict allKeys];
-                    [sqlStr appendFormat:@"%@",whereSqls[0]];
-                    [values addObjectsFromArray:[whereDict objectForKey:whereSqls[0]]];
+            NSMutableArray *keys = [NSMutableArray arrayWithCapacity:0];
+            [columnDict enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+                if ([columns containsObject:key]) {
+                    [sqlStr appendFormat:@"%@ ,",key];
+                    [keys addObject:key];
                 }
+            }];
+            [sqlStr deleteCharactersInRange:NSMakeRange(sqlStr.length - 1, 1)];
+            
+            [sqlStr appendFormat:@"FROM %@",tableName];
+
+            NSMutableArray *values = [NSMutableArray arrayWithCapacity:0];
+            if (where.count > 0) {
+                [where enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+                    [sqlStr appendFormat:@" %@",key];
+                    [values addObjectsFromArray:obj];
+                }];
             }
             
             //分页
@@ -724,13 +713,20 @@ static HXDBManager *sharedManager=nil;
                         }
                     }
                     while ([rs next]) {
-                        int count = [rs columnCount];
                         NSMutableDictionary *dic = [NSMutableDictionary dictionary];
-                        for (int i = 0 ; i < count ; i++) {
-                            NSString *key = [rs columnNameForIndex:i];
-                            NSString *value = [rs stringForColumnIndex:i];
-                            [dic setValue:value forKey:key];
-                        }
+                        [keys enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                            if ([columnDict[obj] isEqualToString:SQL_TEXT]) {
+                                NSString *value = [rs stringForColumn:obj];
+                                if (value) [dic setObject:value forKey:obj];
+                            } else if ([columnDict[obj] isEqualToString:SQL_INTEGER]){
+                                [dic setObject:[NSNumber numberWithLongLong:[rs longLongIntForColumn:obj]] forKey:obj];
+                            } else if ([columnDict[obj] isEqualToString:SQL_REAL]){
+                                [dic setObject:[NSNumber numberWithDouble:[rs doubleForColumn:obj]] forKey:obj];
+                            } else if ([columnDict[obj] isEqualToString:SQL_BLOB]){
+                                NSData *data = [rs dataForColumn:obj];
+                                if (data) [dic setObject:data forKey:obj];
+                            }
+                        }];
                         [dataArr addObject:dic];
                     }
                     [rs close];
@@ -755,25 +751,36 @@ static HXDBManager *sharedManager=nil;
     [self.dbQueue inDatabase:^(FMDatabase *db) {
         NSString *sql = [NSString stringWithFormat:@"SELECT * FROM %@",tableName];
         FMResultSet *rs = [db executeQuery:sql];
-        while ([rs next]) {
-            int count = [rs columnCount];
-            NSMutableDictionary *dic = [NSMutableDictionary dictionary];
-            for (int i = 0 ; i < count ; i++) {
-                NSString *key = [rs columnNameForIndex:i];
-                NSString *value = [rs stringForColumnIndex:i];
-                [dic setValue:value forKey:key];
-            }
-            [dataArr addObject:dic];
-        }
         if (rs == nil) {
             if (block) {
                 NSError *error = [self errorWithErrorCode:2003];
                 block(error);
             }
         }
+        while ([rs next]) {
+            int count = [rs columnCount];
+            NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+            for (int i = 0 ; i < count ; i++) {
+                NSString *key = [rs columnNameForIndex:i];
+                id value = [rs objectForColumnIndex:i];
+                [dic setValue:value forKey:key];
+            }
+            [dataArr addObject:dic];
+        }
         [rs close];
     }];
     return dataArr;
+}
+
+//得到表所有字段名
+- (NSArray *)tableColumnsArr:(NSString *)tableName db:(FMDatabase *)db{
+    NSMutableArray *columns = [NSMutableArray arrayWithCapacity:0];//table中的字段名
+    FMResultSet *resultSet = [db getTableSchema:tableName];
+    while([resultSet next]){
+        [columns addObject:[resultSet stringForColumn:@"name"]];//获得table中的字段名
+    }
+    [resultSet close];
+    return columns;
 }
 
 - (dispatch_queue_t)queue{
@@ -804,7 +811,7 @@ static HXDBManager *sharedManager=nil;
             errorMessage = @"查询错误";
             break;
         default:
-            errorMessage = @"hxdb 不可描述的出出错";
+            errorMessage = @"hxdb 未知出错";
             break;
     }
     return [NSError errorWithDomain:HXDBErrorDomain

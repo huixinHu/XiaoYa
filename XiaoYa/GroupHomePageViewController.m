@@ -61,7 +61,7 @@
 }
 
 - (void)dbSetting{
-    self.hxDB = [HXDBManager shareInstance];
+    self.hxDB = [HXDBManager shareDB];
 
     NSArray *groupArr = [self.hxDB queryAll:@"groupTable" callback:^(NSError *error) {
         if (error) {

@@ -111,7 +111,8 @@
                 appDelegate.userid = [[[[result componentsSeparatedByString:@"("] lastObject] componentsSeparatedByString:@")"]firstObject];
                 appDelegate.phone = ss.phoneNum;
                 //http登录成功了就打开数据库
-                self.hxdb = [HXDBManager shareInstance];
+                self.hxdb = [HXDBManager shareDB:@"XiaoYa.sqlite" dbPath:[Utils HXNSStringMD5:appDelegate.userid]];
+                [self.hxdb changeFilePath:[Utils HXNSStringMD5:appDelegate.userid] dbName:@"XiaoYa.sqlite"];
                 [self.hxdb createTable:groupTable colDict:@{@"groupId":@"TEXT",@"groupName":@"TEXT",@"groupAvatarId":@"TEXT",@"numberOfMember":@"TEXT",@"groupManagerId":@"TEXT"} primaryKey:@"groupId"];
                 [self.hxdb createTable:memberTable colDict:@{@"memberId":@"TEXT",@"memberName":@"TEXT",@"memberphone":@"TEXT"} primaryKey:@"memberId"];
                 

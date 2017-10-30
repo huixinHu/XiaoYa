@@ -107,4 +107,6 @@
  @return 当前控制器
  */
 + (UIViewController *)obtainPresentVC;
+
++ (NSString *)HXNSStringMD5:(NSString *)string;
 @end

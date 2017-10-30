@@ -253,7 +253,7 @@
 
 -(HXDBManager *)hxdb{
     if (_hxdb == nil) {
-        _hxdb = [HXDBManager shareInstance];
+        _hxdb = [HXDBManager shareDB];
     }
     return _hxdb;
 }

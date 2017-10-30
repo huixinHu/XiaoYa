@@ -52,7 +52,7 @@ static NSString *identifier = @"groupDetailCollectionCell";
             //从数据库去取
             __strong typeof(ws) ss = ws;
             //1.查找该群组所有的用户id 查找关系表
-            NSArray *dbMemberIdDictArr = [ss.hxDB queryTable:memberGroupRelation columns:@[@"memberId"] whereArr:@[@"groupId",@"=",model.groupId] callback:^(NSError *error) {
+            NSArray *dbMemberIdDictArr = [ss.hxDB queryTable:memberGroupRelation columns:@{@"memberId":SQL_TEXT}whereDict:@{@"WHERE groupId = ?" : @[model.groupId]} callback:^(NSError *error) {
                 NSLog(@"%@",error.userInfo[NSLocalizedDescriptionKey]);
             }];//NSArray <NSDictionary *>*
             //如果关系表有
@@ -116,7 +116,7 @@ static NSString *identifier = @"groupDetailCollectionCell";
                 } else{
                     NSArray *users = [responseDict objectForKey:@"identity"];
                     NSMutableArray <GroupMemberModel *>*groupMembers = [NSMutableArray array];
-                    NSMutableArray *deleteMemberWheres = [NSMutableArray array];//该群组成员已存在于成员表的成员id 的where条件数组
+                    NSMutableArray *deleteMemberWheres = [NSMutableArray array];//该群组成员已存在于成员表的成员id 的where条件数组.因为要删除旧数据在添加新数据，每次打开群资料都要这样锁
                     NSMutableSet *networkMemberIdSet = [NSMutableSet set];//网络请求获得的所有成员id
                     [users enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
                         NSDictionary *userDict = (NSDictionary *)obj;
@@ -127,10 +127,10 @@ static NSString *identifier = @"groupDetailCollectionCell";
                             [groupMembers addObject:mModel];
                         }
                         [networkMemberIdSet addObject:[NSString stringWithFormat:@"%@",[userDict objectForKey:@"id"]]];//获取成员id//要显式转成nsstring，[userDict objectForKey:@"id"]得到的是long
-                        NSArray *whereArr = @[@"memberId", @"=", [NSString stringWithFormat:@"%@",[userDict objectForKey:@"id"]]];
-                        int count = [ss.hxDB itemCountForTable:memberTable whereArr:whereArr];
+                        NSString *memberId = [NSString stringWithFormat:@"%@",[userDict objectForKey:@"id"]];
+                        int count = [ss.hxDB itemCountForTable:memberTable whereDict:@{@"WHERE memberId = ?" : @[memberId]}];
                         if (count > 0) {
-                            [deleteMemberWheres addObject:whereArr];
+                            [deleteMemberWheres addObject:@{@"WHERE memberId = ?" : @[[NSString stringWithFormat:@"%@",[userDict objectForKey:@"id"]]]}];
                         }
                     }];
                     //更新缓存
@@ -159,8 +159,7 @@ static NSString *identifier = @"groupDetailCollectionCell";
                     if (relationMemberIdSet.count > 0) {
                         NSMutableArray *deleteRelation = [NSMutableArray array];
                         [relationMemberIdSet enumerateObjectsUsingBlock:^(id  _Nonnull obj, BOOL * _Nonnull stop) {
-                            NSArray *deleteWhereArr = @[@"memberId",@"=",obj,@"groupId",@"=",ss.groupModel.groupId];
-                            [deleteRelation addObject:deleteWhereArr];
+                            [deleteRelation addObject:@{@"WHERE memberId = ? AND groupId = ?" : @[obj ,ss.groupModel.groupId]}];
                         }];//删
                         [ss.hxDB deleteTableInTransaction:memberGroupRelation whereArrs:deleteRelation callback:^(NSError *error) {
                             NSLog(@"%@",error.userInfo[NSLocalizedDescriptionKey]);
@@ -285,13 +284,13 @@ static NSString *identifier = @"groupDetailCollectionCell";
                         NSLog(@"解散群组失败");
                     }else {
                         //更新数据库 //删除群组表、关系表、消息表
-                        [self.hxDB deleteTable:groupTable whereArr:@[@"groupId", @"=", groupId] callback:^(NSError *error) {
+                        [self.hxDB deleteTable:groupTable whereDict:@{@"WHERE groupId = ?":@[groupId]} callback:^(NSError *error) {
                             NSLog(@"%@",error);
                         }];
-                        [self.hxDB deleteTable:memberGroupRelation whereArr:@[@"groupId", @"=", groupId] callback:^(NSError *error) {
+                        [self.hxDB deleteTable:memberGroupRelation whereDict:@{@"WHERE groupId = ?":@[groupId]} callback:^(NSError *error) {
                             NSLog(@"%@",error);
                         }];
-                        [self.hxDB deleteTable:groupInfoTable whereArr:@[@"groupId", @"=", groupId] callback:^(NSError *error) {
+                        [self.hxDB deleteTable:groupInfoTable whereDict:@{@"WHERE groupId = ?":@[groupId]} callback:^(NSError *error) {
                             NSLog(@"%@",error);
                         }];
                         //更新缓存
@@ -325,13 +324,13 @@ static NSString *identifier = @"groupDetailCollectionCell";
                         NSLog(@"退出群组失败");
                     }else {
                         //更新数据库 //删除群组表、关系表、消息表
-                        [self.hxDB deleteTable:groupTable whereArr:@[@"groupId", @"=", groupId] callback:^(NSError *error) {
+                        [self.hxDB deleteTable:groupTable whereDict:@{@"WHERE groupId = ?":@[groupId]} callback:^(NSError *error) {
                             NSLog(@"%@",error);
                         }];
-                        [self.hxDB deleteTable:memberGroupRelation whereArr:@[@"groupId", @"=", groupId] callback:^(NSError *error) {
+                        [self.hxDB deleteTable:memberGroupRelation whereDict:@{@"WHERE groupId = ?":@[groupId]} callback:^(NSError *error) {
                             NSLog(@"%@",error);
                         }];
-                        [self.hxDB deleteTable:groupInfoTable whereArr:@[@"groupId", @"=", groupId] callback:^(NSError *error) {
+                        [self.hxDB deleteTable:groupInfoTable whereDict:@{@"WHERE groupId = ?":@[groupId]} callback:^(NSError *error) {
                             NSLog(@"%@",error);
                         }];
                         //更新缓存
@@ -541,7 +540,7 @@ static NSString *identifier = @"groupDetailCollectionCell";
 
 - (HXDBManager *)hxDB{
     if (_hxDB == nil) {
-        _hxDB = [HXDBManager shareInstance];
+        _hxDB = [HXDBManager shareDB];
     }
     return _hxDB;
 }

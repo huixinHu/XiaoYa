@@ -73,21 +73,6 @@
     return [[self alloc] initOrdinaryModelWithDict:dict];
 }
 
-//- (instancetype)initWithArr:(NSArray *)arr{
-//    if (self = [super init]) {
-//        [arr enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-//            NSDictionary *userDict = (NSDictionary *)obj;
-//            self.memberId = userDict[@"id"];
-//        }];
-//    }
-//    return  self;
-//}
-//
-////根据群组id查询群组中所有用户信息，结果转模型
-//+ (instancetype)memberModelWithAllUsersArr:(NSArray *)arr{
-//    return [[self alloc]initWithArr:arr];
-//}
-
 //根据群组id查询群组中所有用户信息，结果(用户信息字典)转模型
 - (instancetype)initWithOneOfAllUserDict:(NSDictionary *)dict{
     if (self = [super init]) {

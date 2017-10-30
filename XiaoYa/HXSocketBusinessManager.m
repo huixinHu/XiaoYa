@@ -206,13 +206,13 @@ static HXSocketBusinessManager *manager = nil;
         case ProtoMessage_Type_QuitGroupNotify:{//被踢出群
             NSString *groupId = receiveData.body;
             //删除群组表、关系表、消息表
-            [self.hxdb deleteTable:groupTable whereArr:@[@"groupId", @"=", groupId] callback:^(NSError *error) {
+            [self.hxdb deleteTable:groupTable whereDict:@{@"WHERE groupId = ?":@[groupId]} callback:^(NSError *error) {
                 NSLog(@"%@",error);
             }];
-            [self.hxdb deleteTable:memberGroupRelation whereArr:@[@"groupId", @"=", groupId] callback:^(NSError *error) {
+            [self.hxdb deleteTable:memberGroupRelation whereDict:@{@"WHERE groupId = ?":@[groupId]} callback:^(NSError *error) {
                 NSLog(@"%@",error);
             }];
-            [self.hxdb deleteTable:groupInfoTable whereArr:@[@"groupId", @"=", groupId] callback:^(NSError *error) {
+            [self.hxdb deleteTable:groupInfoTable whereDict:@{@"WHERE groupId = ?":@[groupId]} callback:^(NSError *error) {
                 NSLog(@"%@",error);
             }];
             //这里的交互？如果用户此时正在使用该群组相关功能...所以全部聊天界面都要收到这个通知？
@@ -232,7 +232,7 @@ static HXSocketBusinessManager *manager = nil;
                 //更新群组表
                 NSString *groupId = [NSString stringWithFormat:@"%@",[jsonDict objectForKey:@"groupId"]];
                 NSString *numberOfMember = [NSString stringWithFormat:@"%@",[jsonDict objectForKey:@"amount"]];
-                [self.hxdb updateTable:groupTable param:@{@"numberOfMember":numberOfMember} whereArr:@[@"groupId", @"=", groupId] callback:^(NSError *error) {
+                [self.hxdb updateTable:groupTable param:@{@"numberOfMember":numberOfMember} whereDict:@{@"WHERE groupId = ?":@[groupId]} callback:^(NSError *error) {
                     NSLog(@"%@",error);
                 }];
                 //发送通知
@@ -252,10 +252,9 @@ static HXSocketBusinessManager *manager = nil;
                 NSString *groupId = [NSString stringWithFormat:@"%@",[jsonDict objectForKey:@"id"]];
                 NSString *groupName = [jsonDict objectForKey:@"groupName"];
                 NSString *numberOfMember = [NSString stringWithFormat:@"%@",[jsonDict objectForKey:@"amount"]];
-//                NSString *groupManagerId = [NSString stringWithFormat:@"%@",[jsonDict objectForKey:@"managerId"]];//群主暂时不变
                 NSString *groupAvatarId = [NSString stringWithFormat:@"%@",[jsonDict objectForKey:@"picId"]];
                 NSDictionary *paraDict = @{@"groupId":groupId ,@"groupAvatarId":groupAvatarId ,@"groupName":groupName, @"numberOfMember":numberOfMember};
-                [self.hxdb updateTable:groupTable param:paraDict whereArr:@[@"groupId", @"=", groupId] callback:^(NSError *error) {
+                [self.hxdb updateTable:groupTable param:paraDict whereDict:@{@"WHERE groupId = ?":@[groupId]} callback:^(NSError *error) {
                     NSLog(@"%@",error);
                 }];
                 //发送通知
@@ -320,7 +319,7 @@ static HXSocketBusinessManager *manager = nil;
 
 - (HXDBManager *)hxdb{
     if (_hxdb == nil) {
-        _hxdb = [HXDBManager shareInstance];
+        _hxdb = [HXDBManager shareDB];
     }
     return _hxdb;
 }

@@ -88,8 +88,7 @@
     if (originSetCopy1.count > 0) {//有删减
         [originSetCopy1 enumerateObjectsUsingBlock:^(NSString * _Nonnull obj, BOOL * _Nonnull stop) {
             [minus appendString:[NSString stringWithFormat:@"%@,",obj]];
-            NSArray *temp = @[@"memberId", @"=", obj, @"groupId", @"=" ,groupId];
-            [delRelatWheresArr addObject:temp];
+            [delRelatWheresArr addObject:@{@"WHERE memberId = ? AND groupId = ?":@[obj,groupId]}];
         }];
         [minus deleteCharactersInRange:NSMakeRange(minus.length - 1, 1)];
     }
@@ -115,7 +114,7 @@
                 //更新数据库
                 //1.群组表
                 NSDictionary *groupParaDict = @{@"groupName":groupName ,@"groupAvatarId":groupAvatarId ,@"numberOfMember":numberOfMember};
-                [ss.hxdb updateTable:groupTable param:groupParaDict whereArr:@[@"groupId", @"=" ,groupId] callback:^(NSError *error) {
+                [ss.hxdb updateTable:groupTable param:groupParaDict whereDict:@{@"WHERE groupId = ?":@[groupId]} callback:^(NSError *error) {
                     NSLog(@"%@",error);
                 }];
                 //2.关系表
@@ -133,7 +132,7 @@
                 NSMutableArray *addMemParaArr = [NSMutableArray array];//插入成员表的数据
                 [addMemberArr enumerateObjectsUsingBlock:^(GroupMemberModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
                     //查询成员表，这些新增的人是否已经在数据库
-                    int count = [ss.hxdb itemCountForTable:memberTable whereArr:@[@"memberId", @"=", obj.memberId]];
+                    int count = [ss.hxdb itemCountForTable:memberTable whereDict:@{@"WHERE memberId = ?" : @[obj.memberId]}];
                     if (count == 0) {//数据库中没有
                         NSDictionary *memDict = @{@"memberId":obj.memberId, @"memberName":obj.memberName, @"memberPhone":obj.memberPhone};
                         [addMemParaArr addObject:memDict];
@@ -165,7 +164,7 @@
 
 - (HXDBManager *)hxdb{
     if (_hxdb == nil) {
-        _hxdb = [HXDBManager shareInstance];
+        _hxdb = [HXDBManager shareDB];
     }
     return _hxdb;
 }
