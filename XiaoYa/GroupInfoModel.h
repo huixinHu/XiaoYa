@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 
 @interface GroupInfoModel : NSObject<NSCopying ,NSCoding>
-@property (nonatomic ,strong) NSDate *publishTime;//发布时间            yyyyMMddHHmmss
+@property (nonatomic ,copy) NSString *publishTime;//发布时间           yyyyMMddHHmmss+四位随机
 @property (nonatomic ,copy) NSString *publisher;//发布者               姓名(id)
 @property (nonatomic ,copy) NSString *event;//事件
 @property (nonatomic ,copy) NSString *eventDate;//事件时间              yyyyMMdd
@@ -17,6 +17,8 @@
 @property (nonatomic ,copy) NSString *comment;//备注
 @property (nonatomic ,assign) NSInteger deadlineIndex;//截止选项        0
 @property (nonatomic ,copy) NSString *deadlineTime;//截止回复时间
+
+@property (nonatomic ,copy) NSString *groupId;
 
 + (instancetype)groupInfoWithDict:(NSDictionary *)dict;
 + (instancetype)defaultModel;

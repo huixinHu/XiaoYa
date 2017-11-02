@@ -20,8 +20,8 @@
     if (self = [super init]) {
         NSDateFormatter *df = [[NSDateFormatter alloc]init];
         [df setDateFormat:@"yyyyMMddHHmmss"];
-        
-        self.publishTime = [df dateFromString:[dict objectForKey:@"publishTime"]];
+        self.publishTime = [dict objectForKey:@"publishTime"];
+//        self.publishTime = [df dateFromString:[dict objectForKey:@"publishTime"]];
         self.publisher = [dict objectForKey:@"publisher"];
         self.event = [dict objectForKey:@"event"];
         self.eventDate = [dict objectForKey:@"eventDate"];
@@ -69,6 +69,7 @@
             NSDate *dlDate = [NSDate dateWithTimeInterval:ti sinceDate:exactDate];
             self.deadlineTime = [df stringFromDate:dlDate];
         }
+        self.groupId = [dict objectForKey:@"groupId"];
     }
     return self;
 }
@@ -85,7 +86,7 @@
     AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
     NSString *user = [NSString stringWithFormat:@"%@(%@)",appDelegate.userName,appDelegate.userid];
     
-    NSMutableDictionary *modelDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"19711212000000",@"publishTime",user,@"publisher",@"",@"event",currentDateStr,@"eventDate",@"",@"eventSection",@"",@"comment",@"0",@"deadlineIndex",nil];
+    NSMutableDictionary *modelDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"197112120000000000",@"publishTime",user,@"publisher",@"",@"event",currentDateStr,@"eventDate",@"",@"eventSection",@"",@"comment",@"0",@"deadlineIndex",@"0",@"groupId",nil];
     GroupInfoModel *defaultModel = [self groupInfoWithDict:modelDict];
     return defaultModel;
 }

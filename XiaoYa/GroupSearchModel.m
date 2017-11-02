@@ -13,9 +13,9 @@
 - (instancetype)initWithDict:(NSDictionary *)dict {
     if (self = [super init]) {
         self.managerName = dict[@"managerName"];
-        self.groupId = dict[@"id"];
+        self.groupId = [NSString stringWithFormat:@"%@",dict[@"id"]];
         self.groupName = dict[@"groupName"];
-        self.managerId = dict[@"managerId"];
+        self.managerId = [NSString stringWithFormat:@"%@",dict[@"managerId"]];
         self.avatarId = [dict[@"picId"] integerValue];
         self.numberOfMember = [dict[@"amount"] integerValue];
     }

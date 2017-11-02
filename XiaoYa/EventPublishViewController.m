@@ -64,11 +64,11 @@
     CGFloat datePickerWidth;//日期选择器宽度
 }
 
-- (instancetype)initWithInfoModel:(GroupInfoModel *)model groupId:(nonnull NSString *)gId publishCompBlock:(publishCompBlock)block{
+- (instancetype)initWithInfoModel:(GroupInfoModel *)model publishCompBlock:(publishCompBlock)block{
     if (self = [super init]) {
         self.infoModel = [model copy];
         self.compBlock = block;
-        self.groupid = gId;
+        self.groupid = model.groupId;
     }
     return self;
 }
@@ -76,7 +76,6 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(notiFromServer:) name:HXNotiFromServerNotification object:nil];//收到来自服务器的通知
     {
         //事件时间
         NSDateFormatter *df = [[NSDateFormatter alloc]init];
@@ -93,36 +92,6 @@
         self.dlIndex = self.infoModel.deadlineIndex;
     }
     [self viewsSetting];
-}
-
-//接收到服务器的通知
-- (void)notiFromServer:(NSNotification *)notification{
-    int type = [[[notification userInfo] objectForKey:@"type"] intValue];
-    switch (type) {
-        case ProtoMessage_Type_DismissGroupNotify://群解散
-        case ProtoMessage_Type_QuitGroupNotify:{//被踢出群
-            NSString *groupId = [[notification userInfo] objectForKey:@"groupId"];
-            if ([self.groupid isEqualToString:groupId]) {
-                if ([[Utils obtainPresentVC] isMemberOfClass:[self class]]) {
-                    NSString *alertMessage = (type == ProtoMessage_Type_QuitGroupNotify) ? @"你已被移除出该群组" : @"群组已解散";
-                    __weak typeof(self) weakself = self;
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        void (^otherBlock)(UIAlertAction *action) = ^(UIAlertAction *action){
-                            for (UIViewController *tempVC in self.navigationController.viewControllers) {
-                                if ([tempVC isKindOfClass:NSClassFromString(@"GroupHomePageViewController")]) {
-                                    [self.navigationController popToViewController:tempVC animated:YES];
-                                }
-                            }
-                        };
-                        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"通知" message:alertMessage preferredStyle:UIAlertControllerStyleAlert cancelTitle:nil cancelBlock:nil otherTitles:@[@"确定"] otherBlocks:@[otherBlock]];
-                        [weakself presentViewController:alert animated:YES completion:nil];
-                    });
-                }
-            }
-        } break;
-        default:
-            break;
-    }
 }
 
 - (void)cancel{
@@ -188,18 +157,23 @@
                     //如果发布成功，就添加到群组消息页
                     [dfm setDateFormat:@"yyyyMMdd"];
                     NSString *eventTime = [dfm stringFromDate:ss.currentDate];
-                    [dfm setDateFormat:@"yyyMMddHHmmss"];
-                    NSString *publishTime = [dfm stringFromDate:[NSDate date]];//应该以服务器时间为准
+
+                    [dfm setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
+                    NSDate *tempPublishDate = [dfm dateFromString:data.time];
+                    [dfm setDateFormat:@"yyyyMMddHHmmss"];
+                    NSString *publishTime = [dfm stringFromDate:tempPublishDate];
+                    NSString *ramdomStr = [NSString stringWithFormat:@"%d" ,(arc4random() % 10000)+10000];
+                    publishTime = [publishTime stringByAppendingString:[ramdomStr substringFromIndex:1]];
+                    
                     NSString *publisher = [NSString stringWithFormat:@"%@(%@)",apd.userName,apd.userid];
                     NSString *eventSection = [ss appendStringWithArray:ss.sectionArray];
-                    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:publishTime,@"publishTime",publisher,@"publisher",ss.eventDescription.text,@"event",eventTime,@"eventDate",eventSection,@"eventSection",ss.commentfield.text,@"comment",[NSString stringWithFormat:@"%@",[NSNumber numberWithInteger:ss.dlIndex]],@"deadlineIndex",nil];
+                    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:publishTime,@"publishTime",publisher,@"publisher",ss.eventDescription.text,@"event",eventTime,@"eventDate",eventSection,@"eventSection",ss.commentfield.text,@"comment",[NSString stringWithFormat:@"%@",[NSNumber numberWithInteger:ss.dlIndex]],@"deadlineIndex",ss.groupid,@"groupId",nil];
                     GroupInfoModel *newEvent = [GroupInfoModel groupInfoWithDict:dict];
                     //更新缓存，通知首页
                     ss.compBlock(newEvent);
-                    NSDictionary *dataDict = [NSDictionary dictionaryWithObjectsAndKeys:newEvent, HXNewGroupInfo, ss.groupid, HXGroupID, nil];
+                    NSDictionary *dataDict = [NSDictionary dictionaryWithObjectsAndKeys:newEvent, HXNewGroupInfo, nil];
                     [[NSNotificationCenter defaultCenter] postNotificationName:HXPublishGroupInfoNotification object:nil userInfo:dataDict];
                     //更新数据库
-                    [dict setObject:ss.groupid forKey:@"groupId"];
                     [ss.hxdb insertTable:groupInfoTable param:dict callback:^(NSError *error) {
                         if (error) NSLog(@"%@",error.userInfo[NSLocalizedDescriptionKey]);
                     }];
@@ -589,6 +563,5 @@
 }
 
 - (void)dealloc{
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:HXNotiFromServerNotification object:nil];
 }
 @end

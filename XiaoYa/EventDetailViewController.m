@@ -50,11 +50,11 @@ typedef NS_ENUM(NSInteger, HXReplyStatus) {
 @end
 
 @implementation EventDetailViewController
-- (instancetype)initWithInfoModel:(GroupInfoModel *)model groupId:(NSString *)gid editCompBlock:(editCompBlock)block{
+- (instancetype)initWithInfoModel:(GroupInfoModel *)model editCompBlock:(editCompBlock)block{
     if (self = [super init]) {
         self.infoModel = model;
         self.editCompBlock = [block copy];
-        self.groupId = gid;
+        self.groupId = model.groupId;
     }
     return self;
 }
@@ -62,42 +62,11 @@ typedef NS_ENUM(NSInteger, HXReplyStatus) {
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(notiFromServer:) name:HXNotiFromServerNotification object:nil];//收到来自服务器的通知
     [self addObserver:self forKeyPath:NSStringFromSelector(@selector(state)) options:NSKeyValueObservingOptionNew context:nil];
     [self viewsSetting];
 
     //此处获取回复状态
     self.state = HXReplyStatusNotReply;//测试
-}
-
-//接收到服务器的通知
-- (void)notiFromServer:(NSNotification *)notification{
-    int type = [[[notification userInfo] objectForKey:@"type"] intValue];
-    switch (type) {
-        case ProtoMessage_Type_DismissGroupNotify://群解散
-        case ProtoMessage_Type_QuitGroupNotify:{//被踢出群
-            NSString *groupId = [[notification userInfo] objectForKey:@"groupId"];
-            if ([self.groupId isEqualToString:groupId]) {
-                if ([[Utils obtainPresentVC] isMemberOfClass:[self class]]) {
-                    NSString *alertMessage = (type == ProtoMessage_Type_QuitGroupNotify) ? @"你已被移除出该群组" : @"群组已解散";
-                    __weak typeof(self) weakself = self;
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        void (^otherBlock)(UIAlertAction *action) = ^(UIAlertAction *action){
-                            for (UIViewController *tempVC in self.navigationController.viewControllers) {
-                                if ([tempVC isKindOfClass:NSClassFromString(@"GroupHomePageViewController")]) {
-                                    [self.navigationController popToViewController:tempVC animated:YES];
-                                }
-                            }
-                        };
-                        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"通知" message:alertMessage preferredStyle:UIAlertControllerStyleAlert cancelTitle:nil cancelBlock:nil otherTitles:@[@"确定"] otherBlocks:@[otherBlock]];
-                        [weakself presentViewController:alert animated:YES completion:nil];
-                    });
-                }
-            }
-        } break;
-        default:
-            break;
-    }
 }
 
 - (void)back{
@@ -108,7 +77,7 @@ typedef NS_ENUM(NSInteger, HXReplyStatus) {
 //重新编辑事务,只有时间发布者能看到这个按钮
 - (void)editEvent{
     __weak typeof(self) ws = self;
-    EventPublishViewController *vc = [[EventPublishViewController alloc]initWithInfoModel:self.infoModel groupId:self.groupId publishCompBlock:^(GroupInfoModel *newEvent) {
+    EventPublishViewController *vc = [[EventPublishViewController alloc]initWithInfoModel:self.infoModel publishCompBlock:^(GroupInfoModel *newEvent) {
         ws.editCompBlock(newEvent);
     }];
     [self.navigationController pushViewController:vc animated:YES];
@@ -178,10 +147,14 @@ typedef NS_ENUM(NSInteger, HXReplyStatus) {
 
 #pragma mark 其他
 //发布时间格式化
-- (NSString *)publishTimeToFormatStr:(NSDate *)date{
+- (NSString *)publishTimeToFormatStr:(NSString *)publishTime{
+    publishTime = [publishTime substringToIndex:publishTime.length-4];
+    //publishtime yyyyMMddHHmmss
     NSDateFormatter *df = [[NSDateFormatter alloc]init];
+    [df setDateFormat:@"yyyyMMddHHmmss"];
+    NSDate *tempDate = [df dateFromString:publishTime];
     [df setDateFormat:@"yyyy-MM-dd HH:mm"];
-    return [df stringFromDate:date];
+    return [df stringFromDate:tempDate];
 }
 
 //时间时间格式化
@@ -391,7 +364,6 @@ typedef NS_ENUM(NSInteger, HXReplyStatus) {
 
 - (void)dealloc{
     [self removeObserver:self forKeyPath:NSStringFromSelector(@selector(state))];
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:HXNotiFromServerNotification object:nil];
 
 }
 @end

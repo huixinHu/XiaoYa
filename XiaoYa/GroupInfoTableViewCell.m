@@ -38,14 +38,23 @@
 }
 
 //把发布时间转换为特定格式时间字符串
--(NSString *)publishTimeToFormatStr:(NSDate *)date{
+-(NSString *)publishTimeToFormatStr:(NSString *)publishTime{
+    if (!publishTime) {
+        return nil;
+    }
+    publishTime = [publishTime substringToIndex:publishTime.length-4];
     NSDateFormatter *df = [[NSDateFormatter alloc]init];
+    [df setDateFormat:@"yyyyMMddHHmmss"];
+    NSDate *date = [df dateFromString:publishTime];
     [df setDateFormat:@"yyyy-MM-dd\nHH:mm"];
     return [df stringFromDate:date];
 }
 
 //把截止回复时间转换为剩余回复时间格式
 - (NSString *)dlTimeToFormatStr:(NSString *)dlTimeStr{
+    if (!dlTimeStr) {
+        return nil;
+    }
     NSDateFormatter *df = [[NSDateFormatter alloc]init];
     [df setDateFormat:@"yyyyMMddHHmm"];
     int ti = [[df dateFromString:dlTimeStr] timeIntervalSince1970] - [[NSDate date] timeIntervalSince1970];
@@ -62,6 +71,9 @@
 }
 
 - (NSString *)eventTimeToFormatStr:(NSString *)eventTime eventSection:(NSMutableArray *)secArr{
+    if (!eventTime || !secArr) {
+        return nil;
+    }
     //这里基本照抄 事务管理 对应的逻辑
     NSDateFormatter *df = [[NSDateFormatter alloc]init];
     [df setDateFormat:@"yyyyMMdd"];

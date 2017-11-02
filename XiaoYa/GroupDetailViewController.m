@@ -116,7 +116,7 @@ static NSString *identifier = @"groupDetailCollectionCell";
                 } else{
                     NSArray *users = [responseDict objectForKey:@"identity"];
                     NSMutableArray <GroupMemberModel *>*groupMembers = [NSMutableArray array];
-                    NSMutableArray *deleteMemberWheres = [NSMutableArray array];//该群组成员已存在于成员表的成员id 的where条件数组.因为要删除旧数据在添加新数据，每次打开群资料都要这样锁
+                    NSMutableArray *deleteMemberWheres = [NSMutableArray array];//该群组成员已存在于成员表的成员id 的where条件数组.因为要删除旧数据在添加新数据，每次打开群资料都要这样做
                     NSMutableSet *networkMemberIdSet = [NSMutableSet set];//网络请求获得的所有成员id
                     [users enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
                         NSDictionary *userDict = (NSDictionary *)obj;
@@ -192,7 +192,6 @@ static NSString *identifier = @"groupDetailCollectionCell";
     [super viewDidLoad];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(refreshUserDetail:) name:HXRefreshUserDetailNotification object:nil];//刷新成员信息
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(notiFromServer:) name:HXNotiFromServerNotification object:nil];//收到来自服务器的通知
     [self viewsSetting];
 }
 
@@ -210,35 +209,6 @@ static NSString *identifier = @"groupDetailCollectionCell";
             self.editBtn.enabled = YES;
         }
     });
-}
-
-//接收到服务器的通知
-- (void)notiFromServer:(NSNotification *)notification{
-    int type = [[[notification userInfo] objectForKey:@"type"] intValue];
-    switch (type) {
-        case ProtoMessage_Type_QuitGroupNotify:{//被踢出群
-            NSString *groupId = [[notification userInfo] objectForKey:@"groupId"];
-            if ([self.groupModel.groupId isEqualToString:groupId]) {
-                if ([[Utils obtainPresentVC] isMemberOfClass:[self class]]) {
-                    NSString *alertMessage = (type == ProtoMessage_Type_QuitGroupNotify) ? @"你已被移除出该群组" : @"群组已解散";
-                    __weak typeof(self) weakself = self;
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        void (^otherBlock)(UIAlertAction *action) = ^(UIAlertAction *action){
-                            for (UIViewController *tempVC in self.navigationController.viewControllers) {
-                                if ([tempVC isKindOfClass:NSClassFromString(@"GroupHomePageViewController")]) {
-                                    [self.navigationController popToViewController:tempVC animated:YES];
-                                }
-                            }
-                        };
-                        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"通知" message:alertMessage preferredStyle:UIAlertControllerStyleAlert cancelTitle:nil cancelBlock:nil otherTitles:@[@"确定"] otherBlocks:@[otherBlock]];
-                        [weakself presentViewController:alert animated:YES completion:nil];
-                    });
-                }
-            }
-        } break;
-        default:
-            break;
-    }
 }
 
 - (void)back{
@@ -284,15 +254,15 @@ static NSString *identifier = @"groupDetailCollectionCell";
                         NSLog(@"解散群组失败");
                     }else {
                         //更新数据库 //删除群组表、关系表、消息表
-                        [self.hxDB deleteTable:groupTable whereDict:@{@"WHERE groupId = ?":@[groupId]} callback:^(NSError *error) {
-                            NSLog(@"%@",error);
-                        }];
-                        [self.hxDB deleteTable:memberGroupRelation whereDict:@{@"WHERE groupId = ?":@[groupId]} callback:^(NSError *error) {
-                            NSLog(@"%@",error);
-                        }];
-                        [self.hxDB deleteTable:groupInfoTable whereDict:@{@"WHERE groupId = ?":@[groupId]} callback:^(NSError *error) {
-                            NSLog(@"%@",error);
-                        }];
+//                        [self.hxDB deleteTable:groupTable whereDict:@{@"WHERE groupId = ?":@[groupId]} callback:^(NSError *error) {
+//                            NSLog(@"%@",error);
+//                        }];
+//                        [self.hxDB deleteTable:memberGroupRelation whereDict:@{@"WHERE groupId = ?":@[groupId]} callback:^(NSError *error) {
+//                            NSLog(@"%@",error);
+//                        }];
+//                        [self.hxDB deleteTable:groupInfoTable whereDict:@{@"WHERE groupId = ?":@[groupId]} callback:^(NSError *error) {
+//                            NSLog(@"%@",error);
+//                        }];
                         //更新缓存
                         NSDictionary *dataDict = [NSDictionary dictionaryWithObject:ss.groupModel.groupId forKey:HXDismissExitGroupKey];
                         [[NSNotificationCenter defaultCenter] postNotificationName:HXDismissExitGroupNotification object:nil userInfo:dataDict];
@@ -535,7 +505,6 @@ static NSString *identifier = @"groupDetailCollectionCell";
 
 - (void)dealloc{
     [[NSNotificationCenter defaultCenter] removeObserver:self name:HXRefreshUserDetailNotification object:nil];
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:HXNotiFromServerNotification object:nil];
 }
 
 - (HXDBManager *)hxDB{

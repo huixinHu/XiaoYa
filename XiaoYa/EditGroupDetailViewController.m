@@ -10,6 +10,7 @@
 #import "Utils.h"
 #import "HXNotifyConfig.h"
 #import "GroupListModel.h"
+#import "GroupInfoModel.h"
 #import "GroupMemberModel.h"
 #import "UIAlertController+Appearance.h"
 #import "HXNetworking.h"
@@ -19,6 +20,8 @@
 @property (nonatomic ,copy) gCreateSucBlock completeBlock;
 @property (nonatomic ,strong) NSMutableSet <NSString *>*originMemberIds;
 @property (nonatomic ,strong) HXDBManager *hxdb;
+@property (nonatomic ,copy) NSString *originGroupName;
+@property (nonatomic ,strong) NSMutableArray <GroupMemberModel *> *originMembers;
 @end
 
 @implementation EditGroupDetailViewController
@@ -30,6 +33,8 @@
         [model.groupMembers enumerateObjectsUsingBlock:^(GroupMemberModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
             [self.originMemberIds addObject:obj.memberId];
         }];
+        self.originGroupName = model.groupName;
+        self.originMembers = [model.groupMembers copy];
     }
     return self;
 }
@@ -81,26 +86,26 @@
     }];
     if (add.length > 0) [add deleteCharactersInRange:NSMakeRange(add.length - 1, 1)];
     
-    NSMutableSet <NSString *> *originSetCopy1 = [self.originMemberIds mutableCopy];
-    [originSetCopy1 minusSet:curMemberIds];//减
+//    NSMutableSet <NSString *> *originSetCopy1 = [self.originMemberIds mutableCopy];
+//    [originSetCopy1 minusSet:curMemberIds];//减
     NSMutableString *minus = [NSMutableString string];
     NSMutableArray *delRelatWheresArr = [NSMutableArray array];//删除关系表的wheres数组
-    if (originSetCopy1.count > 0) {//有删减
-        [originSetCopy1 enumerateObjectsUsingBlock:^(NSString * _Nonnull obj, BOOL * _Nonnull stop) {
-            [minus appendString:[NSString stringWithFormat:@"%@,",obj]];
-            [delRelatWheresArr addObject:@{@"WHERE memberId = ? AND groupId = ?":@[obj,groupId]}];
-        }];
-        [minus deleteCharactersInRange:NSMakeRange(minus.length - 1, 1)];
-    }
+    //有删减
+//    [originSetCopy1 enumerateObjectsUsingBlock:^(NSString * _Nonnull obj, BOOL * _Nonnull stop) {
+//        [minus appendString:[NSString stringWithFormat:@"%@,",obj]];
+//        [delRelatWheresArr addObject:@{@"WHERE memberId = ? AND groupId = ?":@[obj,groupId]}];
+//    }];
+//    [minus deleteCharactersInRange:NSMakeRange(minus.length - 1, 1)];
     
-//    if (addMemberArr.count > 0) {
-//        [addMemberArr enumerateObjectsUsingBlock:^(GroupMemberModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-//            [add appendString:[NSString stringWithFormat:@"%@,",obj.memberId]];
-//            NSDictionary *tempDict = @{@"memberId":obj.memberId ,@"groupId":groupId};
-//            [addRelatParaArr addObject:tempDict];
-//        }];
-//        [add deleteCharactersInRange:NSMakeRange(add.length - 1, 1)];
-//    }
+    NSMutableArray <GroupMemberModel *> *delMemberArr = [NSMutableArray arrayWithCapacity:0];//存放踢出成员的模型
+    [self.originMembers enumerateObjectsUsingBlock:^(GroupMemberModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        if (![curMemberIds containsObject:obj.memberId]) {
+            [delMemberArr addObject:obj];
+            [minus appendString:[NSString stringWithFormat:@"%@,",obj.memberId]];
+            [delRelatWheresArr addObject:@{@"WHERE memberId = ? AND groupId = ?":@[obj,groupId]}];
+        }
+    }];
+    [minus deleteCharactersInRange:NSMakeRange(minus.length - 1, 1)];
     
     NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"CHGROUPDATA", @"type", groupId,@"groupId", groupManagerId, @"managerId", groupAvatarId, @"picId",groupName,@"groupName",add,@"addUsers",minus,@"minusUsers",nil];
     __weak typeof(self) ws = self;
@@ -144,6 +149,46 @@
                     }];
                 }
                 
+                //4.消息表
+                NSMutableArray *insertMegList = [NSMutableArray arrayWithCapacity:0];//由于群资料更改产生的新群组消息
+                NSDateFormatter *df = [[NSDateFormatter alloc] init];
+                [df setDateFormat:@"yyyyMMddHHmmss"];
+                NSString *tempDateStr = [df stringFromDate:[NSDate date]];//这里暂时先用客户端的时间，最终应以服务器的时间戳为准
+                __block int random = (arc4random() % 10000)+10000;//10000~19999随机数
+                //群名
+                if (![ss.originGroupName isEqualToString:groupName]) {
+                    NSString *randomStr = [[NSString stringWithFormat:@"%d" ,random] substringFromIndex:1];
+                    NSDictionary *groupInfoDict = @{@"publishTime":[NSString stringWithFormat:@"%@%@",tempDateStr,randomStr] , @"event":[NSString stringWithFormat:@"群组名改为%@",groupName] , @"groupId":groupId};
+                    GroupInfoModel *infoModel = [GroupInfoModel groupInfoWithDict:groupInfoDict];
+                    [insertMegList addObject:infoModel];
+                }
+                //添加的人
+                [addMemberArr enumerateObjectsUsingBlock:^(GroupMemberModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                    random +=1;
+                    NSString *randomStr = [NSString stringWithFormat:@"%@",@(idx+random)];//从群组名更改的random+1开始
+                    NSString *publishTime = [tempDateStr stringByAppendingString:[randomStr substringFromIndex:1]];
+                    NSDictionary *groupInfoDict = @{@"publishTime":publishTime , @"event":[NSString stringWithFormat:@"%@加入群组",obj.memberName] , @"groupId":groupId};
+                    GroupInfoModel *infoModel = [GroupInfoModel groupInfoWithDict:groupInfoDict];
+                    [insertMegList addObject:infoModel];
+                }];
+                //踢出的人
+                [delMemberArr enumerateObjectsUsingBlock:^(GroupMemberModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                    random += 1;
+                    NSString *randomStr = [NSString stringWithFormat:@"%@",@(idx+random)];
+                    NSString *publishTime = [tempDateStr stringByAppendingString:[randomStr substringFromIndex:1]];
+                    NSDictionary *groupInfoDict = @{@"publishTime":publishTime , @"event":[NSString stringWithFormat:@"%@被踢出群组",obj] , @"groupId":groupId};
+                    GroupInfoModel *infoModel = [GroupInfoModel groupInfoWithDict:groupInfoDict];
+                    [insertMegList addObject:infoModel];
+
+                }];
+                //插入由于群资料更改产生的新群组消息
+                if (insertMegList.count > 0) {
+                    [self.hxdb insertTableInTransaction:groupInfoTable modelArr:insertMegList excludeProperty:nil callback:^(NSError *error) {
+                        NSLog(@"%@",error);
+                    }];
+                    insertMegList = (NSMutableArray *)[[insertMegList reverseObjectEnumerator] allObjects];//倒序。时间越晚的越前
+                }
+                
                 //更新缓存
                 NSDictionary *modelDict = @{@"groupName":groupName, @"groupId":groupId, @"groupAvatarId":groupAvatarId, @"numberOfMember":numberOfMember, @"groupManagerId":groupManagerId, @"groupMembers":[self.dataArray mutableCopy]};
                 GroupListModel *refreshModel = [GroupListModel groupWithDict:modelDict];
@@ -153,7 +198,7 @@
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [ss.navigationController popViewControllerAnimated:YES];
                 });
-                NSDictionary *dataDict = [NSDictionary dictionaryWithObject:refreshModel forKey:HXEditGroupDetailKey];
+                NSDictionary *dataDict = @{HXEditGroupDetailKey:refreshModel ,@"insertMegList":insertMegList};
                 [[NSNotificationCenter defaultCenter] postNotificationName:HXEditGroupDetailNotification object:nil userInfo:dataDict];
             }
         } failure:^(NSURLSessionDataTask *task, NSError *error) {

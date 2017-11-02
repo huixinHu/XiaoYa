@@ -12,6 +12,6 @@
 typedef void(^editCompBlock)(GroupInfoModel *edittedModel);
 @interface EventDetailViewController : UIViewController
 
-- (instancetype)initWithInfoModel:(GroupInfoModel *)model groupId:(NSString *)gid editCompBlock:(editCompBlock)block;
+- (instancetype)initWithInfoModel:(GroupInfoModel *)model editCompBlock:(editCompBlock)block;
 - (instancetype)init NS_UNAVAILABLE;
 @end

@@ -122,6 +122,15 @@
             obj.groupName = refreshModel.groupName;
             obj.groupAvatarId = refreshModel.groupAvatarId;
             obj.numberOfMember = refreshModel.numberOfMember;
+            
+            NSArray *newInfo = [[notification userInfo] objectForKey:@"insertMegList"];//由于修改群资料产生的新消息
+            if (newInfo.count > 0) {//有因为群资料修改而产生的新群组消息
+                NSMutableArray *newGroupEvents = [NSMutableArray arrayWithArray:newInfo];
+                if (obj.groupEvents) {
+                    [newGroupEvents addObjectsFromArray:obj.groupEvents];
+                }
+                obj.groupEvents = newGroupEvents;
+            }
             *stop = YES;
         }
     }];
@@ -130,7 +139,7 @@
 //自己发布了群消息
 - (void)refreshGroupInfo:(NSNotification *)notification{
     GroupInfoModel *refreshModel = [[notification userInfo] objectForKey:HXNewGroupInfo];
-    NSString *gid = [[notification userInfo] objectForKey:HXGroupID];
+    NSString *gid = refreshModel.groupId;
     [self.groupModels enumerateObjectsUsingBlock:^(GroupListModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         if (obj.groupId.intValue == gid.intValue) {
             if (obj.groupEvents) {//不为空
@@ -229,36 +238,74 @@
         } break;
             
         case ProtoMessage_Type_SomeoneJoinNotify:{//有人进群
-            NSString *groupId = [[notification userInfo] objectForKey:@"groupId"];
-            NSString *numberOfMember = [[notification userInfo] objectForKey:@"numberOfMember"];
+            __block NSInteger indexMoveToTop = -1;//需要被顶置的群组index
+            __block GroupListModel *model;
+            NSDictionary *detailDict = [[notification userInfo] objectForKey:HXNotiFromServerKey];
+            NSString *groupId = [detailDict objectForKey:@"groupId"];
+            NSString *numberOfMember = [detailDict objectForKey:@"numberOfMember"];
+            GroupInfoModel *infoModel = [[notification userInfo] objectForKey:@"insertMsg"];
             [self.groupModels enumerateObjectsUsingBlock:^(GroupListModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
                 if ([obj.groupId isEqualToString:groupId]) {
                     obj.numberOfMember = numberOfMember.integerValue;
-                    if ([[Utils obtainPresentVC] isMemberOfClass:[self class]]) {
-                        dispatch_async(dispatch_get_main_queue(), ^{
-                            [self.groupTable reloadData];//刷新单行会更好
-                        });
+                    if (obj.groupEvents) {//不为空
+                        [obj.groupEvents insertObject:infoModel atIndex:0];
+                    } else{
+                        obj.groupEvents = [NSMutableArray arrayWithObject:infoModel];
                     }
+                    indexMoveToTop = idx;
+                    model = [obj copy];
                     *stop = YES;
                 }
             }];
+            [self.groupModels removeObjectAtIndex:indexMoveToTop];
+            [self.groupModels insertObject:model atIndex:0];
+            if ([[Utils obtainPresentVC] isMemberOfClass:[self class]]) {
+                __weak typeof(self) ws = self;
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    __strong typeof(ws) ss = ws;
+                    [ss.groupTable reloadData];
+                });
+            }
         } break;
             
         case ProtoMessage_Type_UpdateGroupNotify:{//群资料更新
             NSDictionary *detailDict = [[notification userInfo] objectForKey:HXNotiFromServerKey];
+            __block NSInteger indexMoveToTop = -1;//需要被顶置的群组index
+            __block GroupListModel *model;
+            NSArray *newInfo = [[notification userInfo] objectForKey:@"insertMegList"];//由于修改群资料产生的新消息
             [self.groupModels enumerateObjectsUsingBlock:^(GroupListModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
                 if ([obj.groupId isEqualToString:[detailDict objectForKey:@"groupId"]]) {
-                    obj.groupName = [detailDict objectForKey:@"groupName"];
                     obj.groupAvatarId = [detailDict objectForKey:@"groupAvatarId"];
                     obj.numberOfMember = [[detailDict objectForKey:@"numberOfMember"] integerValue];
-                    if ([[Utils obtainPresentVC] isMemberOfClass:[self class]]) {
-                        dispatch_async(dispatch_get_main_queue(), ^{
-                            [self.groupTable reloadData];//刷新单行会更好
-                        });
+                    if (newInfo.count > 0) {//有因为群资料修改而产生的新群组消息
+                        NSMutableArray *newGroupEvents = [NSMutableArray arrayWithArray:newInfo];
+                        if (obj.groupEvents) {
+                            [newGroupEvents addObjectsFromArray:obj.groupEvents];
+                        }
+                        obj.groupEvents = newGroupEvents;
+                        obj.groupName = [detailDict objectForKey:@"groupName"];
                     }
+                    indexMoveToTop = idx;
+                    model = [obj copy];
                     *stop = YES;
                 }
             }];
+            if (newInfo.count > 0) {
+                [self.groupModels removeObjectAtIndex:indexMoveToTop];
+                [self.groupModels insertObject:model atIndex:0];
+            }
+            if ([[Utils obtainPresentVC] isMemberOfClass:[self class]]) {
+                __weak typeof(self) ws = self;
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    __strong typeof(ws) ss = ws;
+                    if (newInfo.count > 0) { //如果修改了群名、增加了人数
+                        [ss.groupTable reloadData];
+                    } else {//如果修改了头像或者踢了人
+                        NSIndexPath *refreshPath = [NSIndexPath indexPathForRow:indexMoveToTop inSection:0];
+                        [ss.groupTable reloadRowsAtIndexPaths:@[refreshPath] withRowAnimation:UITableViewRowAnimationNone];
+                    }
+                });
+            }
         } break;
         default:
             break;

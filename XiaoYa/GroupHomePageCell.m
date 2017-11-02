@@ -57,8 +57,11 @@
     if (group.groupEvents && group.groupEvents.count > 0){
         self.groupMessage.text = group.groupEvents[0].event;
         NSDateFormatter *df = [[NSDateFormatter alloc] init];
+        [df setDateFormat:@"yyyyMMddHHmmss"];
+        NSString *publishTime = group.groupEvents[0].publishTime;
+        NSDate *date = [df dateFromString:[publishTime substringToIndex:publishTime.length - 4]];
         [df setDateFormat:@"MM月dd日"];
-        self.time.text = [df stringFromDate:group.groupEvents[0].publishTime];
+        self.time.text = [df stringFromDate:date];
     }else {
         self.time.text = @" ";
         self.groupMessage.text = @"";

@@ -12,6 +12,6 @@
 typedef void(^publishCompBlock)(GroupInfoModel * _Nullable newEvent);
 @interface EventPublishViewController : UIViewController
 
-- (nonnull instancetype)initWithInfoModel:(nonnull GroupInfoModel *)model groupId:(nonnull NSString *)gId publishCompBlock:(nullable publishCompBlock)block;
+- (nonnull instancetype)initWithInfoModel:(nonnull GroupInfoModel *)model publishCompBlock:(nullable publishCompBlock)block;
 //- (instancetype)init NS_UNAVAILABLE;
 @end

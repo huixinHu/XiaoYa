@@ -57,6 +57,15 @@
     self.detailmodel.groupName = refreshModel.groupName;
     self.detailmodel.groupAvatarId = refreshModel.groupAvatarId;
     self.detailmodel.numberOfMember = refreshModel.numberOfMember;
+    
+    NSArray *newInfo = [[notification userInfo] objectForKey:@"insertMegList"];//由于修改群资料产生的新消息
+    if (newInfo.count > 0) {//有因为群资料修改而产生的新群组消息
+        NSMutableArray *newGroupEvents = [NSMutableArray arrayWithArray:newInfo];
+        if (self.detailmodel.groupEvents) {
+            [newGroupEvents addObjectsFromArray:self.detailmodel.groupEvents];
+        }
+        self.detailmodel.groupEvents = newGroupEvents;
+    }
 }
 
 //接收到服务器的通知
@@ -66,8 +75,7 @@
         //收到新消息
         case ProtoMessage_Type_Chat:{
             GroupInfoModel *infoModel = [[notification userInfo] objectForKey:HXNotiFromServerKey];
-            NSString *groupId = [[notification userInfo] objectForKey:@"groupId"];
-            if ([self.detailmodel.groupId isEqualToString:groupId]) {
+            if ([self.detailmodel.groupId isEqualToString:infoModel.groupId]) {
                 if (self.detailmodel.groupEvents) {//不为空
                     [self.detailmodel.groupEvents insertObject:infoModel atIndex:0];
                 } else{
@@ -97,20 +105,55 @@
                 }
             }
         } break;
+            
+        case ProtoMessage_Type_SomeoneJoinNotify:{//有人进群
+            NSDictionary *detailDict = [[notification userInfo] objectForKey:HXNotiFromServerKey];
+            NSString *groupId = [detailDict objectForKey:@"groupId"];
+            NSString *numberOfMember = [detailDict objectForKey:@"numberOfMember"];
+            GroupInfoModel *infoModel = [[notification userInfo] objectForKey:@"insertMsg"];
+            if ([self.detailmodel.groupId isEqualToString:groupId]) {
+                self.detailmodel.numberOfMember = numberOfMember.integerValue;
+                if (self.detailmodel.groupEvents) {//不为空
+                    [self.detailmodel.groupEvents insertObject:infoModel atIndex:0];
+                } else{
+                    self.detailmodel.groupEvents = [NSMutableArray arrayWithObject:infoModel];
+                }
+            }
+            if ([[Utils obtainPresentVC] isMemberOfClass:[self class]]) {
+                __weak typeof(self) ws = self;
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    __strong typeof(ws) ss = ws;
+                    [ss.infoList reloadData];
+                });
+            }
+        } break;
+            
         case ProtoMessage_Type_UpdateGroupNotify:{//群资料更新
             NSDictionary *detailDict = [[notification userInfo] objectForKey:HXNotiFromServerKey];
             if ([self.detailmodel.groupId isEqualToString:[detailDict objectForKey:@"groupId"]]) {
+                NSArray *newInfo = [[notification userInfo] objectForKey:@"insertMegList"];//由于修改群资料产生的新消息
+                self.detailmodel.groupAvatarId = [detailDict objectForKey:@"groupAvatarId"];
+                self.detailmodel.numberOfMember = [[detailDict objectForKey:@"numberOfMember"] integerValue];
+                self.detailmodel.groupName = [detailDict objectForKey:@"groupName"];
+                if (newInfo.count > 0) {//有因为群资料修改而产生的新群组消息
+                    NSMutableArray *newGroupEvents = [NSMutableArray arrayWithArray:newInfo];
+                    if (self.detailmodel.groupEvents) {
+                        [newGroupEvents addObjectsFromArray:self.detailmodel.groupEvents];
+                    }
+                    self.detailmodel.groupEvents = newGroupEvents;
+                }
                 if ([[Utils obtainPresentVC] isMemberOfClass:[self class]]) {
                     __weak typeof(self) weakself = self;
                     dispatch_async(dispatch_get_main_queue(), ^{
                         __strong typeof(weakself) ss = weakself;
-                        ss.navigationItem.title = [detailDict objectForKey:@"groupName"];
-                        ss.detailmodel.groupName = [detailDict objectForKey:@"groupName"];
-                        ss.detailmodel.groupAvatarId = [detailDict objectForKey:@"groupAvatarId"];
-                        ss.detailmodel.numberOfMember = [[detailDict objectForKey:@"numberOfMember"] integerValue];
+                        ss.navigationItem.title = self.detailmodel.groupName;
+                        if (newInfo.count > 0) {//有因为群资料修改而产生的新群组消息
+                            [ss.infoList reloadData];
+                        }
                     });
                 }
             }
+
         } break;
         default:
             break;
@@ -134,7 +177,8 @@
 - (void)publishEvent{
     __weak typeof(self) ws = self;
     GroupInfoModel *dfm = [GroupInfoModel defaultModel];
-    EventPublishViewController *VC = [[EventPublishViewController alloc]initWithInfoModel:dfm groupId:self.detailmodel.groupId publishCompBlock:^(GroupInfoModel *newEvent) {
+    dfm.groupId = self.detailmodel.groupId;
+    EventPublishViewController *VC = [[EventPublishViewController alloc]initWithInfoModel:dfm publishCompBlock:^(GroupInfoModel *newEvent) {
         __strong typeof(ws) ss = ws;
         if (ss.detailmodel.groupEvents) {//不为空
             [ss.detailmodel.groupEvents insertObject:newEvent atIndex:0];
@@ -162,11 +206,10 @@
     GroupInfoTableViewCell *cell = [GroupInfoTableViewCell GroupInfoCellWithTableView:tableView eventDetailBlock:^(GroupInfoModel *model) {
         EventDetailViewController *VC =
         [[EventDetailViewController alloc]initWithInfoModel:ws.detailmodel.groupEvents[indexPath.row]
-                                                    groupId:ws.detailmodel.groupId
                                               editCompBlock:^(GroupInfoModel *edittedModel) {
                                                   [ws.detailmodel.groupEvents replaceObjectAtIndex:indexPath.row withObject:edittedModel];
                                                   dispatch_async(dispatch_get_main_queue(), ^{
-                                                      [ws.infoList reloadData];//reloadRowsAtIndexPaths ？
+                                                      [ws.infoList reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
                                                   });
                                               }];
         [ws.navigationController pushViewController:VC animated:YES];
