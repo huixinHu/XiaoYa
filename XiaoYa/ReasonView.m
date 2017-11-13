@@ -14,13 +14,13 @@
 @property (nonatomic , weak) HXTextField *txf;
 @property (nonatomic , weak) UIButton *confirm;
 @property (nonatomic , weak) UIButton *cancel;
-@property (nonatomic , copy) void(^cancelBlock)();
+@property (nonatomic , copy) void(^cancelBlock)(void);
 @property (nonatomic , copy) void(^confirmBlock)(NSString *reason);
 @end
 
 @implementation ReasonView
 
-- (instancetype)initWithCancelBlock:(void (^)())cancelBlock confirmBlock:(void (^)(NSString *reason))confirmBlock{
+- (instancetype)initWithCancelBlock:(void (^)(void))cancelBlock confirmBlock:(void (^)(NSString *reason))confirmBlock{
     if (self = [super initWithFrame:CGRectMake(0, 0, 250, 118)]) {
         [self commonInit];
         self.confirmBlock = confirmBlock;

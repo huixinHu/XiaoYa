@@ -43,7 +43,7 @@
 }
 
 //把发布时间转换为特定格式时间字符串
--(NSString *)publishTimeToFormatStr:(NSString *)publishTime{
+- (NSString *)publishTimeToFormatStr:(NSString *)publishTime{
     if (!publishTime) {
         return nil;
     }
@@ -61,7 +61,7 @@
         return nil;
     }
     NSDateFormatter *df = [[NSDateFormatter alloc]init];
-    [df setDateFormat:@"yyyyMMddHHmm"];
+    [df setDateFormat:@"yyyyMMddHHmmss"];
     int ti = [[df dateFromString:dlTimeStr] timeIntervalSince1970] - [[NSDate date] timeIntervalSince1970];
     NSString *formatStr = [NSString string];
     if (ti < 0) {
@@ -123,7 +123,6 @@
 #pragma mark viewsSetting
 - (void)commonInit{
     self.selectionStyle = UITableViewCellSelectionStyleNone;
-//    self.backgroundColor = [Utils colorWithHexString:@"#f0f0f6"];
     self.backgroundColor = [UIColor clearColor];
     //时间轴
     UIView *verLine1 = [[UIView alloc]init];

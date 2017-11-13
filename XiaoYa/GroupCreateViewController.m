@@ -96,8 +96,11 @@ static NSString *identifier = @"collectionCell";
         [HXNetworking postWithUrl:httpUrl params:paraDict cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
             NSDictionary *responseDic = (NSDictionary *)responseObject;
             if ([[responseObject objectForKey:@"state"]boolValue] == 0){
-                NSLog(@"群组创建失败");
-                //此处应有提示
+                //交互待完善
+                void (^otherBlock)(UIAlertAction *action) = ^(UIAlertAction *action){
+                };
+                UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"创建群组失败" message:[responseObject objectForKey:@"message"] preferredStyle:UIAlertControllerStyleAlert cancelTitle:nil cancelBlock:nil otherTitles:@[@"确定"] otherBlocks:@[otherBlock]];
+                [ss presentViewController:alert animated:YES completion:nil];
             } else{
                 //存入数据库
                 //1.群组表

@@ -18,7 +18,7 @@ typedef void(^confirmBlock)(NSMutableArray * _Nonnull selectIndexs);
 /**
  自定义取消block类型
  */
-typedef void(^cancelBlock)();
+typedef void(^cancelBlock)(void);
 
 /**
  自定义选中block类型

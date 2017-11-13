@@ -270,18 +270,20 @@ static NSString *identifier = @"groupDetailCollectionCell";
                         }];
                         //消息表
                         NSDateFormatter *df = [[NSDateFormatter alloc] init];
+                        [df setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
+                        NSDate *tempDate = [df dateFromString:[responseDict objectForKey:@"time"]];
                         [df setDateFormat:@"yyyyMMddHHmmss"];
-                        NSString *tempDateStr = [df stringFromDate:[NSDate date]];//这里暂时先用客户端的时间，最终应以服务器的时间戳为准
+                        NSString *tempDateStr = [df stringFromDate:tempDate];
                         int random = (arc4random() % 10000)+10000;//10000~19999随机数
                         NSString *randomStr = [[NSString stringWithFormat:@"%d" ,random] substringFromIndex:1];
                         NSDictionary *groupInfoDict = @{@"publishTime":[NSString stringWithFormat:@"%@%@",tempDateStr,randomStr] , @"event":@"你已解散群组", @"groupId":groupId};
                         GroupInfoModel *infoModel = [GroupInfoModel groupInfoWithDict:groupInfoDict];
-                        [ss.hxDB insertTable:groupInfoTable model:infoModel excludeProperty:nil callback:^(NSError *error) {
-                            NSLog(@"%@",error);
-                        }];
+//                        [ss.hxDB insertTable:groupInfoTable model:infoModel excludeProperty:nil callback:^(NSError *error) {
+//                            NSLog(@"%@",error);
+//                        }];//好像不需要插入数据库了，反正下次打开app该群就没有了，要保证群消息干净
 
                         //更新缓存
-                        NSDictionary *dataDict = @{HXNewGroupInfo:infoModel};
+                        NSDictionary *dataDict = @{HXNewGroupInfo:infoModel ,@"deleteFlag":@1};
                         [[NSNotificationCenter defaultCenter] postNotificationName:HXDismissExitGroupNotification object:nil userInfo:dataDict];
                         dispatch_async(dispatch_get_main_queue(), ^{
                             for (UIViewController *tempVC in ss.navigationController.viewControllers) {
@@ -325,17 +327,19 @@ static NSString *identifier = @"groupDetailCollectionCell";
                         }];
                         //消息表
                         NSDateFormatter *df = [[NSDateFormatter alloc] init];
+                        [df setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
+                        NSDate *tempDate = [df dateFromString:[responseDict objectForKey:@"time"]];
                         [df setDateFormat:@"yyyyMMddHHmmss"];
-                        NSString *tempDateStr = [df stringFromDate:[NSDate date]];//这里暂时先用客户端的时间，最终应以服务器的时间戳为准
+                        NSString *tempDateStr = [df stringFromDate:tempDate];
                         int random = (arc4random() % 10000)+10000;//10000~19999随机数
                         NSString *randomStr = [[NSString stringWithFormat:@"%d" ,random] substringFromIndex:1];
                         NSDictionary *groupInfoDict = @{@"publishTime":[NSString stringWithFormat:@"%@%@",tempDateStr,randomStr] , @"event":@"你已退出群组", @"groupId":groupId};
                         GroupInfoModel *infoModel = [GroupInfoModel groupInfoWithDict:groupInfoDict];
-                        [ss.hxDB insertTable:groupInfoTable model:infoModel excludeProperty:nil callback:^(NSError *error) {
-                            NSLog(@"%@",error);
-                        }];
+//                        [ss.hxDB insertTable:groupInfoTable model:infoModel excludeProperty:nil callback:^(NSError *error) {
+//                            NSLog(@"%@",error);
+//                        }];
                         //更新缓存
-                        NSDictionary *dataDict = @{HXNewGroupInfo:infoModel,@"numberOfMember":@(ss.groupModel.numberOfMember - 1)};
+                        NSDictionary *dataDict = @{HXNewGroupInfo:infoModel ,@"numberOfMember":@(ss.groupModel.numberOfMember - 1) ,@"deleteFlag":@1};
                         [[NSNotificationCenter defaultCenter] postNotificationName:HXDismissExitGroupNotification object:nil userInfo:dataDict];
                         dispatch_async(dispatch_get_main_queue(), ^{
                             for (UIViewController *tempVC in ws.navigationController.viewControllers) {

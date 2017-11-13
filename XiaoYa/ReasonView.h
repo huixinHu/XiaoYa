@@ -8,6 +8,6 @@
 
 #import <UIKit/UIKit.h>
 @interface ReasonView : UIView
-- (nonnull instancetype)initWithCancelBlock:(void (^_Nullable)())cancelBlock confirmBlock:(void (^_Nullable)(NSString * _Nonnull reason))confirmBlock;
+- (nonnull instancetype)initWithCancelBlock:(void (^_Nullable)(void))cancelBlock confirmBlock:(void (^_Nullable)(NSString * _Nonnull reason))confirmBlock;
 
 @end

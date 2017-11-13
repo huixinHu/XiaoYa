@@ -173,7 +173,7 @@ static HXSocketBusinessManager *manager = nil;
         case ProtoMessage_Type_ChatResponse:{//聊天回应
             //调用block
             if ([receiveData.body isEqualToString:@"ok"]) {
-                NSString *blockId = [[receiveData.time componentsSeparatedByString:@","] lastObject];
+                NSString *blockId = [[receiveData.time componentsSeparatedByString:@","] firstObject];
                 HXSocketCallbackBlock callBack = self.blockDic[blockId];
                 callBack(nil ,receiveData);
             }
@@ -194,9 +194,17 @@ static HXSocketBusinessManager *manager = nil;
                 NSString *numberOfMember = [NSString stringWithFormat:@"%@",[jsonDict objectForKey:@"amount"]];
                 NSDictionary *paraDict = @{@"groupId":groupId ,@"groupName":groupName ,@"groupManagerId":groupManagerId ,@"groupAvatarId":groupAvatarId ,@"numberOfMember":numberOfMember ,@"deleteFlag":@0};
                 //插入群组表
-                [self.hxdb insertTable:groupTable param:paraDict callback:^(NSError *error) {
-                    if(error) NSLog(@"%@",error);
-                }];
+                //查询是否存在旧数据（刚退出群、被踢出就重新加回去）
+                int oldDataCount = [self.hxdb itemCountForTable:groupTable whereDict:@{@"WHERE groupId = ?" :groupId}];
+                if (oldDataCount > 0) {
+                    [self.hxdb updateTable:groupTable param:paraDict whereDict:@{@"WHERE groupId = ?" :groupId} callback:^(NSError *error) {
+                        if(error) NSLog(@"%@",error);
+                    }];
+                } else{
+                    [self.hxdb insertTable:groupTable param:paraDict callback:^(NSError *error) {
+                        if(error) NSLog(@"%@",error);
+                    }];
+                }
                 //消息表
                 int random = (arc4random() % 10000)+10000;//10000~19999随机数
                 NSString *randomStr = [[NSString stringWithFormat:@"%d" ,random] substringFromIndex:1];
@@ -234,9 +242,9 @@ static HXSocketBusinessManager *manager = nil;
             NSString *event = (receiveData.type == ProtoMessage_Type_QuitGroupNotify) ? @"你已被踢出群组" : @"群组已解散" ;
             NSDictionary *groupInfoDict = @{@"publishTime":[NSString stringWithFormat:@"%@%@",tempPublishTime,randomStr] , @"event":event , @"groupId":groupId};
             GroupInfoModel *infoModel = [GroupInfoModel groupInfoWithDict:groupInfoDict];
-            [self.hxdb insertTable:groupInfoTable model:infoModel excludeProperty:nil callback:^(NSError *error) {
-                NSLog(@"%@",error);
-            }];
+//            [self.hxdb insertTable:groupInfoTable model:infoModel excludeProperty:nil callback:^(NSError *error) {
+//                NSLog(@"%@",error);
+//            }];
             //发送通知
             NSDictionary *dataDict = @{HXNotiFromServerKey:infoModel ,@"type":(receiveData.type == ProtoMessage_Type_QuitGroupNotify) ? @(ProtoMessage_Type_QuitGroupNotify):@(ProtoMessage_Type_DismissGroupNotify)};
             [[NSNotificationCenter defaultCenter] postNotificationName:HXNotiFromServerNotification object:nil userInfo:dataDict];

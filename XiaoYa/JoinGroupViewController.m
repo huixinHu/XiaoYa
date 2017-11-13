@@ -113,9 +113,8 @@
                 
                 //更新消息表
                 NSDateFormatter *df = [[NSDateFormatter alloc] init];
-//                [df setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
-//                NSDate *tempDate = [df dateFromString:[responseObject objectForKey:@"time"]];
-                NSDate *tempDate = [NSDate date];
+                [df setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
+                NSDate *tempDate = [df dateFromString:[responseObject objectForKey:@"time"]];
                 [df setDateFormat:@"yyyyMMddHHmmss"];
                 NSString *tempDateStr = [df stringFromDate:tempDate];
                 int random = (arc4random() % 10000)+10000;//10000~19999随机数

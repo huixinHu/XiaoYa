@@ -164,10 +164,16 @@
             } else{
                 obj.groupEvents = [NSMutableArray arrayWithObject:infoModel];
             }
-            if (memberCount) {//自己解散群或者退出群
+            
+            if (memberCount) {
                 obj.numberOfMember = memberCount.integerValue;
+            }
+            //自己解散群或者退出群
+            int deleteFlag = [[[notification userInfo] objectForKey:@"deleteFlag"] intValue];
+            if (deleteFlag == 1) {
                 obj.deleteFlag = YES;
             }
+
             indexMoveToTop = idx;
             model = [obj copy];
             *stop = YES;
@@ -196,41 +202,23 @@
 - (void)notiFromServer:(NSNotification *)notification{
     int type = [[[notification userInfo] objectForKey:@"type"] intValue];
     switch (type) {
-//        case ProtoMessage_Type_Chat:{//收到新消息
-//            __block NSInteger indexMoveToTop = -1;//需要被顶置的群组index
-//            __block GroupListModel *model;
-//            GroupInfoModel *infoModel = [[notification userInfo] objectForKey:HXNotiFromServerKey];
-//            [self.groupModels enumerateObjectsUsingBlock:^(GroupListModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-//                if ([obj.groupId isEqualToString:infoModel.groupId]) {
-//                    if (obj.groupEvents) {//不为空
-//                        [obj.groupEvents insertObject:infoModel atIndex:0];
-//                    } else{
-//                        obj.groupEvents = [NSMutableArray arrayWithObject:infoModel];
-//                    }
-//                    indexMoveToTop = idx;
-//                    model = [obj copy];
-//                    *stop = YES;
-//                }
-//            }];
-//            [self.groupModels removeObjectAtIndex:indexMoveToTop];
-//            [self.groupModels insertObject:model atIndex:0];
-//            if ([[Utils obtainPresentVC] isMemberOfClass:[self class]]) {
-//                __weak typeof(self) ws = self;
-//                dispatch_async(dispatch_get_main_queue(), ^{
-//                    __strong typeof(ws) ss = ws;
-//                    [ss.groupTable reloadData];
-//                });
-//            }
-//        } break;
-            
         case ProtoMessage_Type_JoinGroupNotify:{//被拉入群
+            __block NSInteger removeIndex = -1;
             GroupListModel *groupModel = [[notification userInfo] objectForKey:HXNotiFromServerKey];
+            //是否存在退出、被踢的旧群（同一个群）数据
+            [self.groupModels enumerateObjectsUsingBlock:^(GroupListModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                if ([obj.groupId isEqualToString:groupModel.groupId]) {
+                    removeIndex = idx;
+                    *stop = YES;
+                }
+            }];
+            if (removeIndex >= 0) [self.groupModels removeObjectAtIndex:removeIndex];
             [self.groupModels insertObject:groupModel atIndex:0];
-            if ([[Utils obtainPresentVC] isMemberOfClass:[self class]]) {
-                dispatch_async(dispatch_get_main_queue(), ^{
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if ([[Utils obtainPresentVC] isMemberOfClass:[self class]]) {
                     [self.groupTable reloadData];
-                });
-            }
+                }
+            });
         } break;
         
         case ProtoMessage_Type_Chat://收到新消息
@@ -259,13 +247,15 @@
                     *stop = YES;
                 }
             }];
-            [self.groupModels removeObjectAtIndex:indexMoveToTop];
-            [self.groupModels insertObject:model atIndex:0];
-            if ([[Utils obtainPresentVC] isMemberOfClass:[self class]]) {
+            if (indexMoveToTop >= 0) {
+                [self.groupModels removeObjectAtIndex:indexMoveToTop];
+                [self.groupModels insertObject:model atIndex:0];
                 __weak typeof(self) ws = self;
                 dispatch_async(dispatch_get_main_queue(), ^{
                     __strong typeof(ws) ss = ws;
-                    [ss.groupTable reloadData];
+                    if ([[Utils obtainPresentVC] isMemberOfClass:[ss class]]) {
+                        [ss.groupTable reloadData];
+                    }
                 });
             }
         } break;
@@ -293,19 +283,21 @@
                     *stop = YES;
                 }
             }];
-            if (newInfo.count > 0) {
-                [self.groupModels removeObjectAtIndex:indexMoveToTop];
-                [self.groupModels insertObject:model atIndex:0];
-            }
-            if ([[Utils obtainPresentVC] isMemberOfClass:[self class]]) {
+            if (indexMoveToTop>= 0) {
+//                [self.groupModels removeObjectAtIndex:indexMoveToTop];
+//                [self.groupModels insertObject:model atIndex:0];
                 __weak typeof(self) ws = self;
                 dispatch_async(dispatch_get_main_queue(), ^{
                     __strong typeof(ws) ss = ws;
-                    if (newInfo.count > 0) { //如果修改了群名、增加了人数
-                        [ss.groupTable reloadData];
-                    } else {//如果修改了头像或者踢了人
-                        NSIndexPath *refreshPath = [NSIndexPath indexPathForRow:indexMoveToTop inSection:0];
-                        [ss.groupTable reloadRowsAtIndexPaths:@[refreshPath] withRowAnimation:UITableViewRowAnimationNone];
+                    if ([[Utils obtainPresentVC] isMemberOfClass:[ss class]]) {
+                        if (newInfo.count > 0) { //如果修改了群名、增加了人数
+                            [self.groupModels removeObjectAtIndex:indexMoveToTop];
+                            [self.groupModels insertObject:model atIndex:0];
+                            [ss.groupTable reloadData];
+                        } else {//如果修改了头像或者踢了人
+                            NSIndexPath *refreshPath = [NSIndexPath indexPathForRow:indexMoveToTop inSection:0];
+                            [ss.groupTable reloadRowsAtIndexPaths:@[refreshPath] withRowAnimation:UITableViewRowAnimationNone];
+                        }
                     }
                 });
             }
@@ -343,13 +335,13 @@
                 [self.groupModels removeObjectAtIndex:indexMoveToTop];
                 [self.groupModels insertObject:model atIndex:0];
             }
-            if ([[Utils obtainPresentVC] isMemberOfClass:[self class]]) {
-                __weak typeof(self) ws = self;
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    __strong typeof(ws) ss = ws;
+            __weak typeof(self) ws = self;
+            dispatch_async(dispatch_get_main_queue(), ^{
+                __strong typeof(ws) ss = ws;
+                if ([[Utils obtainPresentVC] isMemberOfClass:[self class]]) {
                     [ss.groupTable reloadData];
-                });
-            }
+                }
+            });
         } break;
         default:
             break;
@@ -382,6 +374,16 @@
 - (void)join{
     __weak typeof(self) ws = self;
     JoinGroupViewController *joinVC = [[JoinGroupViewController alloc] initWithJoinSuccessBlock:^(GroupListModel *model) {
+        //是否存在退出、被踢的旧群（同一个群）数据
+        __block NSInteger removeIndex= -1;
+        [ws.groupModels enumerateObjectsUsingBlock:^(GroupListModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            if ([obj.groupId isEqualToString:model.groupId]) {
+                removeIndex = idx;
+                *stop = YES;
+            }
+        }];
+        if (removeIndex >= 0) [ws.groupModels removeObjectAtIndex:removeIndex];
+        
         [ws.groupModels insertObject:model atIndex:0];
         dispatch_async(dispatch_get_main_queue(), ^{
             ws.hint.hidden = YES;

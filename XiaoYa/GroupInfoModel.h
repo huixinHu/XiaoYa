@@ -16,7 +16,7 @@
 @property (nonatomic ,strong) NSMutableArray *eventSection;//时间节数   ,0,1,2,....
 @property (nonatomic ,copy) NSString *comment;//备注
 @property (nonatomic ,assign) NSInteger deadlineIndex;//截止选项        0
-@property (nonatomic ,copy) NSString *deadlineTime;//截止回复时间
+@property (nonatomic ,copy) NSString *deadlineTime;//截止回复时间yyyyMMddHHmmss
 
 @property (nonatomic ,copy) NSString *groupId;
 

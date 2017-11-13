@@ -31,7 +31,9 @@
         }else{
             avaFontSize = 24.0;
         }
-        self.memberAvatar = [TxAvatar avatarWithText:avaText fontSize:avaFontSize longside:50];
+//        dispatch_async(dispatch_get_main_queue(), ^{
+            self.memberAvatar = [TxAvatar avatarWithText:avaText fontSize:avaFontSize longside:50];
+//        });
     }
     return self;
 }
@@ -61,7 +63,9 @@
             }else{
                 avaFontSize = 24.0;
             }
-            self.memberAvatar = [TxAvatar avatarWithText:avaText fontSize:avaFontSize longside:50];
+//            dispatch_async(dispatch_get_main_queue(), ^{
+                self.memberAvatar = [TxAvatar avatarWithText:avaText fontSize:avaFontSize longside:50];
+//            });
         }
     }
     return self;
@@ -92,7 +96,9 @@
         }else{
             avaFontSize = 24.0;
         }
-        self.memberAvatar = [TxAvatar avatarWithText:avaText fontSize:avaFontSize longside:50];
+//        dispatch_async(dispatch_get_main_queue(), ^{
+            self.memberAvatar = [TxAvatar avatarWithText:avaText fontSize:avaFontSize longside:50];
+//        });
     }
     return self;
 }

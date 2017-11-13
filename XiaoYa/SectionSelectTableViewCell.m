@@ -159,7 +159,8 @@
     //cell 里的 button，它的 superview 是 UITableViewCellContentView，而它的 superview 就是我们自定义的 cell，cell 的 superview 是 UITableViewWrapperView，而它的 superview 就是 UITableView
     UIView *view1 = [sender superview];
     UIView *view2 = [view1 superview];
-    NSIndexPath *indexPath = [(UITableView *)[[view2 superview] superview] indexPathForCell:(UITableViewCell*)view2];
+//    NSIndexPath *indexPath = [(UITableView *)[[view2 superview] superview] indexPathForCell:(UITableViewCell*)view2];
+    NSIndexPath *indexPath = [(UITableView *)[view2 superview] indexPathForCell:(UITableViewCell*)view2];
  
     if (sender.isSelected) {//已经选中了
         sender.selected = NO;//置为未选中

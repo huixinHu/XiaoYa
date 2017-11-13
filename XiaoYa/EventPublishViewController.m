@@ -107,6 +107,11 @@
 
 - (void)confirm{
     [self.view endEditing:YES];
+    //说UIApplication和textfield要在主线程用
+    AppDelegate *apd = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+    NSString *comment = self.commentfield.text;
+    NSString *dsp = self.eventDescription.text;
+    
     __weak typeof(self) ws = self;
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
         __strong typeof(ws) ss = ws;
@@ -126,7 +131,7 @@
                 [sectionStr appendFormat:@"%@",obj];
             }
         }];
-        NSDictionary *bodyDict = @{@"description":ss.eventDescription.text,@"comment":ss.commentfield.text,@"week":week,@"day_of_week":dayOfWeek,@"date":eventDate,@"time":sectionStr,@"repeat":@"-1",@"alarm":@"1000000"};
+        NSDictionary *bodyDict = @{@"description":dsp,@"comment":comment,@"week":week,@"day_of_week":dayOfWeek,@"date":eventDate,@"time":sectionStr,@"repeat":@"-1",@"alarm":@"1000000"};
         if ([NSJSONSerialization isValidJSONObject:bodyDict]) {
             NSError *jsonErr;
             NSData *jsonData = [NSJSONSerialization dataWithJSONObject:bodyDict options:0 error:&jsonErr];
@@ -137,7 +142,6 @@
             NSString *jsonStr = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
             [dfm setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
             NSString *publishTime = [dfm stringFromDate:[NSDate date]];//yyyy-MM-dd HH:mm:ss 应该以服务器时间为准
-            AppDelegate *apd = (AppDelegate *)[[UIApplication sharedApplication] delegate];
             ProtoMessage* s1 = [[ProtoMessage alloc]init];
             s1.type = ProtoMessage_Type_Chat;
             s1.from = [NSString stringWithFormat:@"%@(%@)",apd.userName,apd.userid];
@@ -168,7 +172,7 @@
                     
                     NSString *publisher = [NSString stringWithFormat:@"%@(%@)",apd.userName,apd.userid];
                     NSString *eventSection = [ss appendStringWithArray:ss.sectionArray];
-                    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:publishTime,@"publishTime",publisher,@"publisher",ss.eventDescription.text,@"event",eventTime,@"eventDate",eventSection,@"eventSection",ss.commentfield.text,@"comment",[NSString stringWithFormat:@"%@",[NSNumber numberWithInteger:ss.dlIndex]],@"deadlineIndex",ss.groupid,@"groupId",nil];
+                    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:publishTime,@"publishTime",publisher,@"publisher",dsp,@"event",eventTime,@"eventDate",eventSection,@"eventSection",comment,@"comment",[NSString stringWithFormat:@"%@",[NSNumber numberWithInteger:ss.dlIndex]],@"deadlineIndex",ss.groupid,@"groupId",nil];
                     GroupInfoModel *newEvent = [GroupInfoModel groupInfoWithDict:dict];
                     //更新缓存，通知首页
                     ss.compBlock(newEvent);

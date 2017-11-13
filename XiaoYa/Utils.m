@@ -366,7 +366,7 @@
 }
 
 //tabVC->navVC-vc
-//获取当前显示的控制器
+//获取当前显示的控制器 要在主线程调用
 + (UIViewController *)obtainPresentVC{
     AppDelegate *apd = (AppDelegate *)[[UIApplication sharedApplication] delegate];
     UITabBarController *rootVc = (UITabBarController *)apd.window.rootViewController;

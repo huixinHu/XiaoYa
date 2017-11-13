@@ -18,7 +18,7 @@
 }
 
 + (void)blockInvoke:(NSTimer *)timer {
-    void (^block)() = timer.userInfo;
+    void (^block)(NSTimer *) = timer.userInfo;
     if(block) {
         block(timer);
     }

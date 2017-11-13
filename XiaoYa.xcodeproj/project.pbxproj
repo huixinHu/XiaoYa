@@ -82,6 +82,7 @@
 		57BDFA241E52F06A00C0E254 /* UIAlertController+Appearance.m in Sources */ = {isa = PBXBuildFile; fileRef = 57BDFA231E52F06A00C0E254 /* UIAlertController+Appearance.m */; };
 		57C761241E7D9EBC0002FA77 /* CollectView.m in Sources */ = {isa = PBXBuildFile; fileRef = 57C761231E7D9EBC0002FA77 /* CollectView.m */; };
 		57C761271E7E57320002FA77 /* CollectionViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 57C761261E7E57320002FA77 /* CollectionViewCell.m */; };
+		57CA557C1FBA02F8008E8F95 /* GroupTextInfoCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 57CA557B1FBA02F8008E8F95 /* GroupTextInfoCell.m */; };
 		57D10BB71F874DEB004DCA4D /* LoginProgress.m in Sources */ = {isa = PBXBuildFile; fileRef = 57D10BB61F874DEB004DCA4D /* LoginProgress.m */; };
 		57D49D1F1F0FB9660063C861 /* GroupHomePageViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 57D49D1E1F0FB9660063C861 /* GroupHomePageViewController.m */; };
 		57D49D231F121AD90063C861 /* GroupHomePageCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 57D49D221F121AD90063C861 /* GroupHomePageCell.m */; };
@@ -280,6 +281,8 @@
 		57C761231E7D9EBC0002FA77 /* CollectView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CollectView.m; sourceTree = "<group>"; };
 		57C761251E7E57320002FA77 /* CollectionViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CollectionViewCell.h; sourceTree = "<group>"; };
 		57C761261E7E57320002FA77 /* CollectionViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CollectionViewCell.m; sourceTree = "<group>"; };
+		57CA557A1FBA02F8008E8F95 /* GroupTextInfoCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GroupTextInfoCell.h; sourceTree = "<group>"; };
+		57CA557B1FBA02F8008E8F95 /* GroupTextInfoCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GroupTextInfoCell.m; sourceTree = "<group>"; };
 		57D10BB51F874DEB004DCA4D /* LoginProgress.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LoginProgress.h; sourceTree = "<group>"; };
 		57D10BB61F874DEB004DCA4D /* LoginProgress.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LoginProgress.m; sourceTree = "<group>"; };
 		57D49D1D1F0FB9660063C861 /* GroupHomePageViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GroupHomePageViewController.h; sourceTree = "<group>"; };
@@ -679,6 +682,8 @@
 			children = (
 				57D65FB61F2E3ABB00D3BE72 /* GroupInfoTableViewCell.h */,
 				57D65FB71F2E3ABB00D3BE72 /* GroupInfoTableViewCell.m */,
+				57CA557A1FBA02F8008E8F95 /* GroupTextInfoCell.h */,
+				57CA557B1FBA02F8008E8F95 /* GroupTextInfoCell.m */,
 				572EA91C1F301CF50052907C /* ReasonView.h */,
 				572EA91D1F301CF50052907C /* ReasonView.m */,
 				571DB1A91F5EEBDD00D319EF /* SectionSchedule.h */,
@@ -891,7 +896,7 @@
 		579C2FB11DAD000E00E4EE54 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0800;
+				LastUpgradeCheck = 0910;
 				ORGANIZATIONNAME = commet;
 				TargetAttributes = {
 					579C2FB81DAD000E00E4EE54 = {
@@ -1018,6 +1023,7 @@
 				573F11151EE7F60A00E9F99E /* RegisterViewController.m in Sources */,
 				57D63DA61F176E3B006EC7A8 /* GroupSearchTableViewCell.m in Sources */,
 				5782CE781E7288C100DA4947 /* TimeSelectedTableViewCell.m in Sources */,
+				57CA557C1FBA02F8008E8F95 /* GroupTextInfoCell.m in Sources */,
 				57D49D711F160D6A0063C861 /* GroupMemberModel.m in Sources */,
 				574C2C071E9F9C4800960399 /* XPathQuery.m in Sources */,
 				577C67071EE870F10006E783 /* NSTimer+Addition.m in Sources */,
@@ -1160,14 +1166,20 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
@@ -1206,14 +1218,20 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;

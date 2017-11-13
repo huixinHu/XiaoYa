@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-typedef void(^loginSocketTimeout)();
+typedef void(^loginSocketTimeout)(void);
 
 @interface LoginProgress : NSObject
 

@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface TxAvatar : UIView
+@interface TxAvatar : NSObject
 + (nonnull UIImage *)avatarWithText:(nonnull NSString *)text fontSize:(CGFloat)fz longside:(CGFloat)ls;
 
 @end

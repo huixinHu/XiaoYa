@@ -17,7 +17,7 @@ typedef void(^singleConfirmBlock)(NSInteger selectedIndex);
 /**
  自定义取消block类型
  */
-typedef void(^singleCancelBlock)();
+typedef void(^singleCancelBlock)(void);
 
 @interface SingleChoiceView : UIView
 

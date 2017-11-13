@@ -60,7 +60,8 @@
 - (void)join:(UIButton *)sender{
     UIView *view1 = [sender superview];
     UIView *view2 = [view1 superview];
-    NSIndexPath *indexPath = [(UITableView *)[[view2 superview] superview] indexPathForCell:(UITableViewCell*)view2];
+//    NSIndexPath *indexPath = [(UITableView *)[[view2 superview] superview] indexPathForCell:(UITableViewCell*)view2];
+    NSIndexPath *indexPath = [(UITableView *)[view2 superview] indexPathForCell:(UITableViewCell*)view2];//wrapperView没有了？
     [self.delegate groupSearchCell:self selectIndex:indexPath];
 }
 

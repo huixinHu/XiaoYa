@@ -8,6 +8,7 @@
 
 #import "GroupInfoViewController.h"
 #import "GroupInfoTableViewCell.h"
+#import "GroupTextInfoCell.h"
 #import "GroupDetailViewController.h"
 #import "EventDetailViewController.h"
 #import "EventPublishViewController.h"
@@ -88,13 +89,13 @@
                 if (numberOfMember) {
                     self.detailmodel.numberOfMember = numberOfMember.integerValue;
                 }
-                if ([[Utils obtainPresentVC] isMemberOfClass:[self class]]) {
-                    __weak typeof(self) ws = self;
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        __strong typeof(ws) ss = ws;
+                __weak typeof(self) ws = self;
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    __strong typeof(ws) ss = ws;
+                    if ([[Utils obtainPresentVC] isMemberOfClass:[ss class]]) {
                         [ss.infoList reloadData];
-                    });
-                }
+                    }
+                });
             }
         } break;
         
@@ -112,16 +113,16 @@
                     }
                     self.detailmodel.groupEvents = newGroupEvents;
                 }
-                if ([[Utils obtainPresentVC] isMemberOfClass:[self class]]) {
-                    __weak typeof(self) weakself = self;
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        __strong typeof(weakself) ss = weakself;
+                __weak typeof(self) weakself = self;
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    __strong typeof(weakself) ss = weakself;
+                    if ([[Utils obtainPresentVC] isMemberOfClass:[ss class]]) {
                         ss.navigationItem.title = self.detailmodel.groupName;
                         if (newInfo.count > 0) {//有因为群资料修改而产生的新群组消息
                             [ss.infoList reloadData];
                         }
-                    });
-                }
+                    }
+                });
             }
 
         } break;
@@ -141,13 +142,13 @@
                     }
                 }
             }
-            if (infoModel && [[Utils obtainPresentVC] isMemberOfClass:[self class]]) {
-                __weak typeof(self) ws = self;
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    __strong typeof(ws) ss = ws;
+            __weak typeof(self) ws = self;
+            dispatch_async(dispatch_get_main_queue(), ^{
+                __strong typeof(ws) ss = ws;
+                if (infoModel && [[Utils obtainPresentVC] isMemberOfClass:[ss class]]) {
                     [ss.infoList reloadData];
-                });
-            }
+                }
+            });
         } break;
         default:
             break;
@@ -179,11 +180,11 @@
         } else{
             ss.detailmodel.groupEvents = [NSMutableArray arrayWithObject:newEvent];
         }
-        if ([[Utils obtainPresentVC] isMemberOfClass:[self class]]) {
-            dispatch_async(dispatch_get_main_queue(), ^{
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if ([[Utils obtainPresentVC] isMemberOfClass:[self class]]) {
                 [ss.infoList reloadData];
-            });
-        }
+            }
+        });
     }];
     [self.navigationController pushViewController:VC animated:YES];
 }
@@ -194,27 +195,39 @@
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
-    return 130;
+    GroupInfoModel *cellModel = self.detailmodel.groupEvents[indexPath.row];
+    if (!cellModel.publisher) {
+        return 40;
+    } else{
+        return 130;
+    }
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
-    __weak typeof(self) ws = self;
-    GroupInfoTableViewCell *cell = [GroupInfoTableViewCell GroupInfoCellWithTableView:tableView eventDetailBlock:^(GroupInfoModel *model) {
-        EventDetailViewController *VC =
-        [[EventDetailViewController alloc]initWithInfoModel:ws.detailmodel.groupEvents[indexPath.row]
-                                              editCompBlock:^(GroupInfoModel *edittedModel) {
-                                                  [ws.detailmodel.groupEvents replaceObjectAtIndex:indexPath.row withObject:edittedModel];
-                                                  dispatch_async(dispatch_get_main_queue(), ^{
-                                                      [ws.infoList reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
-                                                  });
-                                              }];
-        [ws.navigationController pushViewController:VC animated:YES];
-    }];
-    cell.model = self.detailmodel.groupEvents[indexPath.row];
-    if (self.detailmodel.deleteFlag == 1) {
-        cell.enableFlag = NO;
+    GroupInfoModel *cellModel = self.detailmodel.groupEvents[indexPath.row];
+    if (!cellModel.publisher) {
+        GroupTextInfoCell *cell = [GroupTextInfoCell GroupTextInfoCellWithTableView:tableView];
+        cell.model = cellModel;
+        return cell;
+    } else{
+        __weak typeof(self) ws = self;
+        GroupInfoTableViewCell *cell = [GroupInfoTableViewCell GroupInfoCellWithTableView:tableView eventDetailBlock:^(GroupInfoModel *model) {
+            EventDetailViewController *VC =
+            [[EventDetailViewController alloc]initWithInfoModel:ws.detailmodel.groupEvents[indexPath.row]
+                                                  editCompBlock:^(GroupInfoModel *edittedModel) {
+                                                      [ws.detailmodel.groupEvents replaceObjectAtIndex:indexPath.row withObject:edittedModel];
+                                                      dispatch_async(dispatch_get_main_queue(), ^{
+                                                          [ws.infoList reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
+                                                      });
+                                                  }];
+            [ws.navigationController pushViewController:VC animated:YES];
+        }];
+        cell.model = cellModel;
+        if (self.detailmodel.deleteFlag == 1) {
+            cell.enableFlag = NO;
+        }
+        return cell;
     }
-    return cell;
 }
 
 #pragma mark viewsSetting

@@ -85,7 +85,6 @@
         dispatch_group_leave(group);
     } failure:^(NSURLSessionDataTask *task, NSError *error) {
         NSLog(@"Error: %@", error);
-        return;
     } refresh:NO];
     dispatch_group_notify(group, dispatch_get_global_queue(0, 0), ^{
         [self login];
