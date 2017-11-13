@@ -123,7 +123,7 @@ static NSString * groupInfoTable = @"groupInfoTable";
 
 
 /**
- 删除单条记录
+ 删除单条件记录
 
  @param tableName 表名
  @param where where子句字典
@@ -132,7 +132,7 @@ static NSString * groupInfoTable = @"groupInfoTable";
 - (void)deleteTable:(NSString *)tableName whereDict:(NSDictionary *)where callback:(void(^)(NSError *error))block;
 
 /**
- 批量删除记录
+ 批量删除不同条件的记录
 
  @param tableName 表名
  @param whereArrs where子句字典的集合

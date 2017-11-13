@@ -96,7 +96,7 @@
                 self.hxdb = [HXDBManager shareDB:@"XiaoYa.sqlite" dbPath:[Utils HXNSStringMD5:appDelegate.userid]];
                 //如果是退出再登录其他人的账号，要切换用户路径。（如果是打开app的第一次登录就只是重复执行上一句的代码）
                 [self.hxdb changeFilePath:[Utils HXNSStringMD5:appDelegate.userid] dbName:@"XiaoYa.sqlite"];
-                [self.hxdb createTable:groupTable colDict:@{@"groupId":@"TEXT",@"groupName":@"TEXT",@"groupAvatarId":@"TEXT",@"numberOfMember":@"TEXT",@"groupManagerId":@"TEXT"} primaryKey:@"groupId"];
+                [self.hxdb createTable:groupTable colDict:@{@"groupId":@"TEXT",@"groupName":@"TEXT",@"groupAvatarId":@"TEXT",@"numberOfMember":@"TEXT",@"groupManagerId":@"TEXT",@"deleteFlag":@"INTEGER"} primaryKey:@"groupId"];
                 [self.hxdb createTable:memberTable colDict:@{@"memberId":@"TEXT",@"memberName":@"TEXT",@"memberPhone":@"TEXT"} primaryKey:@"memberId"];
                 
                 [self.hxdb tableCreate:@"CREATE TABLE IF NOT EXISTS memberGroupRelation (memberId TEXT,groupId TEXT, FOREIGN KEY(groupId) REFERENCES groupTable(groupId) ON DELETE CASCADE);" table:@"memberGroupRelation"];

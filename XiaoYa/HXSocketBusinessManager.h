@@ -62,7 +62,7 @@ typedef void(^HXSocketLoginCallback)(NSError *error);
  */
 - (void)connectSocket:(NSDictionary *)token  authAppraisalFailCallBack:(HXSocketLoginCallback)block;
 
-- (void)writeDataWithCmdtype:(HXCmdType)cmdType requestBody:(NSData *)requestData block:(HXSocketCallbackBlock)callback;
+- (void)writeDataWithCmdtype:(HXCmdType)cmdType requestBody:(NSData *)requestData blockId:(NSString *)bId block:(HXSocketCallbackBlock)callback;
 
 
 /**

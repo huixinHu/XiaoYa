@@ -17,6 +17,7 @@
 @property (nonatomic ,strong) NSMutableArray <GroupMemberModel *>*groupMembers;    //群成员集
 @property (nonatomic ,assign) NSInteger numberOfMember;                     //群人数
 @property (nonatomic ,copy) NSString *groupManagerId;//群主id
+@property (nonatomic ,assign) NSInteger deleteFlag;
 
 @property (nonatomic ,strong) NSMutableArray<GroupInfoModel *> *groupEvents;       //群消息集
 

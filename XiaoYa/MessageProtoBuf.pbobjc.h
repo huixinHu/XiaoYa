@@ -42,6 +42,9 @@ typedef GPB_ENUM(ProtoMessage_Type) {
   ProtoMessage_Type_DismissGroupNotify = 7,
   ProtoMessage_Type_UpdateGroupNotify = 8,
   ProtoMessage_Type_NoGroupNotify = 9,
+  ProtoMessage_Type_HeartBeat = 10,
+  ProtoMessage_Type_HeartBeatResponse = 11,
+  ProtoMessage_Type_SomeoneQuitNotify = 12,
 };
 
 GPBEnumDescriptor *ProtoMessage_Type_EnumDescriptor(void);

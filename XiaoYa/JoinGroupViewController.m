@@ -14,6 +14,7 @@
 #import "HXTextField.h"
 #import "HXNetworking.h"
 #import "GroupSearchModel.h"
+#import "GroupInfoModel.h"
 #import "GroupListModel.h"
 #import "UIAlertController+Appearance.h"
 #import "AppDelegate.h"
@@ -95,24 +96,39 @@
                     //加入失败的交互待完善
                     void (^otherBlock)(UIAlertAction *action) = ^(UIAlertAction *action){
                     };
-                    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"加入群组失败" message:@"请确定用户、群组信息无误" preferredStyle:UIAlertControllerStyleAlert cancelTitle:nil cancelBlock:nil otherTitles:@[@"确定"] otherBlocks:@[otherBlock]];
+                    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"加入群组失败" message:[responseObject objectForKey:@"message"] preferredStyle:UIAlertControllerStyleAlert cancelTitle:nil cancelBlock:nil otherTitles:@[@"确定"] otherBlocks:@[otherBlock]];
                     [ss presentViewController:alert animated:YES completion:nil];
                 });
             }else {
-                NSLog(@"%@", [responseObject objectForKey:@"message"]);
                 //更新数据库 - 群组表
                 NSString *groupId = selectedModel.groupId;
                 NSString *groupName = selectedModel.groupName;
                 NSString *groupManagerId = selectedModel.managerId;
                 NSString *groupAvatarId = [NSString stringWithFormat:@"%@",[NSNumber numberWithInteger:selectedModel.avatarId]];
                 NSString *numberOfMember = [NSString stringWithFormat:@"%@",[NSNumber numberWithInteger:selectedModel.numberOfMember + 1]];//加1是因为要算上自己
-                NSDictionary *groupParaDict = @{@"groupId":groupId ,@"groupName":groupName ,@"groupManagerId":groupManagerId ,@"groupAvatarId":groupAvatarId ,@"numberOfMember":numberOfMember};
+                NSDictionary *groupParaDict = @{@"groupId":groupId ,@"groupName":groupName ,@"groupManagerId":groupManagerId ,@"groupAvatarId":groupAvatarId ,@"numberOfMember":numberOfMember ,@"deleteFlag":@0};
                 [ss.hxdb insertTable:groupTable param:groupParaDict callback:^(NSError *error) {
                     if(error) NSLog(@"加入群组-插入群组表失败：%@",error);
+                }];
+                
+                //更新消息表
+                NSDateFormatter *df = [[NSDateFormatter alloc] init];
+//                [df setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
+//                NSDate *tempDate = [df dateFromString:[responseObject objectForKey:@"time"]];
+                NSDate *tempDate = [NSDate date];
+                [df setDateFormat:@"yyyyMMddHHmmss"];
+                NSString *tempDateStr = [df stringFromDate:tempDate];
+                int random = (arc4random() % 10000)+10000;//10000~19999随机数
+                NSString *randomStr = [[NSString stringWithFormat:@"%d" ,random] substringFromIndex:1];
+                NSDictionary *groupInfoDict = @{@"publishTime":[NSString stringWithFormat:@"%@%@",tempDateStr,randomStr] , @"event":@"你已加入群组", @"groupId":groupId};
+                GroupInfoModel *infoModel = [GroupInfoModel groupInfoWithDict:groupInfoDict];
+                [self.hxdb insertTable:groupInfoTable model:infoModel excludeProperty:nil callback:^(NSError *error) {
+                    NSLog(@"%@",error);
                 }];
 
                 //更新缓存
                 GroupListModel *groupModel = [GroupListModel groupWithDict:groupParaDict];
+                groupModel.groupEvents = [NSMutableArray arrayWithObject:infoModel];
                 if (ss.sucBlock) {
                     ss.sucBlock(groupModel);
                 }

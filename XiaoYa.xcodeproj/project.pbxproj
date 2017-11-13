@@ -31,7 +31,6 @@
 		571DB1BA1F656DB000D319EF /* MemberListViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 571DB1B91F656DB000D319EF /* MemberListViewController.m */; };
 		571DB1DB1F68383200D319EF /* EditGroupDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 571DB1DA1F68383200D319EF /* EditGroupDetailViewController.m */; };
 		571DB1E51F7A6A7E00D319EF /* HXDBManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 571DB1E41F7A6A7E00D319EF /* HXDBManager.m */; };
-		571DB1E81F7A6D6D00D319EF /* MessageProtoBuf.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 571DB1E71F7A6D6D00D319EF /* MessageProtoBuf.pbobjc.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		571DB1EB1F7BC32A00D319EF /* HXTokenManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 571DB1EA1F7BC32A00D319EF /* HXTokenManager.m */; };
 		572B6D121F166A520069D1D2 /* AddGroupMemberViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 572B6D111F166A520069D1D2 /* AddGroupMemberViewController.m */; };
 		572B6D151F1748590069D1D2 /* JoinGroupViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 572B6D141F1748590069D1D2 /* JoinGroupViewController.m */; };
@@ -49,6 +48,7 @@
 		574C2C061E9F9C4800960399 /* TFHppleElement.m in Sources */ = {isa = PBXBuildFile; fileRef = 574C2C021E9F9C4800960399 /* TFHppleElement.m */; };
 		574C2C071E9F9C4800960399 /* XPathQuery.m in Sources */ = {isa = PBXBuildFile; fileRef = 574C2C041E9F9C4800960399 /* XPathQuery.m */; };
 		574C2C0A1E9FA2E000960399 /* libxml2.2.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 574C2C091E9FA2E000960399 /* libxml2.2.tbd */; };
+		576266FB1FB85B1B00EE3F53 /* MessageProtoBuf.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 576266FA1FB85B1B00EE3F53 /* MessageProtoBuf.pbobjc.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		577430961E9374020027D471 /* EventKitManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 577430951E9374020027D471 /* EventKitManager.m */; };
 		577430991E9374C70027D471 /* EventKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 577430971E9374C70027D471 /* EventKit.framework */; };
 		5774309A1E9374C70027D471 /* EventKitUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 577430981E9374C70027D471 /* EventKitUI.framework */; };
@@ -180,8 +180,6 @@
 		571DB1DC1F6AA30100D319EF /* HXNotifyConfig.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HXNotifyConfig.h; sourceTree = "<group>"; };
 		571DB1E31F7A6A7E00D319EF /* HXDBManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HXDBManager.h; sourceTree = "<group>"; };
 		571DB1E41F7A6A7E00D319EF /* HXDBManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HXDBManager.m; sourceTree = "<group>"; };
-		571DB1E61F7A6D6D00D319EF /* MessageProtoBuf.pbobjc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MessageProtoBuf.pbobjc.h; sourceTree = "<group>"; };
-		571DB1E71F7A6D6D00D319EF /* MessageProtoBuf.pbobjc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MessageProtoBuf.pbobjc.m; sourceTree = "<group>"; };
 		571DB1E91F7BC32A00D319EF /* HXTokenManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HXTokenManager.h; sourceTree = "<group>"; };
 		571DB1EA1F7BC32A00D319EF /* HXTokenManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HXTokenManager.m; sourceTree = "<group>"; };
 		572B6D101F166A520069D1D2 /* AddGroupMemberViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AddGroupMemberViewController.h; sourceTree = "<group>"; };
@@ -216,6 +214,8 @@
 		574C2C041E9F9C4800960399 /* XPathQuery.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XPathQuery.m; sourceTree = "<group>"; };
 		574C2C091E9FA2E000960399 /* libxml2.2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libxml2.2.tbd; path = usr/lib/libxml2.2.tbd; sourceTree = SDKROOT; };
 		574C2C0B1E9FA32E00960399 /* libxml2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libxml2.tbd; path = usr/lib/libxml2.tbd; sourceTree = SDKROOT; };
+		576266F91FB85B1B00EE3F53 /* MessageProtoBuf.pbobjc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MessageProtoBuf.pbobjc.h; sourceTree = "<group>"; };
+		576266FA1FB85B1B00EE3F53 /* MessageProtoBuf.pbobjc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MessageProtoBuf.pbobjc.m; sourceTree = "<group>"; };
 		577430941E9374020027D471 /* EventKitManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EventKitManager.h; sourceTree = "<group>"; };
 		577430951E9374020027D471 /* EventKitManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EventKitManager.m; sourceTree = "<group>"; };
 		577430971E9374C70027D471 /* EventKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = EventKit.framework; path = System/Library/Frameworks/EventKit.framework; sourceTree = SDKROOT; };
@@ -594,8 +594,8 @@
 		579C2FBC1DAD000E00E4EE54 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				571DB1E61F7A6D6D00D319EF /* MessageProtoBuf.pbobjc.h */,
-				571DB1E71F7A6D6D00D319EF /* MessageProtoBuf.pbobjc.m */,
+				576266F91FB85B1B00EE3F53 /* MessageProtoBuf.pbobjc.h */,
+				576266FA1FB85B1B00EE3F53 /* MessageProtoBuf.pbobjc.m */,
 				579C2FBD1DAD000E00E4EE54 /* main.m */,
 			);
 			name = "Supporting Files";
@@ -1037,7 +1037,6 @@
 				57EA0A1F1F2086F50003BE87 /* NeedLoginViewController.m in Sources */,
 				573F110B1EE6DE4200E9F99E /* LoginViewController.m in Sources */,
 				571DB1A51F5D000400D319EF /* MutipleChoiceView.m in Sources */,
-				571DB1E81F7A6D6D00D319EF /* MessageProtoBuf.pbobjc.m in Sources */,
 				571DB1A21F5CFF4B00D319EF /* MutipleChoiceCell.m in Sources */,
 				57D49D231F121AD90063C861 /* GroupHomePageCell.m in Sources */,
 				57C761271E7E57320002FA77 /* CollectionViewCell.m in Sources */,
@@ -1050,6 +1049,7 @@
 				579C2FC11DAD000E00E4EE54 /* AppDelegate.m in Sources */,
 				571DB1AB1F5EEBDD00D319EF /* SectionSchedule.m in Sources */,
 				E26B70151E6AFF75000A08CB /* timeselecteview.m in Sources */,
+				576266FB1FB85B1B00EE3F53 /* MessageProtoBuf.pbobjc.m in Sources */,
 				577C671A1EED676B0006E783 /* HXNetworking.m in Sources */,
 				E26B70141E6AFF75000A08CB /* weekselectview.m in Sources */,
 				571DB1A81F5D8E1A00D319EF /* BgView.m in Sources */,

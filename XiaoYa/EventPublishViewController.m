@@ -136,15 +136,16 @@
             }
             NSString *jsonStr = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
             [dfm setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
+            NSString *publishTime = [dfm stringFromDate:[NSDate date]];//yyyy-MM-dd HH:mm:ss 应该以服务器时间为准
             AppDelegate *apd = (AppDelegate *)[[UIApplication sharedApplication] delegate];
             ProtoMessage* s1 = [[ProtoMessage alloc]init];
             s1.type = ProtoMessage_Type_Chat;
             s1.from = [NSString stringWithFormat:@"%@(%@)",apd.userName,apd.userid];
             s1.to = ss.groupid;
-            s1.time = [dfm stringFromDate:[NSDate date]];//yyyy-MM-dd HH:mm:ss 应该以服务器时间为准
+            s1.time = publishTime;
             s1.body = jsonStr;
             
-            [[HXSocketBusinessManager shareInstance] writeDataWithCmdtype:HXCmdType_Chat requestBody:[s1 data] block:^(NSError *error, ProtoMessage *data) {
+            [[HXSocketBusinessManager shareInstance] writeDataWithCmdtype:HXCmdType_Chat requestBody:[s1 data] blockId:publishTime block:^(NSError *error, ProtoMessage *data) {
                 if (error) {
                     NSLog(@"%@",error);
                     dispatch_async(dispatch_get_main_queue(), ^{
@@ -159,7 +160,7 @@
                     NSString *eventTime = [dfm stringFromDate:ss.currentDate];
 
                     [dfm setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
-                    NSDate *tempPublishDate = [dfm dateFromString:data.time];
+                    NSDate *tempPublishDate = [dfm dateFromString:[[data.time componentsSeparatedByString:@","] lastObject]];
                     [dfm setDateFormat:@"yyyyMMddHHmmss"];
                     NSString *publishTime = [dfm stringFromDate:tempPublishDate];
                     NSString *ramdomStr = [NSString stringWithFormat:@"%d" ,(arc4random() % 10000)+10000];

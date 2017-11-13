@@ -13,6 +13,7 @@ typedef void(^GroupInfoDetail)(GroupInfoModel *model);
 
 @interface GroupInfoTableViewCell : UITableViewCell
 @property (nonatomic ,strong) GroupInfoModel *model;
+@property (nonatomic ,assign) BOOL enableFlag;
 
 + (instancetype)GroupInfoCellWithTableView:(UITableView *)tableView eventDetailBlock:(GroupInfoDetail)block;
 

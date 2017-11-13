@@ -143,7 +143,8 @@ GPBEnumDescriptor *ProtoMessage_Type_EnumDescriptor(void) {
         "Login\000Chat\000LoginResponse\000ChatResponse\000Jo"
         "inGroupNotify\000QuitGroupNotify\000SomeoneJoi"
         "nNotify\000DismissGroupNotify\000UpdateGroupNo"
-        "tify\000NoGroupNotify\000";
+        "tify\000NoGroupNotify\000HeartBeat\000HeartBeatRe"
+        "sponse\000SomeoneQuitNotify\000";
     static const int32_t values[] = {
         ProtoMessage_Type_Login,
         ProtoMessage_Type_Chat,
@@ -155,6 +156,9 @@ GPBEnumDescriptor *ProtoMessage_Type_EnumDescriptor(void) {
         ProtoMessage_Type_DismissGroupNotify,
         ProtoMessage_Type_UpdateGroupNotify,
         ProtoMessage_Type_NoGroupNotify,
+        ProtoMessage_Type_HeartBeat,
+        ProtoMessage_Type_HeartBeatResponse,
+        ProtoMessage_Type_SomeoneQuitNotify,
     };
     GPBEnumDescriptor *worker =
         [GPBEnumDescriptor allocDescriptorForName:GPBNSStringifySymbol(ProtoMessage_Type)
@@ -181,6 +185,9 @@ BOOL ProtoMessage_Type_IsValidValue(int32_t value__) {
     case ProtoMessage_Type_DismissGroupNotify:
     case ProtoMessage_Type_UpdateGroupNotify:
     case ProtoMessage_Type_NoGroupNotify:
+    case ProtoMessage_Type_HeartBeat:
+    case ProtoMessage_Type_HeartBeatResponse:
+    case ProtoMessage_Type_SomeoneQuitNotify:
       return YES;
     default:
       return NO;

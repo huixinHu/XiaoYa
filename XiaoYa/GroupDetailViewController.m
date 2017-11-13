@@ -13,6 +13,7 @@
 #import "EditGroupDetailViewController.h"
 #import "GroupListModel.h"
 #import "GroupMemberModel.h"
+#import "GroupInfoModel.h"
 #import "Utils.h"
 #import "Masonry.h"
 #import "BgView.h"
@@ -257,14 +258,30 @@ static NSString *identifier = @"groupDetailCollectionCell";
 //                        [self.hxDB deleteTable:groupTable whereDict:@{@"WHERE groupId = ?":@[groupId]} callback:^(NSError *error) {
 //                            NSLog(@"%@",error);
 //                        }];
-//                        [self.hxDB deleteTable:memberGroupRelation whereDict:@{@"WHERE groupId = ?":@[groupId]} callback:^(NSError *error) {
-//                            NSLog(@"%@",error);
-//                        }];
-//                        [self.hxDB deleteTable:groupInfoTable whereDict:@{@"WHERE groupId = ?":@[groupId]} callback:^(NSError *error) {
-//                            NSLog(@"%@",error);
-//                        }];
+                        [self.hxDB deleteTable:memberGroupRelation whereDict:@{@"WHERE groupId = ?":@[groupId]} callback:^(NSError *error) {
+                            NSLog(@"%@",error);
+                        }];
+                        [self.hxDB deleteTable:groupInfoTable whereDict:@{@"WHERE groupId = ?":@[groupId]} callback:^(NSError *error) {
+                            NSLog(@"%@",error);
+                        }];
+                        //仅更新群组表，deleteFlag置1
+                        [ss.hxDB updateTable:groupTable param:@{@"deleteFlag":@1} whereDict:@{@"WHERE groupId = ?":@[groupId]} callback:^(NSError *error) {
+                            NSLog(@"%@",error);
+                        }];
+                        //消息表
+                        NSDateFormatter *df = [[NSDateFormatter alloc] init];
+                        [df setDateFormat:@"yyyyMMddHHmmss"];
+                        NSString *tempDateStr = [df stringFromDate:[NSDate date]];//这里暂时先用客户端的时间，最终应以服务器的时间戳为准
+                        int random = (arc4random() % 10000)+10000;//10000~19999随机数
+                        NSString *randomStr = [[NSString stringWithFormat:@"%d" ,random] substringFromIndex:1];
+                        NSDictionary *groupInfoDict = @{@"publishTime":[NSString stringWithFormat:@"%@%@",tempDateStr,randomStr] , @"event":@"你已解散群组", @"groupId":groupId};
+                        GroupInfoModel *infoModel = [GroupInfoModel groupInfoWithDict:groupInfoDict];
+                        [ss.hxDB insertTable:groupInfoTable model:infoModel excludeProperty:nil callback:^(NSError *error) {
+                            NSLog(@"%@",error);
+                        }];
+
                         //更新缓存
-                        NSDictionary *dataDict = [NSDictionary dictionaryWithObject:ss.groupModel.groupId forKey:HXDismissExitGroupKey];
+                        NSDictionary *dataDict = @{HXNewGroupInfo:infoModel};
                         [[NSNotificationCenter defaultCenter] postNotificationName:HXDismissExitGroupNotification object:nil userInfo:dataDict];
                         dispatch_async(dispatch_get_main_queue(), ^{
                             for (UIViewController *tempVC in ss.navigationController.viewControllers) {
@@ -294,17 +311,31 @@ static NSString *identifier = @"groupDetailCollectionCell";
                         NSLog(@"退出群组失败");
                     }else {
                         //更新数据库 //删除群组表、关系表、消息表
-                        [self.hxDB deleteTable:groupTable whereDict:@{@"WHERE groupId = ?":@[groupId]} callback:^(NSError *error) {
+//                        [self.hxDB deleteTable:groupTable whereDict:@{@"WHERE groupId = ?":@[groupId]} callback:^(NSError *error) {
+//                            NSLog(@"%@",error);
+//                        }];
+                        [ss.hxDB deleteTable:memberGroupRelation whereDict:@{@"WHERE groupId = ?":@[groupId]} callback:^(NSError *error) {
                             NSLog(@"%@",error);
-                        }];
-                        [self.hxDB deleteTable:memberGroupRelation whereDict:@{@"WHERE groupId = ?":@[groupId]} callback:^(NSError *error) {
-                            NSLog(@"%@",error);
-                        }];
+                        }];//避免再次加入群时产生重复数据
                         [self.hxDB deleteTable:groupInfoTable whereDict:@{@"WHERE groupId = ?":@[groupId]} callback:^(NSError *error) {
                             NSLog(@"%@",error);
                         }];
+                        [ss.hxDB updateTable:groupTable param:@{@"deleteFlag":@1} whereDict:@{@"WHERE groupId = ?":@[groupId]} callback:^(NSError *error) {
+                            NSLog(@"%@",error);
+                        }];
+                        //消息表
+                        NSDateFormatter *df = [[NSDateFormatter alloc] init];
+                        [df setDateFormat:@"yyyyMMddHHmmss"];
+                        NSString *tempDateStr = [df stringFromDate:[NSDate date]];//这里暂时先用客户端的时间，最终应以服务器的时间戳为准
+                        int random = (arc4random() % 10000)+10000;//10000~19999随机数
+                        NSString *randomStr = [[NSString stringWithFormat:@"%d" ,random] substringFromIndex:1];
+                        NSDictionary *groupInfoDict = @{@"publishTime":[NSString stringWithFormat:@"%@%@",tempDateStr,randomStr] , @"event":@"你已退出群组", @"groupId":groupId};
+                        GroupInfoModel *infoModel = [GroupInfoModel groupInfoWithDict:groupInfoDict];
+                        [ss.hxDB insertTable:groupInfoTable model:infoModel excludeProperty:nil callback:^(NSError *error) {
+                            NSLog(@"%@",error);
+                        }];
                         //更新缓存
-                        NSDictionary *dataDict = [NSDictionary dictionaryWithObject:ss.groupModel.groupId forKey:HXDismissExitGroupKey];
+                        NSDictionary *dataDict = @{HXNewGroupInfo:infoModel,@"numberOfMember":@(ss.groupModel.numberOfMember - 1)};
                         [[NSNotificationCenter defaultCenter] postNotificationName:HXDismissExitGroupNotification object:nil userInfo:dataDict];
                         dispatch_async(dispatch_get_main_queue(), ^{
                             for (UIViewController *tempVC in ws.navigationController.viewControllers) {

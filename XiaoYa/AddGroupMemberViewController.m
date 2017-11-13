@@ -43,10 +43,12 @@
 }
 
 - (void)cancel{
+    [self.view endEditing:YES];
     [self.navigationController popViewControllerAnimated:YES];
 }
 
 - (void)done{
+    [self.view endEditing:YES];
     NSMutableArray <GroupMemberModel *>*selectedModel = [NSMutableArray array];
     for (NSNumber *num in self.selectIndexs) {
         [selectedModel addObject:self.memberModels[num.intValue]];
@@ -56,6 +58,7 @@
 }
 
 - (void)searchMember{
+    [self.view endEditing:YES];
     __weak typeof(self) weakself = self;
     NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"GETUSER",@"type",self.searchTxf.text,@"mobile", nil];
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
@@ -95,9 +98,11 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
     __weak typeof(self) ws = self;
     MemberSearchTableViewCell *cell = [MemberSearchTableViewCell MemberSearchCellWithTableView:tableView selectBlock:^(NSIndexPath *indexPath) {
+        [ws.view endEditing:YES];
         [ws.selectIndexs addObject:[NSNumber numberWithInteger:indexPath.row]];
         ws.navigationItem.rightBarButtonItem.enabled = YES;
     } deselectBlock:^(NSIndexPath *indexPath) {
+        [ws.view endEditing:YES];
         [ws.selectIndexs removeObject:[NSNumber numberWithInteger:indexPath.row]];
         if (ws.selectIndexs.count == 0) {
             ws.navigationItem.rightBarButtonItem.enabled = NO;
@@ -111,21 +116,6 @@
     }
     return cell;
 }
-
-//#pragma mark MemberSearchCellDelegate
-////传回当前选中的indexpath
-//- (void)memberSearchCell:(MemberSearchTableViewCell*)cell selectIndex:(NSIndexPath *)indexPath{
-//    [self.selectIndexs addObject:[NSNumber numberWithInteger:indexPath.row]];
-//    self.navigationItem.rightBarButtonItem.enabled = YES;
-//}
-//
-////传回当前撤销选中的IndexPath
-//- (void)memberSearchCell:(MemberSearchTableViewCell*)cell deSelectIndex:(NSIndexPath *)indexPath{
-//    [self.selectIndexs removeObject:[NSNumber numberWithInteger:indexPath.row]];
-//    if (self.selectIndexs.count == 0) {
-//        self.navigationItem.rightBarButtonItem.enabled = NO;
-//    }
-//}
 
 #pragma mark viewsSetting
 - (void)viewsSetting{

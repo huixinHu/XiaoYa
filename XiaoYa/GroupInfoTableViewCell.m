@@ -37,6 +37,11 @@
     //应有计时器刷新剩余回复时间界面的显示？
 }
 
+- (void)setEnableFlag:(BOOL)enableFlag{
+    self.infoPresentBtn.enabled = enableFlag;
+    self.replyDetail.enabled = enableFlag;
+}
+
 //把发布时间转换为特定格式时间字符串
 -(NSString *)publishTimeToFormatStr:(NSString *)publishTime{
     if (!publishTime) {

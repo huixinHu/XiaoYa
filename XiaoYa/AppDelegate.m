@@ -52,6 +52,7 @@
     self.userName = @"user";
     self.userid = @"0";
     self.phone = @"";
+    self.isNoGroup = NO;
     return YES;
 }
 

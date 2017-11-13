@@ -71,63 +71,33 @@
 //接收到服务器的通知
 - (void)notiFromServer:(NSNotification *)notification{
     int type = [[[notification userInfo] objectForKey:@"type"] intValue];
+    //收到聊天消息、群解散、被踢、有人进群都是可以整合在一起写的逻辑
     switch (type) {
-        //收到新消息
-        case ProtoMessage_Type_Chat:{
+        case ProtoMessage_Type_Chat://收到群消息
+        case ProtoMessage_Type_DismissGroupNotify://群解散
+        case ProtoMessage_Type_QuitGroupNotify://被踢出群
+        case ProtoMessage_Type_SomeoneJoinNotify:{//有人进群
             GroupInfoModel *infoModel = [[notification userInfo] objectForKey:HXNotiFromServerKey];
+            NSString *numberOfMember = [[notification userInfo] objectForKey:@"numberOfMember"];
             if ([self.detailmodel.groupId isEqualToString:infoModel.groupId]) {
                 if (self.detailmodel.groupEvents) {//不为空
                     [self.detailmodel.groupEvents insertObject:infoModel atIndex:0];
                 } else{
                     self.detailmodel.groupEvents = [NSMutableArray arrayWithObject:infoModel];
                 }
+                if (numberOfMember) {
+                    self.detailmodel.numberOfMember = numberOfMember.integerValue;
+                }
                 if ([[Utils obtainPresentVC] isMemberOfClass:[self class]]) {
+                    __weak typeof(self) ws = self;
                     dispatch_async(dispatch_get_main_queue(), ^{
-                        [self.infoList reloadData];
+                        __strong typeof(ws) ss = ws;
+                        [ss.infoList reloadData];
                     });
                 }
             }
         } break;
-        case ProtoMessage_Type_DismissGroupNotify://群解散
-        case ProtoMessage_Type_QuitGroupNotify:{//被踢出群
-            NSString *groupId = [[notification userInfo] objectForKey:@"groupId"];
-            if ([self.detailmodel.groupId isEqualToString:groupId]) {
-                if ([[Utils obtainPresentVC] isMemberOfClass:[self class]]) {
-                    NSString *alertMessage = (type == ProtoMessage_Type_QuitGroupNotify) ? @"你已被移除出该群组" : @"群组已解散";
-                    __weak typeof(self) weakself = self;
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        void (^otherBlock)(UIAlertAction *action) = ^(UIAlertAction *action){
-                            [weakself back];
-                        };
-                        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"通知" message:alertMessage preferredStyle:UIAlertControllerStyleAlert cancelTitle:nil cancelBlock:nil otherTitles:@[@"确定"] otherBlocks:@[otherBlock]];
-                        [weakself presentViewController:alert animated:YES completion:nil];
-                    });
-                }
-            }
-        } break;
-            
-        case ProtoMessage_Type_SomeoneJoinNotify:{//有人进群
-            NSDictionary *detailDict = [[notification userInfo] objectForKey:HXNotiFromServerKey];
-            NSString *groupId = [detailDict objectForKey:@"groupId"];
-            NSString *numberOfMember = [detailDict objectForKey:@"numberOfMember"];
-            GroupInfoModel *infoModel = [[notification userInfo] objectForKey:@"insertMsg"];
-            if ([self.detailmodel.groupId isEqualToString:groupId]) {
-                self.detailmodel.numberOfMember = numberOfMember.integerValue;
-                if (self.detailmodel.groupEvents) {//不为空
-                    [self.detailmodel.groupEvents insertObject:infoModel atIndex:0];
-                } else{
-                    self.detailmodel.groupEvents = [NSMutableArray arrayWithObject:infoModel];
-                }
-            }
-            if ([[Utils obtainPresentVC] isMemberOfClass:[self class]]) {
-                __weak typeof(self) ws = self;
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    __strong typeof(ws) ss = ws;
-                    [ss.infoList reloadData];
-                });
-            }
-        } break;
-            
+        
         case ProtoMessage_Type_UpdateGroupNotify:{//群资料更新
             NSDictionary *detailDict = [[notification userInfo] objectForKey:HXNotiFromServerKey];
             if ([self.detailmodel.groupId isEqualToString:[detailDict objectForKey:@"groupId"]]) {
@@ -154,6 +124,30 @@
                 }
             }
 
+        } break;
+            
+        case ProtoMessage_Type_SomeoneQuitNotify:{//有人退群
+            NSDictionary *detailDict = [[notification userInfo] objectForKey:HXNotiFromServerKey];
+            GroupInfoModel *infoModel = [detailDict objectForKey:@"insertMsg"];
+            if ([self.detailmodel.groupId isEqualToString:[detailDict objectForKey:@"groupId"]]) {
+                if ([detailDict objectForKey:@"numberOfMember"]) {
+                    self.detailmodel.numberOfMember = [[detailDict objectForKey:@"numberOfMember"] integerValue];
+                }
+                if (infoModel) {
+                    if (self.detailmodel.groupEvents) {//不为空
+                        [self.detailmodel.groupEvents insertObject:infoModel atIndex:0];
+                    } else{
+                        self.detailmodel.groupEvents = [NSMutableArray arrayWithObject:infoModel];
+                    }
+                }
+            }
+            if (infoModel && [[Utils obtainPresentVC] isMemberOfClass:[self class]]) {
+                __weak typeof(self) ws = self;
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    __strong typeof(ws) ss = ws;
+                    [ss.infoList reloadData];
+                });
+            }
         } break;
         default:
             break;
@@ -185,9 +179,11 @@
         } else{
             ss.detailmodel.groupEvents = [NSMutableArray arrayWithObject:newEvent];
         }
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [ss.infoList reloadData];
-        });
+        if ([[Utils obtainPresentVC] isMemberOfClass:[self class]]) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [ss.infoList reloadData];
+            });
+        }
     }];
     [self.navigationController pushViewController:VC animated:YES];
 }
@@ -215,6 +211,9 @@
         [ws.navigationController pushViewController:VC animated:YES];
     }];
     cell.model = self.detailmodel.groupEvents[indexPath.row];
+    if (self.detailmodel.deleteFlag == 1) {
+        cell.enableFlag = NO;
+    }
     return cell;
 }
 
@@ -225,6 +224,7 @@
     UIButton *groupData = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 50, 40)];//群资料
     [groupData setTitle:@"群资料" forState:UIControlStateNormal];
     [groupData setTitleColor:[Utils colorWithHexString:@"#666666"] forState:UIControlStateNormal];
+    [groupData setTitleColor:[Utils colorWithHexString:@"#999999"] forState:UIControlStateDisabled];
     groupData.titleLabel.font = [UIFont systemFontOfSize:15];
     [groupData addTarget:self action:@selector(groupDetailData) forControlEvents:UIControlEventTouchUpInside];
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc]initWithCustomView:groupData];
@@ -267,6 +267,11 @@
         make.right.equalTo(self.view.mas_right).offset(-24);
         make.bottom.equalTo(self.view.mas_bottom).offset(-50);
     }];
+    
+    if (self.detailmodel.deleteFlag == 1) {
+        _publish.hidden = YES;
+        groupData.enabled = NO;
+    }
 }
 
 - (void)didReceiveMemoryWarning {

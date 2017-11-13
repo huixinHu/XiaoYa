@@ -106,7 +106,7 @@ static NSString *identifier = @"collectionCell";
                 NSString *groupManagerId = manager.memberId;
                 NSString *groupAvatarId = [NSString stringWithFormat:@"%@",[NSNumber numberWithInteger:ss.avatarID-101]];
                 NSString *numberOfMember = [NSString stringWithFormat:@"%@", [NSNumber numberWithInteger:ss.dataArray.count]];
-                NSMutableDictionary *groupParaDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:groupId, @"groupId", groupName, @"groupName", groupManagerId, @"groupManagerId", groupAvatarId, @"groupAvatarId", numberOfMember, @"numberOfMember",nil];
+                NSMutableDictionary *groupParaDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:groupId, @"groupId", groupName, @"groupName", groupManagerId, @"groupManagerId", groupAvatarId, @"groupAvatarId", numberOfMember, @"numberOfMember",@0,@"deleteFlag",nil];
 
                 [ss.hxdb insertTable:groupTable param:groupParaDict callback:^(NSError *error) {
                     if(error) NSLog(@"创建群组-插入群组表失败：%@",error);
@@ -121,7 +121,6 @@ static NSString *identifier = @"collectionCell";
                     if(error) NSLog(@"创建群组-插入关系表失败：%@",error);
                 }];
                 //3.成员表 要注意重复问题，不过memberTable中的memberId已经设了是唯一Id
-                //利用唯一id避免重复，这里不能使用封装的HXDB的事务方法，封装的方法中，只要有一条出错就回溯并且停止后续插入
                 NSMutableArray *addMemParaArr = [NSMutableArray array];//插入成员表的数据
                 [ss.dataArray enumerateObjectsUsingBlock:^(GroupMemberModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
                     //查询成员表，这些新增的人是否已经在数据库

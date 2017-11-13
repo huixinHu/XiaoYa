@@ -16,5 +16,6 @@
 @property (nonatomic ,copy) NSString *userName;
 @property (nonatomic ,copy) NSString *phone;
 @property (nonatomic ,copy) NSString *userid;
+@property (nonatomic ,assign) BOOL isNoGroup;
 @end
 

@@ -85,18 +85,10 @@
         }
     }];
     if (add.length > 0) [add deleteCharactersInRange:NSMakeRange(add.length - 1, 1)];
-    
-//    NSMutableSet <NSString *> *originSetCopy1 = [self.originMemberIds mutableCopy];
-//    [originSetCopy1 minusSet:curMemberIds];//减
+
     NSMutableString *minus = [NSMutableString string];
     NSMutableArray *delRelatWheresArr = [NSMutableArray array];//删除关系表的wheres数组
     //有删减
-//    [originSetCopy1 enumerateObjectsUsingBlock:^(NSString * _Nonnull obj, BOOL * _Nonnull stop) {
-//        [minus appendString:[NSString stringWithFormat:@"%@,",obj]];
-//        [delRelatWheresArr addObject:@{@"WHERE memberId = ? AND groupId = ?":@[obj,groupId]}];
-//    }];
-//    [minus deleteCharactersInRange:NSMakeRange(minus.length - 1, 1)];
-    
     NSMutableArray <GroupMemberModel *> *delMemberArr = [NSMutableArray arrayWithCapacity:0];//存放踢出成员的模型
     [self.originMembers enumerateObjectsUsingBlock:^(GroupMemberModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         if (![curMemberIds containsObject:obj.memberId]) {
@@ -105,7 +97,7 @@
             [delRelatWheresArr addObject:@{@"WHERE memberId = ? AND groupId = ?":@[obj,groupId]}];
         }
     }];
-    [minus deleteCharactersInRange:NSMakeRange(minus.length - 1, 1)];
+    if (minus.length > 0) [minus deleteCharactersInRange:NSMakeRange(minus.length - 1, 1)];
     
     NSMutableDictionary *paraDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"CHGROUPDATA", @"type", groupId,@"groupId", groupManagerId, @"managerId", groupAvatarId, @"picId",groupName,@"groupName",add,@"addUsers",minus,@"minusUsers",nil];
     __weak typeof(self) ws = self;
@@ -152,8 +144,10 @@
                 //4.消息表
                 NSMutableArray *insertMegList = [NSMutableArray arrayWithCapacity:0];//由于群资料更改产生的新群组消息
                 NSDateFormatter *df = [[NSDateFormatter alloc] init];
+                [df setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
+                NSDate *tempDate = [df dateFromString:[response objectForKey:@"time"]];
                 [df setDateFormat:@"yyyyMMddHHmmss"];
-                NSString *tempDateStr = [df stringFromDate:[NSDate date]];//这里暂时先用客户端的时间，最终应以服务器的时间戳为准
+                NSString *tempDateStr = [df stringFromDate:tempDate];
                 __block int random = (arc4random() % 10000)+10000;//10000~19999随机数
                 //群名
                 if (![ss.originGroupName isEqualToString:groupName]) {
@@ -176,7 +170,7 @@
                     random += 1;
                     NSString *randomStr = [NSString stringWithFormat:@"%@",@(idx+random)];
                     NSString *publishTime = [tempDateStr stringByAppendingString:[randomStr substringFromIndex:1]];
-                    NSDictionary *groupInfoDict = @{@"publishTime":publishTime , @"event":[NSString stringWithFormat:@"%@被踢出群组",obj] , @"groupId":groupId};
+                    NSDictionary *groupInfoDict = @{@"publishTime":publishTime , @"event":[NSString stringWithFormat:@"%@被踢出群组",obj.memberName] , @"groupId":groupId};
                     GroupInfoModel *infoModel = [GroupInfoModel groupInfoWithDict:groupInfoDict];
                     [insertMegList addObject:infoModel];
 
@@ -190,7 +184,7 @@
                 }
                 
                 //更新缓存
-                NSDictionary *modelDict = @{@"groupName":groupName, @"groupId":groupId, @"groupAvatarId":groupAvatarId, @"numberOfMember":numberOfMember, @"groupManagerId":groupManagerId, @"groupMembers":[self.dataArray mutableCopy]};
+                NSDictionary *modelDict = @{@"groupName":groupName, @"groupId":groupId, @"groupAvatarId":groupAvatarId, @"numberOfMember":numberOfMember, @"groupManagerId":groupManagerId, @"groupMembers":[self.dataArray mutableCopy], @"deleteFlag":@0};
                 GroupListModel *refreshModel = [GroupListModel groupWithDict:modelDict];
                 if (ss.completeBlock) {
                     ss.completeBlock(refreshModel);

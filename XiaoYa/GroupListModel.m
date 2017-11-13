@@ -19,6 +19,7 @@
         self.groupMembers = dict[@"groupMembers"];
         self.numberOfMember = [dict[@"numberOfMember"] integerValue];
         self.groupManagerId = dict[@"groupManagerId"];
+        self.deleteFlag = [dict[@"deleteFlag"] integerValue];
     }
     return self;
 }
