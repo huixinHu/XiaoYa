@@ -200,15 +200,14 @@ static HXDBManager *sharedManager = nil;
     NSMutableString *sqlStr = [NSMutableString stringWithFormat:@"CREATE TABLE IF NOT EXISTS %@ (",tableName];
     NSArray *keysArr = [dict allKeys];
     [keysArr enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        if (idx == dict.count - 1) {
-            [sqlStr appendFormat:@"%@ %@)",obj,dict[obj]];
-        }else{
-            [sqlStr appendFormat:@"%@ %@,",obj,dict[obj]];
-        }
+        [sqlStr appendFormat:@"%@ %@,",obj,dict[obj]];
         if (pk && ([obj isEqualToString:pk])) {
             [sqlStr insertString:@" PRIMARY KEY" atIndex:sqlStr.length-1];
         }
     }];
+    [sqlStr deleteCharactersInRange:NSMakeRange(sqlStr.length - 1, 1)];
+    [sqlStr appendString:@")"];
+    
     [self.dbQueue inDatabase:^(FMDatabase *db) {
         if ([db open]) {
             result = [db executeUpdate:sqlStr];
@@ -296,14 +295,13 @@ static HXDBManager *sharedManager = nil;
             NSMutableArray *values = [NSMutableArray arrayWithCapacity:0];
             [keys enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
                 if ([columns containsObject:obj]) {
-                    if (idx == paraDict.count - 1) {
-                        [sqlStr appendFormat:@"%@ )",obj];
-                    } else{
-                        [sqlStr appendFormat:@"%@ ,",obj];
-                    }
+                    [sqlStr appendFormat:@"%@ ,",obj];
                     [values addObject:paraDict[obj]];
                 }
             }];
+            [sqlStr deleteCharactersInRange:NSMakeRange(sqlStr.length - 1, 1)];
+            [sqlStr appendString:@")"];
+            
             [sqlStr appendFormat:@" VALUES (%@)",[self appendKeys:values.count]];
             BOOL result = [db executeUpdate:sqlStr withArgumentsInArray:values];
             if (!result) {
@@ -342,14 +340,13 @@ static HXDBManager *sharedManager = nil;
                 NSMutableArray *values = [NSMutableArray arrayWithCapacity:0];
                 [keys enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
                     if ([columns containsObject:obj]) {
-                        if (idx == paraDict.count - 1) {
-                            [sqlStr appendFormat:@"%@ )",obj];
-                        } else{
-                            [sqlStr appendFormat:@"%@ ,",obj];
-                        }
+                        [sqlStr appendFormat:@"%@ ,",obj];
                         [values addObject:paraDict[obj]];
                     }
                 }];
+                [sqlStr deleteCharactersInRange:NSMakeRange(sqlStr.length - 1, 1)];
+                [sqlStr appendString:@")"];
+                
                 [sqlStr appendFormat:@" VALUES (%@)",[self appendKeys:values.count]];
                 BOOL result = [db executeUpdate:sqlStr withArgumentsInArray:values];
                 if (!result) {

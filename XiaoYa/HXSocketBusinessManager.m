@@ -195,9 +195,9 @@ static HXSocketBusinessManager *manager = nil;
                 NSDictionary *paraDict = @{@"groupId":groupId ,@"groupName":groupName ,@"groupManagerId":groupManagerId ,@"groupAvatarId":groupAvatarId ,@"numberOfMember":numberOfMember ,@"deleteFlag":@0};
                 //插入群组表
                 //查询是否存在旧数据（刚退出群、被踢出就重新加回去）
-                int oldDataCount = [self.hxdb itemCountForTable:groupTable whereDict:@{@"WHERE groupId = ?" :groupId}];
+                int oldDataCount = [self.hxdb itemCountForTable:groupTable whereDict:@{@"WHERE groupId = ?" :@[groupId]}];
                 if (oldDataCount > 0) {
-                    [self.hxdb updateTable:groupTable param:paraDict whereDict:@{@"WHERE groupId = ?" :groupId} callback:^(NSError *error) {
+                    [self.hxdb updateTable:groupTable param:paraDict whereDict:@{@"WHERE groupId = ?" :@[groupId]} callback:^(NSError *error) {
                         if(error) NSLog(@"%@",error);
                     }];
                 } else{
@@ -210,7 +210,7 @@ static HXSocketBusinessManager *manager = nil;
                 NSString *randomStr = [[NSString stringWithFormat:@"%d" ,random] substringFromIndex:1];
                 NSDictionary *groupInfoDict = @{@"publishTime":[NSString stringWithFormat:@"%@%@",tempPublishTime,randomStr] , @"event":@"你已加入群组" , @"groupId":groupId};
                 GroupInfoModel *infoModel = [GroupInfoModel groupInfoWithDict:groupInfoDict];
-                [self.hxdb insertTable:groupInfoTable model:infoModel excludeProperty:nil callback:^(NSError *error) {
+                [self.hxdb insertTable:groupInfoTable model:infoModel excludeProperty:@[@"eventSection",@"deadlineIndex"] callback:^(NSError *error) {
                     NSLog(@"%@",error);
                 }];
                 //发送通知
@@ -224,9 +224,9 @@ static HXSocketBusinessManager *manager = nil;
         case ProtoMessage_Type_QuitGroupNotify:{//被踢出群
             NSString *groupId = receiveData.body;
             //删除群组表、关系表、消息表
-//            [self.hxdb deleteTable:groupTable whereDict:@{@"WHERE groupId = ?":@[groupId]} callback:^(NSError *error) {
-//                NSLog(@"%@",error);
-//            }];
+            [self.hxdb deleteTable:groupTable whereDict:@{@"WHERE groupId = ?":@[groupId]} callback:^(NSError *error) {
+                NSLog(@"%@",error);
+            }];
             [self.hxdb deleteTable:memberGroupRelation whereDict:@{@"WHERE groupId = ?":@[groupId]} callback:^(NSError *error) {
                 NSLog(@"%@",error);
             }];
@@ -269,7 +269,7 @@ static HXSocketBusinessManager *manager = nil;
                 NSString *randomStr = [[NSString stringWithFormat:@"%d" ,random] substringFromIndex:1];
                 NSDictionary *groupInfoDict = @{@"publishTime":[NSString stringWithFormat:@"%@%@",tempPublishTime,randomStr] , @"event":[NSString stringWithFormat:@"%@加入群组",joinUser] , @"groupId":groupId};
                 GroupInfoModel *infoModel = [GroupInfoModel groupInfoWithDict:groupInfoDict];
-                [self.hxdb insertTable:groupInfoTable model:infoModel excludeProperty:nil callback:^(NSError *error) {
+                [self.hxdb insertTable:groupInfoTable model:infoModel excludeProperty:@[@"eventSection",@"deadlineIndex"] callback:^(NSError *error) {
                     NSLog(@"%@",error);
                 }];
                 //发送通知
@@ -328,7 +328,11 @@ static HXSocketBusinessManager *manager = nil;
                 }
                 //插入由于群资料更改产生的新群组消息
                 if (insertMegList.count > 0) {
-                    [self.hxdb insertTableInTransaction:groupInfoTable modelArr:insertMegList excludeProperty:nil callback:^(NSError *error) {
+                    NSMutableArray *exclude = [NSMutableArray arrayWithCapacity:0];
+                    for (int i = 0; i < insertMegList.count; ++i) {
+                        [exclude addObject:@[@"eventSection",@"deadlineIndex"]];
+                    }
+                    [self.hxdb insertTableInTransaction:groupInfoTable modelArr:insertMegList excludeProperty:exclude callback:^(NSError *error) {
                         NSLog(@"%@",error);
                     }];
                     insertMegList = (NSMutableArray *)[[insertMegList reverseObjectEnumerator] allObjects];//倒序。时间越晚的越前
@@ -343,8 +347,10 @@ static HXSocketBusinessManager *manager = nil;
         case ProtoMessage_Type_NoGroupNotify:{//还没有加入任何群组
             NSDictionary *dataDict = @{@"type":[NSNumber numberWithInt:ProtoMessage_Type_NoGroupNotify]};
             [[NSNotificationCenter defaultCenter] postNotificationName:HXNotiFromServerNotification object:nil userInfo:dataDict];
-            AppDelegate *apd = (AppDelegate *)[[UIApplication sharedApplication] delegate];
-            apd.isNoGroup = YES;
+            dispatch_async(dispatch_get_main_queue(), ^{
+                AppDelegate *apd = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+                apd.isNoGroup = YES;
+            });
         } break;
             
         case ProtoMessage_Type_HeartBeat:{
@@ -362,24 +368,25 @@ static HXSocketBusinessManager *manager = nil;
             if (jsonError) {
                 NSLog(@"json 解析错误: --- error %@", jsonError);
             } else{
-                //要显式转成nsstring，[userDict objectForKey:@"id"]得到的是long
-                NSString *groupId = [NSString stringWithFormat:@"%@",[jsonDict objectForKey:@"id"]];
-                NSString *userId = [NSString stringWithFormat:@"%@",[jsonDict objectForKey:@"userId"]];
-                NSString *numberOfMember = [NSString stringWithFormat:@"%@",[jsonDict objectForKey:@"amount"]];
+                //要显式转成nsstring，[userDict objectForKey:@"groupId"]得到的是long
+                NSString *groupId = [NSString stringWithFormat:@"%@",[jsonDict objectForKey:@"groupId"]];
                 
                 NSMutableDictionary *dict = [NSMutableDictionary dictionary];
                 [dict setObject:groupId forKey:@"groupId"];
-                if (userId) {
+                if ([jsonDict objectForKey:@"userName"]) {
                     int random = (arc4random() % 10000)+10000;//10000~19999随机数
                     NSString *randomStr = [[NSString stringWithFormat:@"%d" ,random] substringFromIndex:1];
-                    NSDictionary *groupInfoDict = @{@"publishTime":[NSString stringWithFormat:@"%@%@",tempPublishTime,randomStr] , @"event":[NSString stringWithFormat:@"%@退出群组",userId] , @"groupId":groupId};
+                    
+                    NSString *userName = [jsonDict objectForKey:@"userName"];
+                    NSDictionary *groupInfoDict = @{@"publishTime":[NSString stringWithFormat:@"%@%@",tempPublishTime,randomStr] , @"event":[NSString stringWithFormat:@"%@退出群组",userName] , @"groupId":groupId};
                     GroupInfoModel *infoModel = [GroupInfoModel groupInfoWithDict:groupInfoDict];
-                    [self.hxdb insertTable:groupInfoTable model:infoModel excludeProperty:nil callback:^(NSError *error) {
+                    [self.hxdb insertTable:groupInfoTable model:infoModel excludeProperty:@[@"eventSection",@"deadlineIndex"] callback:^(NSError *error) {
                         NSLog(@"%@",error);
                     }];
                     [dict setObject:infoModel forKey:@"insertMsg"];
                 }
-                if (numberOfMember) {
+                if ([jsonDict objectForKey:@"amount"]) {
+                    NSString *numberOfMember = [NSString stringWithFormat:@"%@",[jsonDict objectForKey:@"amount"]];
                     [dict setObject:numberOfMember forKey:@"numberOfMember"];
                 }
                 

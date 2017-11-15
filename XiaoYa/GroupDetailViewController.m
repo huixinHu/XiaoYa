@@ -255,9 +255,9 @@ static NSString *identifier = @"groupDetailCollectionCell";
                         NSLog(@"解散群组失败");
                     }else {
                         //更新数据库 //删除群组表、关系表、消息表
-//                        [self.hxDB deleteTable:groupTable whereDict:@{@"WHERE groupId = ?":@[groupId]} callback:^(NSError *error) {
-//                            NSLog(@"%@",error);
-//                        }];
+                        [self.hxDB deleteTable:groupTable whereDict:@{@"WHERE groupId = ?":@[groupId]} callback:^(NSError *error) {
+                            NSLog(@"%@",error);
+                        }];
                         [self.hxDB deleteTable:memberGroupRelation whereDict:@{@"WHERE groupId = ?":@[groupId]} callback:^(NSError *error) {
                             NSLog(@"%@",error);
                         }];
@@ -278,7 +278,7 @@ static NSString *identifier = @"groupDetailCollectionCell";
                         NSString *randomStr = [[NSString stringWithFormat:@"%d" ,random] substringFromIndex:1];
                         NSDictionary *groupInfoDict = @{@"publishTime":[NSString stringWithFormat:@"%@%@",tempDateStr,randomStr] , @"event":@"你已解散群组", @"groupId":groupId};
                         GroupInfoModel *infoModel = [GroupInfoModel groupInfoWithDict:groupInfoDict];
-//                        [ss.hxDB insertTable:groupInfoTable model:infoModel excludeProperty:nil callback:^(NSError *error) {
+//                        [ss.hxDB insertTable:groupInfoTable model:infoModel excludeProperty:@[@"eventSection",@"deadlineIndex"] callback:^(NSError *error) {
 //                            NSLog(@"%@",error);
 //                        }];//好像不需要插入数据库了，反正下次打开app该群就没有了，要保证群消息干净
 
@@ -313,9 +313,9 @@ static NSString *identifier = @"groupDetailCollectionCell";
                         NSLog(@"退出群组失败");
                     }else {
                         //更新数据库 //删除群组表、关系表、消息表
-//                        [self.hxDB deleteTable:groupTable whereDict:@{@"WHERE groupId = ?":@[groupId]} callback:^(NSError *error) {
-//                            NSLog(@"%@",error);
-//                        }];
+                        [self.hxDB deleteTable:groupTable whereDict:@{@"WHERE groupId = ?":@[groupId]} callback:^(NSError *error) {
+                            NSLog(@"%@",error);
+                        }];
                         [ss.hxDB deleteTable:memberGroupRelation whereDict:@{@"WHERE groupId = ?":@[groupId]} callback:^(NSError *error) {
                             NSLog(@"%@",error);
                         }];//避免再次加入群时产生重复数据
@@ -335,7 +335,7 @@ static NSString *identifier = @"groupDetailCollectionCell";
                         NSString *randomStr = [[NSString stringWithFormat:@"%d" ,random] substringFromIndex:1];
                         NSDictionary *groupInfoDict = @{@"publishTime":[NSString stringWithFormat:@"%@%@",tempDateStr,randomStr] , @"event":@"你已退出群组", @"groupId":groupId};
                         GroupInfoModel *infoModel = [GroupInfoModel groupInfoWithDict:groupInfoDict];
-//                        [ss.hxDB insertTable:groupInfoTable model:infoModel excludeProperty:nil callback:^(NSError *error) {
+//                        [ss.hxDB insertTable:groupInfoTable model:infoModel excludeProperty:@[@"eventSection",@"deadlineIndex"] callback:^(NSError *error) {
 //                            NSLog(@"%@",error);
 //                        }];
                         //更新缓存

@@ -277,30 +277,28 @@
                         }
                         obj.groupEvents = newGroupEvents;
                         obj.groupName = [detailDict objectForKey:@"groupName"];
-                        indexMoveToTop = idx;
                         model = [obj copy];
                     }
+                    indexMoveToTop = idx;
                     *stop = YES;
                 }
             }];
-            if (indexMoveToTop>= 0) {
 //                [self.groupModels removeObjectAtIndex:indexMoveToTop];
 //                [self.groupModels insertObject:model atIndex:0];
-                __weak typeof(self) ws = self;
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    __strong typeof(ws) ss = ws;
-                    if ([[Utils obtainPresentVC] isMemberOfClass:[ss class]]) {
-                        if (newInfo.count > 0) { //如果修改了群名、增加了人数
-                            [self.groupModels removeObjectAtIndex:indexMoveToTop];
-                            [self.groupModels insertObject:model atIndex:0];
-                            [ss.groupTable reloadData];
-                        } else {//如果修改了头像或者踢了人
-                            NSIndexPath *refreshPath = [NSIndexPath indexPathForRow:indexMoveToTop inSection:0];
-                            [ss.groupTable reloadRowsAtIndexPaths:@[refreshPath] withRowAnimation:UITableViewRowAnimationNone];
-                        }
+            __weak typeof(self) ws = self;
+            dispatch_async(dispatch_get_main_queue(), ^{
+                __strong typeof(ws) ss = ws;
+                if ([[Utils obtainPresentVC] isMemberOfClass:[ss class]]) {
+                    if (newInfo.count > 0) { //如果修改了群名、增加了人数
+                        [self.groupModels removeObjectAtIndex:indexMoveToTop];
+                        [self.groupModels insertObject:model atIndex:0];
+                        [ss.groupTable reloadData];
+                    } else {//如果修改了头像或者踢了人
+                        NSIndexPath *refreshPath = [NSIndexPath indexPathForRow:indexMoveToTop inSection:0];
+                        [ss.groupTable reloadRowsAtIndexPaths:@[refreshPath] withRowAnimation:UITableViewRowAnimationNone];
                     }
-                });
-            }
+                }
+            });
         } break;
             
         case ProtoMessage_Type_NoGroupNotify:{//没有加入任何群
@@ -325,21 +323,25 @@
                         } else{
                             obj.groupEvents = [NSMutableArray arrayWithObject:infoModel];
                         }
-                        indexMoveToTop = idx;
                         model = [obj copy];
                     }
+                    indexMoveToTop = idx;
                     *stop = YES;
                 }
             }];
-            if (infoModel) {
-                [self.groupModels removeObjectAtIndex:indexMoveToTop];
-                [self.groupModels insertObject:model atIndex:0];
-            }
             __weak typeof(self) ws = self;
             dispatch_async(dispatch_get_main_queue(), ^{
                 __strong typeof(ws) ss = ws;
                 if ([[Utils obtainPresentVC] isMemberOfClass:[self class]]) {
-                    [ss.groupTable reloadData];
+                    if (infoModel) {
+                        [ss.groupModels removeObjectAtIndex:indexMoveToTop];
+                        [ss.groupModels insertObject:model atIndex:0];
+                        [ss.groupTable reloadData];
+                    }
+                    if ([dict objectForKey:@"numberOfMember"]) {
+                        NSIndexPath *refreshPath = [NSIndexPath indexPathForRow:indexMoveToTop inSection:0];
+                        [ss.groupTable reloadRowsAtIndexPaths:@[refreshPath] withRowAnimation:UITableViewRowAnimationNone];
+                    }
                 }
             });
         } break;

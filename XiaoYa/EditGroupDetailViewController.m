@@ -177,7 +177,11 @@
                 }];
                 //插入由于群资料更改产生的新群组消息
                 if (insertMegList.count > 0) {
-                    [self.hxdb insertTableInTransaction:groupInfoTable modelArr:insertMegList excludeProperty:nil callback:^(NSError *error) {
+                    NSMutableArray *exclude = [NSMutableArray arrayWithCapacity:0];
+                    for (int i = 0; i < insertMegList.count; ++i) {
+                        [exclude addObject:@[@"eventSection",@"deadlineIndex"]];
+                    }
+                    [self.hxdb insertTableInTransaction:groupInfoTable modelArr:insertMegList excludeProperty:exclude callback:^(NSError *error) {
                         NSLog(@"%@",error);
                     }];
                     insertMegList = (NSMutableArray *)[[insertMegList reverseObjectEnumerator] allObjects];//倒序。时间越晚的越前

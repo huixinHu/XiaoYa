@@ -29,8 +29,12 @@
 - (void)singleClicked:(UIButton *)sender{
     UIView *view1 = [sender superview];
     UIView *view2 = [view1 superview];
-    NSIndexPath *indexPath = [(UITableView *)[view2 superview] indexPathForCell:(UITableViewCell*)view2];
-//    NSIndexPath *indexPath = [(UITableView *)[[view2 superview] superview] indexPathForCell:(UITableViewCell*)view2];
+    NSIndexPath *indexPath;
+    if ([UIDevice currentDevice].systemVersion.doubleValue >= 11.0) {
+        indexPath = [(UITableView *)[view2 superview] indexPathForCell:(UITableViewCell*)view2];
+    } else{
+        indexPath = [(UITableView *)[[view2 superview] superview] indexPathForCell:(UITableViewCell*)view2];
+    }
     
     if (!sender.isSelected) {
         sender.selected = YES;

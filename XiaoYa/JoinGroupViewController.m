@@ -121,7 +121,7 @@
                 NSString *randomStr = [[NSString stringWithFormat:@"%d" ,random] substringFromIndex:1];
                 NSDictionary *groupInfoDict = @{@"publishTime":[NSString stringWithFormat:@"%@%@",tempDateStr,randomStr] , @"event":@"你已加入群组", @"groupId":groupId};
                 GroupInfoModel *infoModel = [GroupInfoModel groupInfoWithDict:groupInfoDict];
-                [self.hxdb insertTable:groupInfoTable model:infoModel excludeProperty:nil callback:^(NSError *error) {
+                [self.hxdb insertTable:groupInfoTable model:infoModel excludeProperty:@[@"eventSection",@"deadlineIndex"] callback:^(NSError *error) {
                     NSLog(@"%@",error);
                 }];
 

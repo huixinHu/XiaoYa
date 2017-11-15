@@ -84,7 +84,7 @@ static NSString * groupInfoTable = @"groupInfoTable";
 
  @param tableName 表名
  @param paraDict 待更新数据。字典key：字段名，value：字段值
- @param where where子句字典。key:where子句遵循绑定语法，value：绑定值数组。比如“where name = 'John' AND age = '17'” -> @{@"WHERE name = ? AND age = ?":@[@"John",@"17"]}。要保证where字典有且仅有一个key-value
+ @param where where子句字典。key:where子句遵循绑定语法，value：绑定值数组。比如“where name = 'John' AND age = '17'” -> @{@"WHERE name = ? AND age = ?":@[@"John",@"17"]}。要保证where字典有且仅有一组key-value
  @param block 回调
  */
 - (void)updateTable:(NSString *)tableName param:(NSDictionary *)paraDict whereDict:(NSDictionary *)where callback:(void(^)(NSError *error ))block;
@@ -94,7 +94,7 @@ static NSString * groupInfoTable = @"groupInfoTable";
 
  @param tableName 表名
  @param paraArr 待更新数据集合。数组每个元素是字典，字典构成同上
- @param whereArr where子句字典的集合
+ @param whereArr where子句字典的集合。where子句字典 -- key:where子句遵循绑定语法，value：绑定值数组。比如“where name = 'John' AND age = '17'” -> @{@"WHERE name = ? AND age = ?":@[@"John",@"17"]}。要保证where字典有且仅有一组key-value
  @param block 回调
  */
 - (void)updateTableInTransaction:(NSString *)tableName paramArr:(NSArray <NSDictionary *>*)paraArr whereArrs:(NSArray <NSDictionary *>*)whereArr callback:(void(^)(NSError *error))block;
@@ -105,7 +105,7 @@ static NSString * groupInfoTable = @"groupInfoTable";
  @param tableName 表名
  @param model 模型对象
  @param colArr 模型中不需要更新的属性名集合
- @param where where子句字典
+ @param where where子句字典。key:where子句遵循绑定语法，value：绑定值数组。比如“where name = 'John' AND age = '17'” -> @{@"WHERE name = ? AND age = ?":@[@"John",@"17"]}。要保证where字典有且仅有一组key-value
  @param block 回调
  */
 - (void)updateTable:(NSString *)tableName model:(id)model excludeProperty:(NSArray *)colArr whereDict:(NSDictionary *)where callback:(void(^)(NSError *error ))block;
@@ -116,7 +116,7 @@ static NSString * groupInfoTable = @"groupInfoTable";
  @param tableName 表名
  @param modelArr 模型对象集合
  @param colArr 一一对应模型对象数组中的每一元素，模型对象中不需要更新的属性名集合
- @param whereArr where子句字典的集合
+ @param whereArr where子句字典的集合。where子句字典 -- key:where子句遵循绑定语法，value：绑定值数组。比如“where name = 'John' AND age = '17'” -> @{@"WHERE name = ? AND age = ?":@[@"John",@"17"]}。要保证where字典有且仅有一组key-value
  @param block 回调
  */
 - (void)updateTableInTransaction:(NSString *)tableName modelArr:(NSArray <id>*)modelArr excludeProperty:(NSArray <NSArray *>*)colArr whereArrs:(NSArray<NSDictionary *> *)whereArr callback:(void (^)(NSError *))block;
@@ -126,7 +126,7 @@ static NSString * groupInfoTable = @"groupInfoTable";
  删除单条件记录
 
  @param tableName 表名
- @param where where子句字典
+ @param where where子句字典。key:where子句遵循绑定语法，value：绑定值数组。比如“where name = 'John' AND age = '17'” -> @{@"WHERE name = ? AND age = ?":@[@"John",@"17"]}。要保证where字典有且仅有一组key-value
  @param block 回调
  */
 - (void)deleteTable:(NSString *)tableName whereDict:(NSDictionary *)where callback:(void(^)(NSError *error))block;
@@ -135,7 +135,7 @@ static NSString * groupInfoTable = @"groupInfoTable";
  批量删除不同条件的记录
 
  @param tableName 表名
- @param whereArrs where子句字典的集合
+ @param whereArrs where子句字典的集合。where子句字典 -- key:where子句遵循绑定语法，value：绑定值数组。比如“where name = 'John' AND age = '17'” -> @{@"WHERE name = ? AND age = ?":@[@"John",@"17"]}。要保证where字典有且仅有一组key-value
  @param block 回调
  */
 - (void)deleteTableInTransaction:(NSString *)tableName whereArrs:(NSArray <NSDictionary *>*)whereArrs callback:(void(^)(NSError *error))block;
@@ -156,7 +156,7 @@ static NSString * groupInfoTable = @"groupInfoTable";
  根据条件查询有多少条记录
 
  @param tableName 表名
- @param where where子句字典
+ @param where where子句字典。key:where子句遵循绑定语法，value：绑定值数组。比如“where name = 'John' AND age = '17'” -> @{@"WHERE name = ? AND age = ?":@[@"John",@"17"]}。要保证where字典有且仅有一组key-value
  @return 记录数目
  */
 - (int)itemCountForTable:(NSString *)tableName whereDict:(NSDictionary *)where;
@@ -167,7 +167,7 @@ static NSString * groupInfoTable = @"groupInfoTable";
  @param tableName 表名
  @param cls 模型类
  @param colArr 模型中不需要被查询的属性名集合
- @param where where子句字典
+ @param where where子句字典。key:where子句遵循绑定语法，value：绑定值数组。比如“where name = 'John' AND age = '17'” -> @{@"WHERE name = ? AND age = ?":@[@"John",@"17"]}。要保证where字典有且仅有一组key-value
  @param block 回调
  @return 查询结果
  */
@@ -178,7 +178,7 @@ static NSString * groupInfoTable = @"groupInfoTable";
 
  @param tableName 表名
  @param columnDict 查询字段。字典：key 字段名，value 字段对应的sql数据类型
- @param where where子句字典
+ @param where where子句字典。key:where子句遵循绑定语法，value：绑定值数组。比如“where name = 'John' AND age = '17'” -> @{@"WHERE name = ? AND age = ?":@[@"John",@"17"]}。要保证where字典有且仅有一组key-value
  @param block 回调
  @return 查询结果
  */
