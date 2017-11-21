@@ -201,6 +201,10 @@
             }
         } failure:^(NSURLSessionDataTask *task, NSError *error) {
             NSLog(@"Error: %@", error);
+            NSError *underErr = error.userInfo[@"NSUnderlyingError"];
+            NSData *data = underErr.userInfo[@"com.alamofire.serialization.response.error.data"];
+            NSString *result = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+            NSLog(@"result :%@",result);
         } refresh:NO];
     });
 }

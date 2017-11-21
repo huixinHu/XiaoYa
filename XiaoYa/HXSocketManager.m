@@ -98,18 +98,16 @@ static HXSocketManager *manager = nil;
             if (![weakself.socket connectToHost:HOST onPort:PORT withTimeout:CONNECT_TIMEOUT error:&error]) {
                 weakself.connectStatus = HXSocketConnectStatusDisconnect;//连接状态-未连接
             }
-            [timer invalidate];
-            timer = nil;
+            [weakself.reconnectTimer invalidate];
+            weakself.reconnectTimer = nil;
         } repeats:NO];//repeat参数为NO,timer执行完自动invalidate，但是timer != nil;
         [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]];
-        
     }
     else{//当手动断开socket时（退出账号、进入后台等），reconnectCount<0
         [self.reconnectTimer invalidate];
         self.reconnectTimer = nil;
         self.reconnectionCount = 0;
     }
-    
 }
 
 - (void)socketHeartBeatBegin:(NSData *)heartBeatData{
@@ -128,13 +126,14 @@ static HXSocketManager *manager = nil;
             if (strongself.heartBeatCount >= HEARTBEAT_LIMIT) {
                 [strongself.socket disconnect];
 //                self.reconnectionCount = -1; ？？心跳失败后还需不需要重连？不需要就设-1
-                [timer invalidate];
-                timer = nil;
+                [weakself.heartBeatTimer invalidate];
+                weakself.heartBeatTimer = nil;
             }else{
                 strongself.heartBeatCount++;
                 [strongself socketWriteData:heartBeatData];
             }
         } repeats:YES];
+        [self.heartBeatTimer fire];
         [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]];
     }
 }

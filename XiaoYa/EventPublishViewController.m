@@ -141,7 +141,7 @@
             }
             NSString *jsonStr = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
             [dfm setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
-            NSString *publishTime = [dfm stringFromDate:[NSDate date]];//yyyy-MM-dd HH:mm:ss 应该以服务器时间为准
+            NSString *publishTime = [dfm stringFromDate:[NSDate date]];
             ProtoMessage* s1 = [[ProtoMessage alloc]init];
             s1.type = ProtoMessage_Type_Chat;
             s1.from = [NSString stringWithFormat:@"%@(%@)",apd.userName,apd.userid];

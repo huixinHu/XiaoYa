@@ -47,11 +47,27 @@ static NSString *identifier = @"groupDetailCollectionCell";
         
         __weak typeof(self) ws = self;
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
+            __strong typeof(ws) ss = ws;
+            //首先获取群组名、群组头像
+            NSMutableDictionary *getGroup = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"GETGROUP",@"type", model.groupId ,@"groupId", nil];
+            [HXNetworking postWithUrl:httpUrl params:getGroup cache:NO success:^(NSURLSessionDataTask *task, id responseObject) {
+                NSDictionary *responseDict = (NSDictionary *)responseObject;
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    if ([[responseDict objectForKey:@"state"] boolValue] != 0){
+                        NSDictionary *groupDetail = [responseDict objectForKey:@"group"];
+                        ss.groupModel.groupName = [groupDetail objectForKey:@"groupName"];
+                        ss.groupModel.groupAvatarId = [NSString stringWithFormat:@"%@",[groupDetail objectForKey:@"picId"]];
+                    }
+                });
+            } failure:^(NSURLSessionDataTask *task, NSError *error) {
+                NSLog(@"Error: %@", error);
+            } refresh:NO];
+            
+            
             NSMutableArray *relationMemberIdArr = [NSMutableArray array];//关系表中的用户id数组
             //无论有没有缓存都先取数据库，再取网络
 //            if (model.groupMembers.count == 0 || !model.groupMembers){
             //从数据库去取
-            __strong typeof(ws) ss = ws;
             //1.查找该群组所有的用户id 查找关系表
             NSArray *dbMemberIdDictArr = [ss.hxDB queryTable:memberGroupRelation columns:@{@"memberId":SQL_TEXT}whereDict:@{@"WHERE groupId = ?" : @[model.groupId]} callback:^(NSError *error) {
                 NSLog(@"%@",error.userInfo[NSLocalizedDescriptionKey]);

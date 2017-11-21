@@ -152,7 +152,9 @@
                 });
             }
         } else{
-            ws.loginPregress.loginTimeoutBlock();
+            if (ws.loginPregress.loginTimeoutBlock) {
+                ws.loginPregress.loginTimeoutBlock();
+            }
         }
     };
 }

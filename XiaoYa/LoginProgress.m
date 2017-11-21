@@ -11,7 +11,7 @@
 #import "MBProgressHUD.h"
 @interface LoginProgress()
 @property (nonatomic ,strong) NSTimer *timer;
-@property (nonatomic ,strong) dispatch_queue_t serialQ;
+@property (nonatomic ,strong) dispatch_queue_t concurrentQ;
 @property (nonatomic ,strong) MBProgressHUD *hub;
 
 @end
@@ -22,18 +22,19 @@
 }
 
 - (void)showProgress:(BOOL)show onView:(UIView *)view{
-    dispatch_async(self.serialQ, ^{
+    dispatch_async(self.concurrentQ, ^{
         if (show) {
             [self showLoginProgressGUI:YES onParent:view];
             [self stopTimer];
             __weak typeof(self) ws = self;
             self.timer = [NSTimer scheduledTimerWithTimeInterval:5 block:^(NSTimer *timer) {
-                if (ws.loginTimeoutBlock != nil) {
+                NSLog(@"____");
+                if (ws.loginTimeoutBlock && ws.timer) {
                     ws.loginTimeoutBlock();
                 }
             } repeats:NO];
             runlp = CFRunLoopGetCurrent();
-            [[NSRunLoop currentRunLoop]runMode:NSRunLoopCommonModes beforeDate:[NSDate distantFuture]];
+            [[NSRunLoop currentRunLoop]runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]];
         }
         else{
             [self showLoginProgressGUI:NO onParent:view];
@@ -78,11 +79,10 @@
     });
 }
 
-
-- (dispatch_queue_t)serialQ{
-    if (_serialQ == nil) {
-        _serialQ = dispatch_queue_create("com.commet.LoginProgress", DISPATCH_QUEUE_SERIAL);
+- (dispatch_queue_t)concurrentQ{
+    if (_concurrentQ == nil) {
+        _concurrentQ = dispatch_queue_create("com.commet.LoginProgress", DISPATCH_QUEUE_CONCURRENT);
     }
-    return _serialQ;
+    return _concurrentQ;
 }
 @end
